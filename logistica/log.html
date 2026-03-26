@@ -1353,66 +1353,456 @@ async function releaseExp(id) {
 // ================================================
 // RELATÓRIOS
 // ================================================
+let _repData = { calls:[], ships:[], exps:[] };
+
 async function renderRelatorios() {
   loading();
   const [cr, sr, er] = await Promise.all([apiGet('/calls.php'), apiGet('/shipments.php'), apiGet('/expenses.php')]);
-  const calls = cr.ok ? cr.data : [];
-  const ships = sr.ok ? sr.data : [];
-  const exps  = er.ok ? er.data : [];
-  const cnt  = (arr,k,v) => arr.filter(i=>i[k]===v).length;
-  const sum  = (arr,k) => arr.reduce((s,i)=>s+parseFloat(i[k]||0),0);
+  _repData.calls = cr.ok ? cr.data : [];
+  _repData.ships = sr.ok ? sr.data : [];
+  _repData.exps  = er.ok ? er.data : [];
+
+  const allItems = [..._repData.calls, ..._repData.ships, ..._repData.exps];
+  const anos = [...new Set(allItems.map(i=>(i.created_at||'').slice(0,4)).filter(Boolean))].sort().reverse();
+  const anoOpts = anos.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mesOpts = MESES.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');
+
+  const filterBar = (prefix, extraFilters) => `
+    <div class="card p-4 mb-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        ${extraFilters}
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label class="form-label" style="font-size:11px">Data início</label>
+          <input type="date" id="rf_${prefix}_de" class="form-input" onchange="applyRepFilter('${prefix}')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Data fim</label>
+          <input type="date" id="rf_${prefix}_ate" class="form-input" onchange="applyRepFilter('${prefix}')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Mês</label>
+          <select id="rf_${prefix}_mes" class="form-input" onchange="applyRepFilter('${prefix}')">
+            <option value="">Todos os meses</option>${mesOpts}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Ano</label>
+          <select id="rf_${prefix}_ano" class="form-input" onchange="applyRepFilter('${prefix}')">
+            <option value="">Todos os anos</option>${anoOpts}
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button class="btn btn-outline btn-sm" onclick="clearRepFilter('${prefix}')"><i class="fas fa-times mr-1"></i>Limpar filtros</button>
+        <button class="btn btn-outline btn-sm" onclick="exportRepCSV('${prefix}')"><i class="fas fa-download mr-1"></i>Exportar CSV</button>
+      </div>
+    </div>`;
 
   setView(`
-    <div class="grid md:grid-cols-3 gap-4 mb-6">
-      ${statCard('Total Chamados',    calls.length, 'fa-bell',       '#1a3550','#e0e7ff')}
-      ${statCard('Total Envios',      ships.length, 'fa-box',        '#10b981','#d1fae5')}
-      ${statCard('Total Despesas',    fmtMoney(sum(exps,'amount')), 'fa-dollar-sign','#ef4444','#fee2e2')}
+    <!-- TABS -->
+    <div class="flex gap-1 mb-5" style="border-bottom:2px solid var(--border)">
+      ${[
+        {id:'despesas', label:'Despesas',          icon:'fa-dollar-sign'},
+        {id:'chamados', label:'Chamados',           icon:'fa-bell'},
+        {id:'envios',   label:'Envios / Retiradas', icon:'fa-box'},
+      ].map(t=>`
+        <button id="repTab_${t.id}" onclick="switchRepTab('${t.id}')"
+          class="flex items-center gap-2 px-5 py-2 text-sm font-semibold -mb-0.5 transition-all rounded-t"
+          style="border-bottom:2px solid transparent;color:var(--text-muted)">
+          <i class="fas ${t.icon}"></i>${t.label}
+        </button>`).join('')}
     </div>
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
-      <div class="card p-5">
-        <h3 class="font-bold text-gray-800 mb-4">Chamados por Status</h3>
-        ${['pending','in_progress','completed','cancelled'].map(s=>`
-          <div class="flex justify-between items-center py-2 border-b last:border-0">
-            <span class="badge badge-${badgeClass(s)}">${STATUS_LABELS[s]}</span>
-            <span class="font-bold text-gray-800">${cnt(calls,'status',s)}</span>
-          </div>`).join('')}
-      </div>
-      <div class="card p-5">
-        <h3 class="font-bold text-gray-800 mb-4">Despesas por Status</h3>
-        ${['pending','approved','released','rejected'].map(s=>`
-          <div class="flex justify-between items-center py-2 border-b last:border-0">
-            <span class="badge badge-${badgeClass(s)}">${STATUS_LABELS[s]}</span>
-            <span class="font-bold text-gray-800">${cnt(exps,'status',s)}</span>
-          </div>`).join('')}
-        <div class="flex justify-between pt-3 font-bold">
-          <span class="text-gray-600">Total Liberado</span>
-          <span class="text-green-600">${fmtMoney(sum(exps.filter(e=>e.status==='released'),'amount'))}</span>
+
+    <!-- ─── DESPESAS ─── -->
+    <div id="repPanel_despesas">
+      ${filterBar('exp', `
+        <div>
+          <label class="form-label" style="font-size:11px">Setor</label>
+          <input type="text" id="rf_exp_setor" class="form-input" placeholder="Todos" oninput="applyRepFilter('exp')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Forma de Pagamento</label>
+          <select id="rf_exp_forma" class="form-input" onchange="applyRepFilter('exp')">
+            <option value="">Todas</option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="pix">PIX</option>
+            <option value="cartao">Cartão</option>
+            <option value="transferencia">Transferência</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Classificação Financeira</label>
+          <input type="text" id="rf_exp_class" class="form-input" placeholder="Todas" oninput="applyRepFilter('exp')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Status</label>
+          <select id="rf_exp_status" class="form-input" onchange="applyRepFilter('exp')">
+            <option value="">Todos</option>
+            <option value="pending">Pendente</option>
+            <option value="approved">Aprovado</option>
+            <option value="released">Liberado</option>
+            <option value="rejected">Rejeitado</option>
+          </select>
+        </div>
+      `)}
+      <div id="rep_exp_summary" class="grid grid-cols-3 gap-3 mb-4"></div>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr style="background:var(--bg);border-bottom:2px solid var(--border)">
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Data</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Setor</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Beneficiário</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Referência</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Classificação</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Forma</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Valor</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Status</th>
+            </tr></thead>
+            <tbody id="rep_exp_body"></tbody>
+          </table>
         </div>
       </div>
     </div>
-    <div class="card p-5">
-      <h3 class="font-bold text-gray-800 mb-4">Extrato de Despesas</h3>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead><tr class="border-b text-left text-gray-400 text-xs uppercase">
-            <th class="pb-2 pr-3">Data</th><th class="pb-2 pr-3">Beneficiário</th>
-            <th class="pb-2 pr-3">Referência</th><th class="pb-2 pr-3">Forma</th>
-            <th class="pb-2 pr-3">Valor</th><th class="pb-2">Status</th>
-          </tr></thead>
-          <tbody>
-            ${exps.map(e=>`
-              <tr class="border-b hover:bg-gray-50">
-                <td class="py-2 pr-3 text-gray-400">${fmtDateOnly(e.data_solicitacao||e.created_at)}</td>
-                <td class="py-2 pr-3 font-semibold text-gray-800">${escHtml(e.beneficiario||e.created_by_name)}</td>
-                <td class="py-2 pr-3 text-gray-500">${escHtml(e.description||'-')}</td>
-                <td class="py-2 pr-3 text-gray-500">${e.forma_pagamento||'-'}</td>
-                <td class="py-2 pr-3 font-bold">${fmtMoney(e.amount)}</td>
-                <td class="py-2"><span class="badge badge-${badgeClass(e.status)}">${STATUS_LABELS[e.status]||e.status}</span></td>
-              </tr>`).join('')||'<tr><td colspan="6" class="py-4 text-center text-gray-400">Nenhuma despesa</td></tr>'}
-          </tbody>
-        </table>
+
+    <!-- ─── CHAMADOS ─── -->
+    <div id="repPanel_chamados" class="hidden">
+      ${filterBar('call', `
+        <div>
+          <label class="form-label" style="font-size:11px">Motorista</label>
+          <input type="text" id="rf_call_driver" class="form-input" placeholder="Todos" oninput="applyRepFilter('call')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Unidade / Origem</label>
+          <input type="text" id="rf_call_origin" class="form-input" placeholder="Todas" oninput="applyRepFilter('call')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Prioridade</label>
+          <select id="rf_call_prio" class="form-input" onchange="applyRepFilter('call')">
+            <option value="">Todas</option>
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgente</option>
+            <option value="emergency">Emergência</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Status</label>
+          <select id="rf_call_status" class="form-input" onchange="applyRepFilter('call')">
+            <option value="">Todos</option>
+            <option value="pending">Pendente</option>
+            <option value="in_progress">Em Andamento</option>
+            <option value="completed">Concluído</option>
+          </select>
+        </div>
+      `)}
+      <div id="rep_call_summary" class="grid grid-cols-3 gap-3 mb-4"></div>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr style="background:var(--bg);border-bottom:2px solid var(--border)">
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Data/Hora</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Origem / Unidade</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Prioridade</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Motorista</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Chegada NTO</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Conclusão</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Duração</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Status</th>
+            </tr></thead>
+            <tbody id="rep_call_body"></tbody>
+          </table>
+        </div>
       </div>
-    </div>`);
+    </div>
+
+    <!-- ─── ENVIOS ─── -->
+    <div id="repPanel_envios" class="hidden">
+      ${filterBar('ship', `
+        <div>
+          <label class="form-label" style="font-size:11px">Setor Origem</label>
+          <input type="text" id="rf_ship_setor" class="form-input" placeholder="Todos" oninput="applyRepFilter('ship')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Local Destino</label>
+          <input type="text" id="rf_ship_dest" class="form-input" placeholder="Todos" oninput="applyRepFilter('ship')">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Tipo</label>
+          <select id="rf_ship_tipo" class="form-input" onchange="applyRepFilter('ship')">
+            <option value="">Todos</option>
+            <option value="send">Envio</option>
+            <option value="pickup">Retirada</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px">Status</label>
+          <select id="rf_ship_status" class="form-input" onchange="applyRepFilter('ship')">
+            <option value="">Todos</option>
+            <option value="pending">Pendente</option>
+            <option value="in_progress">Em Andamento</option>
+            <option value="completed">Concluído</option>
+          </select>
+        </div>
+      `)}
+      <div id="rep_ship_summary" class="grid grid-cols-3 gap-3 mb-4"></div>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr style="background:var(--bg);border-bottom:2px solid var(--border)">
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Data/Hora</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Setor Origem</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Destino</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Tipo</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Motorista</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Conclusão</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Duração</th>
+              <th class="px-3 py-3 text-left text-xs font-bold uppercase" style="color:var(--text-muted)">Status</th>
+            </tr></thead>
+            <tbody id="rep_ship_body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `);
+
+  switchRepTab('despesas');
+}
+
+function switchRepTab(tab) {
+  const map = { despesas:'exp', chamados:'call', envios:'ship' };
+  ['despesas','chamados','envios'].forEach(t => {
+    const panel = document.getElementById('repPanel_' + t);
+    const btn   = document.getElementById('repTab_' + t);
+    const active = t === tab;
+    if (panel) panel.classList.toggle('hidden', !active);
+    if (btn) {
+      btn.style.borderBottomColor = active ? '#1a3550' : 'transparent';
+      btn.style.color             = active ? '#1a3550' : 'var(--text-muted)';
+      btn.style.background        = active ? 'var(--card)' : 'transparent';
+    }
+  });
+  applyRepFilter(map[tab] || tab);
+}
+
+function _repDateKey(item) {
+  return item.data_solicitacao || item.created_at || '';
+}
+function _matchRepDate(dateStr, de, ate, mes, ano) {
+  if (!dateStr) return true;
+  const ds = dateStr.slice(0, 10);
+  const d  = new Date(ds + 'T00:00:00');
+  if (de  && ds < de)  return false;
+  if (ate && ds > ate) return false;
+  if (mes && String(d.getMonth() + 1).padStart(2,'0') !== mes) return false;
+  if (ano && String(d.getFullYear()) !== ano) return false;
+  return true;
+}
+function _duracao(start, end) {
+  if (!start || !end) return '—';
+  const ms = new Date(end) - new Date(start);
+  if (ms <= 0) return '—';
+  const min = Math.round(ms / 60000);
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return `${h}h${m > 0 ? String(m).padStart(2,'0') : ''}`;
+}
+function _repCard(value, label, icon, color, bg) {
+  return `<div class="card p-4 flex items-center gap-3">
+    <div style="background:${bg};width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="fas ${icon}" style="color:${color};font-size:16px"></i>
+    </div>
+    <div>
+      <div class="font-bold" style="color:var(--text);font-size:15px">${value}</div>
+      <div style="color:var(--text-muted);font-size:11px">${label}</div>
+    </div>
+  </div>`;
+}
+function _gv(id) { const el=document.getElementById(id); return el ? el.value : ''; }
+
+function applyRepFilter(prefix) {
+  if (prefix === 'exp' || prefix === 'despesas') {
+    const setor  = _gv('rf_exp_setor').toLowerCase();
+    const forma  = _gv('rf_exp_forma');
+    const cls    = _gv('rf_exp_class').toLowerCase();
+    const status = _gv('rf_exp_status');
+    const de     = _gv('rf_exp_de');
+    const ate    = _gv('rf_exp_ate');
+    const mes    = _gv('rf_exp_mes');
+    const ano    = _gv('rf_exp_ano');
+
+    const data = _repData.exps.filter(e =>
+      (!setor  || (e.created_by_sector||'').toLowerCase().includes(setor)) &&
+      (!forma  || e.forma_pagamento === forma) &&
+      (!cls    || (e.classificacao_fin||'').toLowerCase().includes(cls)) &&
+      (!status || e.status === status) &&
+      _matchRepDate(e.data_solicitacao || e.created_at, de, ate, mes, ano)
+    );
+
+    const total    = data.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const liberado = data.filter(e=>e.status==='released').reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    document.getElementById('rep_exp_summary').innerHTML =
+      _repCard(data.length,           'Registros',      'fa-file-alt',    '#1a3550','#e0e7ff') +
+      _repCard(fmtMoney(total),        'Total Solicitado','fa-dollar-sign', '#f59e0b','#fffbeb') +
+      _repCard(fmtMoney(liberado),     'Total Liberado',  'fa-check-circle','#10b981','#d1fae5');
+
+    document.getElementById('rep_exp_body').innerHTML = data.length === 0
+      ? `<tr><td colspan="8" class="px-3 py-6 text-center" style="color:var(--text-muted)">Nenhum resultado encontrado</td></tr>`
+      : data.map(e=>`
+        <tr style="border-bottom:1px solid var(--border)">
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${fmtDateOnly(e.data_solicitacao||e.created_at)}</td>
+          <td class="px-3 py-2 font-medium" style="color:var(--text)">${escHtml(e.created_by_sector||e.created_by_name||'—')}</td>
+          <td class="px-3 py-2" style="color:var(--text)">${escHtml(e.beneficiario||'—')}</td>
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${escHtml(e.description||'—')}</td>
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${escHtml(e.classificacao_fin||'—')}</td>
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${e.forma_pagamento||'—'}</td>
+          <td class="px-3 py-2 font-bold" style="color:var(--text)">${fmtMoney(e.amount)}</td>
+          <td class="px-3 py-2"><span class="badge badge-${badgeClass(e.status)}">${STATUS_LABELS[e.status]||e.status}</span></td>
+        </tr>`).join('');
+  }
+
+  if (prefix === 'call' || prefix === 'chamados') {
+    const driver = _gv('rf_call_driver').toLowerCase();
+    const origin = _gv('rf_call_origin').toLowerCase();
+    const prio   = _gv('rf_call_prio');
+    const status = _gv('rf_call_status');
+    const de     = _gv('rf_call_de');
+    const ate    = _gv('rf_call_ate');
+    const mes    = _gv('rf_call_mes');
+    const ano    = _gv('rf_call_ano');
+
+    const data = _repData.calls.filter(c =>
+      (!driver || (c.assigned_driver_name||'').toLowerCase().includes(driver)) &&
+      (!origin || (c.origin_name||'').toLowerCase().includes(origin)) &&
+      (!prio   || c.priority === prio) &&
+      (!status || c.status === status) &&
+      _matchRepDate(c.created_at, de, ate, mes, ano)
+    );
+
+    const completed = data.filter(c=>c.status==='completed');
+    const durs = completed
+      .map(c=>c.completed_at&&c.created_at ? (new Date(c.completed_at)-new Date(c.created_at))/60000 : null)
+      .filter(d=>d!==null && d>=0);
+    const avgMin = durs.length ? Math.round(durs.reduce((a,b)=>a+b,0)/durs.length) : null;
+    const avgStr = avgMin === null ? '—' : avgMin < 60 ? `${avgMin}min` : `${Math.floor(avgMin/60)}h${String(avgMin%60).padStart(2,'0')}`;
+
+    document.getElementById('rep_call_summary').innerHTML =
+      _repCard(data.length,      'Total Chamados', 'fa-bell',   '#1a3550','#e0e7ff') +
+      _repCard(completed.length, 'Concluídos',     'fa-check',  '#10b981','#d1fae5') +
+      _repCard(avgStr,           'Tempo Médio',    'fa-clock',  '#f59e0b','#fffbeb');
+
+    document.getElementById('rep_call_body').innerHTML = data.length === 0
+      ? `<tr><td colspan="8" class="px-3 py-6 text-center" style="color:var(--text-muted)">Nenhum resultado encontrado</td></tr>`
+      : data.map(c=>{
+          const prioBg  = {emergency:'#fee2e2',urgent:'#ffedd5',normal:'#f1f5f9'}[c.priority]||'#f1f5f9';
+          const prioClr = {emergency:'#991b1b',urgent:'#9a3412',normal:'#475569'}[c.priority]||'#475569';
+          return `<tr style="border-bottom:1px solid var(--border)">
+            <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${fmtDate(c.created_at)}</td>
+            <td class="px-3 py-2 font-medium" style="color:var(--text)">${escHtml(c.origin_name||'—')}</td>
+            <td class="px-3 py-2"><span class="badge" style="background:${prioBg};color:${prioClr}">${PRIORITY_LABELS[c.priority]||c.priority}</span></td>
+            <td class="px-3 py-2 text-xs" style="color:var(--text)">${escHtml(c.assigned_driver_name||'—')}</td>
+            <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${c.arrival_at_nto ? fmtDate(c.arrival_at_nto) : '—'}</td>
+            <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${c.completed_at ? fmtDate(c.completed_at) : '—'}</td>
+            <td class="px-3 py-2 text-xs font-mono" style="color:var(--text)">${_duracao(c.created_at,c.completed_at)}</td>
+            <td class="px-3 py-2"><span class="badge badge-${badgeClass(c.status)}">${STATUS_LABELS[c.status]||c.status}</span></td>
+          </tr>`;
+        }).join('');
+  }
+
+  if (prefix === 'ship' || prefix === 'envios') {
+    const setor  = _gv('rf_ship_setor').toLowerCase();
+    const dest   = _gv('rf_ship_dest').toLowerCase();
+    const tipo   = _gv('rf_ship_tipo');
+    const status = _gv('rf_ship_status');
+    const de     = _gv('rf_ship_de');
+    const ate    = _gv('rf_ship_ate');
+    const mes    = _gv('rf_ship_mes');
+    const ano    = _gv('rf_ship_ano');
+
+    const data = _repData.ships.filter(s =>
+      (!setor  || (s.origin_sector||'').toLowerCase().includes(setor)) &&
+      (!dest   || (s.destination_name||'').toLowerCase().includes(dest)) &&
+      (!tipo   || s.type === tipo) &&
+      (!status || s.status === status) &&
+      _matchRepDate(s.created_at, de, ate, mes, ano)
+    );
+
+    const completed = data.filter(s=>s.status==='completed');
+    const nEnvios   = data.filter(s=>s.type==='send').length;
+    const nRet      = data.filter(s=>s.type==='pickup').length;
+    document.getElementById('rep_ship_summary').innerHTML =
+      _repCard(data.length,              'Total Demandas',      'fa-box',          '#1a3550','#e0e7ff') +
+      _repCard(`${nEnvios}E / ${nRet}R`, 'Envios / Retiradas',  'fa-exchange-alt', '#7c3aed','#ede9fe') +
+      _repCard(completed.length,         'Concluídos',          'fa-check-circle', '#10b981','#d1fae5');
+
+    document.getElementById('rep_ship_body').innerHTML = data.length === 0
+      ? `<tr><td colspan="8" class="px-3 py-6 text-center" style="color:var(--text-muted)">Nenhum resultado encontrado</td></tr>`
+      : data.map(s=>`
+        <tr style="border-bottom:1px solid var(--border)">
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${fmtDate(s.created_at)}</td>
+          <td class="px-3 py-2 font-medium" style="color:var(--text)">${escHtml(s.origin_sector||'—')}</td>
+          <td class="px-3 py-2" style="color:var(--text)">${escHtml(s.destination_name||'—')}</td>
+          <td class="px-3 py-2"><span class="badge ${s.type==='send'?'badge-progress':'badge-completed'}">${s.type==='send'?'Envio':'Retirada'}</span></td>
+          <td class="px-3 py-2 text-xs" style="color:var(--text)">${escHtml(s.assigned_driver_name||'—')}</td>
+          <td class="px-3 py-2 text-xs" style="color:var(--text-muted)">${s.completed_at ? fmtDate(s.completed_at) : '—'}</td>
+          <td class="px-3 py-2 text-xs font-mono" style="color:var(--text)">${_duracao(s.created_at,s.completed_at)}</td>
+          <td class="px-3 py-2"><span class="badge badge-${badgeClass(s.status)}">${STATUS_LABELS[s.status]||s.status}</span></td>
+        </tr>`).join('');
+  }
+}
+
+function clearRepFilter(prefix) {
+  const ids = {
+    exp:  ['rf_exp_setor','rf_exp_forma','rf_exp_class','rf_exp_status','rf_exp_de','rf_exp_ate','rf_exp_mes','rf_exp_ano'],
+    call: ['rf_call_driver','rf_call_origin','rf_call_prio','rf_call_status','rf_call_de','rf_call_ate','rf_call_mes','rf_call_ano'],
+    ship: ['rf_ship_setor','rf_ship_dest','rf_ship_tipo','rf_ship_status','rf_ship_de','rf_ship_ate','rf_ship_mes','rf_ship_ano'],
+  };
+  (ids[prefix]||[]).forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  applyRepFilter(prefix);
+}
+
+function exportRepCSV(prefix) {
+  let headers=[], rows=[];
+  if (prefix === 'exp') {
+    headers = ['Data','Setor','Beneficiário','Referência','Classificação','Forma Pagamento','Valor (R$)','Status'];
+    rows = _repData.exps.map(e=>[
+      fmtDateOnly(e.data_solicitacao||e.created_at),
+      e.created_by_sector||e.created_by_name||'',
+      e.beneficiario||'', e.description||'',
+      e.classificacao_fin||'', e.forma_pagamento||'',
+      parseFloat(e.amount||0).toFixed(2),
+      STATUS_LABELS[e.status]||e.status,
+    ]);
+  } else if (prefix === 'call') {
+    headers = ['Data/Hora','Origem / Unidade','Prioridade','Motorista','Chegada NTO','Conclusão','Duração','Status'];
+    rows = _repData.calls.map(c=>[
+      fmtDate(c.created_at), c.origin_name||'',
+      PRIORITY_LABELS[c.priority]||c.priority||'',
+      c.assigned_driver_name||'',
+      c.arrival_at_nto ? fmtDate(c.arrival_at_nto) : '',
+      c.completed_at   ? fmtDate(c.completed_at)   : '',
+      _duracao(c.created_at,c.completed_at),
+      STATUS_LABELS[c.status]||c.status,
+    ]);
+  } else {
+    headers = ['Data/Hora','Setor Origem','Destino','Tipo','Motorista','Conclusão','Duração','Status'];
+    rows = _repData.ships.map(s=>[
+      fmtDate(s.created_at), s.origin_sector||'', s.destination_name||'',
+      s.type==='send'?'Envio':'Retirada',
+      s.assigned_driver_name||'',
+      s.completed_at ? fmtDate(s.completed_at) : '',
+      _duracao(s.created_at,s.completed_at),
+      STATUS_LABELS[s.status]||s.status,
+    ]);
+  }
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'),{href:url,download:`relatorio_${prefix}_${today()}.csv`});
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ================================================
