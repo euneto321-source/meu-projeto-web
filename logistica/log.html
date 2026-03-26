@@ -7,16 +7,45 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
-* { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-body { background: #f1f5f9; }
+/* ── VARIÁVEIS DE TEMA ─────────────────────────────── */
+:root {
+  --bg:          #f1f5f9;
+  --card:        #ffffff;
+  --topbar:      #ffffff;
+  --text:        #1e293b;
+  --text-muted:  #64748b;
+  --border:      #e2e8f0;
+  --input-bg:    #ffffff;
+  --shadow:      0 1px 4px rgba(0,0,0,.08);
+  --accent:      #1a3550;
+  --accent2:     #0ea5e9;
+}
+html.dark {
+  --bg:          #0f172a;
+  --card:        #1e293b;
+  --topbar:      #1e293b;
+  --text:        #f1f5f9;
+  --text-muted:  #94a3b8;
+  --border:      #334155;
+  --input-bg:    #0f172a;
+  --shadow:      0 1px 6px rgba(0,0,0,.3);
+}
 
-.sidebar { background: linear-gradient(180deg, #1a3550 0%, #0b1a2a 100%); min-height: 100vh; width: 240px; flex-shrink: 0; }
-.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: rgba(255,255,255,0.65); border-radius: 8px; margin: 2px 8px; cursor: pointer; transition: all .2s; font-size: 14px; }
-.sidebar-link:hover, .sidebar-link.active { color: #fff; background: rgba(255,255,255,0.12); }
+* { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+body { background: var(--bg); color: var(--text); transition: background .3s, color .3s; }
+
+/* ── SIDEBAR ───────────────────────────────────────── */
+.sidebar { background: linear-gradient(180deg, #1a3550 0%, #071627 100%); min-height: 100vh; width: 240px; flex-shrink: 0; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: rgba(255,255,255,.6); border-radius: 8px; margin: 2px 8px; cursor: pointer; transition: all .2s; font-size: 14px; }
+.sidebar-link:hover, .sidebar-link.active { color: #fff; background: rgba(255,255,255,.13); }
 .sidebar-link i { width: 18px; text-align: center; }
 
-.card { background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+/* ── CARDS ─────────────────────────────────────────── */
+.card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); }
+.stat-card { background: var(--card); border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); }
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
+/* ── BADGES ────────────────────────────────────────── */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-pending   { background: #fef3c7; color: #92400e; }
 .badge-progress  { background: #d1fae5; color: #065f46; }
@@ -25,61 +54,115 @@ body { background: #f1f5f9; }
 .badge-rejected  { background: #fee2e2; color: #991b1b; }
 .badge-released  { background: #dbeafe; color: #1e40af; }
 
+/* ── CALL CARDS ────────────────────────────────────── */
 .call-card { border-left: 4px solid #fbbf24; transition: all .2s; }
 .call-card.in_progress { border-left-color: #10b981; background: #f0fdf4; }
 .call-card.completed   { border-left-color: #6366f1; opacity: .7; }
 .call-card.emergency   { border-left-color: #ef4444; }
 .call-card.urgent      { border-left-color: #f97316; }
+html.dark .call-card.in_progress { background: rgba(16,185,129,.08); }
 
-.stat-card { background: #fff; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-
+/* ── FORM ──────────────────────────────────────────── */
 .form-group { margin-bottom: 14px; }
-.form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px; }
-.form-input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: border .2s; background: #fff; }
-.form-input:focus { border-color: #1a3550; box-shadow: 0 0 0 2px rgba(26,53,80,.1); }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: border .2s; background: var(--input-bg); color: var(--text); }
+.form-input:focus { border-color: #1a3550; box-shadow: 0 0 0 2px rgba(26,53,80,.15); }
 
+/* ── BUTTONS ───────────────────────────────────────── */
 .btn { padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
-.btn-primary { background: #1a3550; color: #fff; }
-.btn-primary:hover { background: #0b1a2a; }
-.btn-success { background: #10b981; color: #fff; }
-.btn-success:hover { background: #059669; }
-.btn-danger  { background: #ef4444; color: #fff; }
-.btn-danger:hover  { background: #dc2626; }
-.btn-warning { background: #f59e0b; color: #fff; }
-.btn-warning:hover { background: #d97706; }
-.btn-outline { background: transparent; border: 1.5px solid #1a3550; color: #1a3550; }
-.btn-outline:hover { background: #f0f4f8; }
-.btn-tv { background: #7c3aed; color: #fff; }
-.btn-tv:hover { background: #6d28d9; }
+.btn-primary  { background: #1a3550; color: #fff; }
+.btn-primary:hover  { background: #0b1a2a; }
+.btn-success  { background: #10b981; color: #fff; }
+.btn-success:hover  { background: #059669; }
+.btn-danger   { background: #ef4444; color: #fff; }
+.btn-danger:hover   { background: #dc2626; }
+.btn-warning  { background: #f59e0b; color: #fff; }
+.btn-warning:hover  { background: #d97706; }
+.btn-outline  { background: transparent; border: 1.5px solid #1a3550; color: #1a3550; }
+.btn-outline:hover  { background: #f0f4f8; }
+.btn-tv       { background: linear-gradient(135deg,#7c3aed,#4f46e5); color: #fff; }
+.btn-tv:hover { opacity: .9; }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto; }
+/* ── TOPBAR ────────────────────────────────────────── */
+.topbar { background: var(--topbar); border-bottom: 1px solid var(--border); transition: background .3s; }
+
+/* ── MODAL ─────────────────────────────────────────── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { background: var(--card); color: var(--text); border-radius: 16px; width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto; }
 .modal-lg { max-width: 740px; }
 
+/* ── AVISOS ────────────────────────────────────────── */
 .avisos-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-top: 16px; }
 .avisos-box h4 { font-weight: 700; color: #92400e; margin-bottom: 8px; font-size: 13px; }
 .avisos-box li { font-size: 12px; color: #78350f; margin-bottom: 4px; line-height: 1.5; }
 
-/* TV Panel */
-#tvPanel { display: none; position: fixed; inset: 0; background: #060f1a; z-index: 200; overflow: hidden; flex-direction: column; }
-.tv-card-pending  { background: #1c2a1a; border: 2px solid #fbbf24; border-radius: 12px; padding: 16px; }
-.tv-card-progress { background: #0d2a1a; border: 2px solid #10b981; border-radius: 12px; padding: 16px; }
-@keyframes tv-blink { 0%,100%{opacity:1}50%{opacity:.4} }
-.tv-blink { animation: tv-blink 1.5s ease-in-out infinite; }
+/* ── TV PANEL ──────────────────────────────────────── */
+#tvPanel { display: none; position: fixed; inset: 0; z-index: 200; overflow: hidden; flex-direction: column; background: #040d18; }
 
-#soundIndicator { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #ef4444; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 300; display: none; box-shadow: 0 4px 16px rgba(239,68,68,.4); white-space: nowrap; }
-@keyframes snd-pulse { 0%,100%{opacity:1}50%{opacity:.6} }
+/* TV header gradient */
+.tv-header { background: linear-gradient(90deg, #071627 0%, #0f2d4a 50%, #071627 100%); border-bottom: 1px solid rgba(14,165,233,.25); padding: 12px 24px; }
+
+/* TV column headers */
+.tv-col-header { padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.06); }
+
+/* TV call cards */
+.tv-card {
+  border-radius: 14px; padding: 16px 18px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.03);
+  transition: all .4s;
+}
+.tv-card-pending {
+  border-color: rgba(251,191,36,.5);
+  background: linear-gradient(135deg, rgba(251,191,36,.06) 0%, rgba(245,158,11,.03) 100%);
+  box-shadow: 0 0 20px rgba(251,191,36,.08);
+}
+.tv-card-progress {
+  border-color: rgba(16,185,129,.5);
+  background: linear-gradient(135deg, rgba(16,185,129,.08) 0%, rgba(5,150,105,.04) 100%);
+  box-shadow: 0 0 20px rgba(16,185,129,.12);
+}
+.tv-card-emergency {
+  border-color: rgba(239,68,68,.6);
+  background: linear-gradient(135deg, rgba(239,68,68,.1) 0%, rgba(220,38,38,.05) 100%);
+  box-shadow: 0 0 24px rgba(239,68,68,.15);
+}
+
+@keyframes tv-blink { 0%,100%{opacity:1}50%{opacity:.35} }
+.tv-blink { animation: tv-blink 1.2s ease-in-out infinite; }
+@keyframes tv-glow  { 0%,100%{box-shadow:0 0 16px rgba(251,191,36,.1)}50%{box-shadow:0 0 32px rgba(251,191,36,.25)} }
+.tv-card-pending { animation: tv-glow 2s ease-in-out infinite; }
+
+/* TV badge */
+.tv-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.tv-badge-pending  { background: rgba(251,191,36,.2); color: #fbbf24; border: 1px solid rgba(251,191,36,.4); }
+.tv-badge-progress { background: rgba(16,185,129,.2); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
+.tv-badge-emergency{ background: rgba(239,68,68,.25); color: #f87171; border: 1px solid rgba(239,68,68,.4); }
+
+/* ── SOUND INDICATOR ───────────────────────────────── */
+#soundIndicator { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#ef4444,#dc2626); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 13px; font-weight: 700; z-index: 300; display: none; box-shadow: 0 4px 20px rgba(239,68,68,.5); white-space: nowrap; }
+@keyframes snd-pulse { 0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.04)} }
 #soundIndicator { animation: snd-pulse 1s ease-in-out infinite; }
 
+/* ── DARK MODE TOGGLE ──────────────────────────────── */
+.theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all .2s; }
+.theme-btn:hover { background: var(--bg); }
+
+/* ── TOPBAR dark text adjust ───────────────────────── */
+html.dark .topbar h2, html.dark .topbar p { color: var(--text); }
+html.dark #clockDisplay { color: var(--text-muted); }
+html.dark .btn-outline { border-color: #475569; color: #94a3b8; }
+html.dark .btn-outline:hover { background: #1e293b; }
+
+/* ── SCROLLBAR ─────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 
 .hidden { display: none !important; }
 
-/* Mobile sidebar toggle */
+/* ── MOBILE ────────────────────────────────────────── */
 @media (max-width: 768px) {
   #mainApp { position: relative; }
   .sidebar { position: fixed; left: -240px; top: 0; height: 100%; z-index: 100; transition: left .3s; }
@@ -89,17 +172,14 @@ body { background: #f1f5f9; }
   #contentArea { margin-left: 0 !important; }
 }
 
-/* Driver card mobile */
-.driver-call-card { border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 2px solid #fbbf24; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-.driver-call-card.in_progress { border-color: #10b981; background: #f0fdf4; }
-.driver-call-card.completed { border-color: #c7d2fe; background: #f5f3ff; opacity: .8; }
+/* ── DRIVER CARD ───────────────────────────────────── */
+.driver-call-card { border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 2px solid #fbbf24; background: var(--card); box-shadow: var(--shadow); }
+.driver-call-card.in_progress { border-color: #10b981; background: var(--card); }
+.driver-call-card.completed { border-color: #c7d2fe; opacity: .8; }
 .driver-btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
-.driver-btn-assume  { background: #10b981; color: #fff; }
-.driver-btn-complete{ background: #1a3550; color: #fff; }
+.driver-btn-assume   { background: #10b981; color: #fff; }
+.driver-btn-complete { background: #1a3550; color: #fff; }
 .driver-btn-assume:active, .driver-btn-complete:active { opacity: .85; transform: scale(.98); }
-
-/* Simple call form */
-.call-form-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.1); width: 100%; max-width: 480px; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -109,39 +189,82 @@ body { background: #f1f5f9; }
 <!-- ================================================
      LOGIN PAGE
 ================================================ -->
-<div id="loginPage" class="hidden min-h-screen flex items-center justify-center p-4" style="background: linear-gradient(135deg, #0b1a2a 0%, #1a3550 50%, #0b1a2a 100%);">
-  <div class="w-full max-w-sm">
-    <div class="text-center mb-6">
-      <img src="Logo-Menu.webp" alt="Medclin" class="h-20 mx-auto mb-3 object-contain" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
-      <div id="logoFallback" style="display:none" class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-lg mb-3">
-        <i class="fas fa-truck-medical text-blue-900 text-3xl"></i>
+<div id="loginPage" class="hidden min-h-screen flex" style="background:#040d18">
+
+  <!-- Left brand panel (hidden on mobile) -->
+  <div class="hidden md:flex flex-col items-center justify-center flex-1 p-12 relative overflow-hidden">
+    <!-- bg glow blobs -->
+    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.18) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none"></div>
+    <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none"></div>
+
+    <div class="relative z-10 text-center max-w-md">
+      <img src="Logo-Menu.webp" alt="Medclin" class="h-28 mx-auto mb-8 object-contain drop-shadow-xl"
+           onerror="this.style.display='none';document.getElementById('lgFallback').style.display='flex'">
+      <div id="lgFallback" style="display:none" class="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-8 shadow-2xl">
+        <i class="fas fa-truck-medical text-white text-4xl"></i>
       </div>
-      <h1 class="text-white text-xl font-bold leading-tight">NTO Logística Laboratorial</h1>
-      <p class="text-blue-300 text-sm mt-1">Laboratórios Medclin</p>
+      <h1 class="text-white text-3xl font-black mb-2 tracking-tight">NTO Logística Laboratorial</h1>
+      <p class="text-sky-400 font-semibold text-lg mb-1">Laboratórios Medclin</p>
+      <p class="text-slate-500 text-sm mt-4 leading-relaxed">Gestão inteligente de chamados,<br>envios e controle financeiro.</p>
+
+      <div class="mt-10 grid grid-cols-3 gap-4">
+        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
+          <i class="fas fa-bell text-yellow-400 text-2xl mb-2 block"></i>
+          <p class="text-white text-xs font-semibold">Chamados</p>
+        </div>
+        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
+          <i class="fas fa-box text-sky-400 text-2xl mb-2 block"></i>
+          <p class="text-white text-xs font-semibold">Logística</p>
+        </div>
+        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
+          <i class="fas fa-dollar-sign text-emerald-400 text-2xl mb-2 block"></i>
+          <p class="text-white text-xs font-semibold">Financeiro</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right login form -->
+  <div class="flex flex-col items-center justify-center w-full md:w-auto md:min-w-96 p-6 md:p-12" style="background:rgba(255,255,255,.025);border-left:1px solid rgba(255,255,255,.06)">
+
+    <!-- Mobile logo -->
+    <div class="md:hidden text-center mb-8">
+      <img src="Logo-Menu.webp" alt="Medclin" class="h-16 mx-auto mb-3 object-contain"
+           onerror="this.style.display='none'">
+      <h1 class="text-white text-xl font-black">NTO Logística Laboratorial</h1>
+      <p class="text-sky-400 text-sm mt-1">Laboratórios Medclin</p>
     </div>
 
-    <div class="card p-6">
-      <h2 class="text-gray-800 font-bold text-base mb-4">Acesso ao Sistema</h2>
-      <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm"></div>
+    <div class="w-full max-w-sm">
+      <div class="mb-6">
+        <h2 class="text-white text-2xl font-bold">Bem-vindo</h2>
+        <p class="text-slate-400 text-sm mt-1">Acesse sua conta para continuar</p>
+      </div>
+
+      <div id="loginError" class="hidden rounded-xl px-4 py-3 mb-4 text-sm font-medium" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#fca5a5"></div>
+
       <div class="form-group">
-        <label class="form-label">E-mail</label>
-        <input type="email" id="loginEmail" class="form-input" placeholder="seu@email.com">
+        <label class="form-label" style="color:#94a3b8">E-mail</label>
+        <input type="email" id="loginEmail" class="form-input" placeholder="seu@email.com"
+               style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#f1f5f9;padding:12px 14px">
       </div>
       <div class="form-group">
-        <label class="form-label">Senha</label>
-        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        <label class="form-label" style="color:#94a3b8">Senha</label>
+        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••"
+               style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#f1f5f9;padding:12px 14px"
+               onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <button class="btn btn-primary w-full mt-1" style="justify-content:center" onclick="doLogin()">
+
+      <button class="btn w-full mt-2" style="justify-content:center;padding:13px;font-size:15px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);color:#fff;border-radius:12px;font-weight:700;box-shadow:0 4px 16px rgba(14,165,233,.3)" onclick="doLogin()">
         <i class="fas fa-sign-in-alt"></i> Entrar
       </button>
-      <div class="mt-3 pt-3 border-t">
-        <button class="btn btn-tv w-full" style="justify-content:center" onclick="openTV()">
-          <i class="fas fa-tv"></i> Painel de TV
-        </button>
-      </div>
+
+      <button class="btn btn-tv w-full mt-3" style="justify-content:center;padding:12px;font-size:14px;border-radius:12px" onclick="openTV()">
+        <i class="fas fa-tv"></i> Abrir Painel de TV
+      </button>
     </div>
 
-    <p class="text-center text-blue-400 text-xs mt-5">Desenvolvido por <span class="text-white font-semibold">CRSystems</span></p>
+    <p class="text-slate-600 text-xs mt-10">Desenvolvido por <span class="text-slate-400 font-semibold">CRSystems</span></p>
   </div>
 </div>
 
@@ -149,44 +272,69 @@ body { background: #f1f5f9; }
      PAINEL DE TV
 ================================================ -->
 <div id="tvPanel">
-  <!-- Header TV -->
-  <div class="flex items-center justify-between px-6 py-3 border-b border-blue-900">
+
+  <!-- TV Header -->
+  <div class="tv-header flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <img src="Logo-Menu.webp" alt="Medclin" class="h-12 object-contain" onerror="this.style.display='none'">
-      <div>
-        <div class="text-white text-xl font-bold">NTO Logística Laboratorial</div>
-        <div class="text-blue-400 text-sm">Laboratórios Medclin — Painel Operacional</div>
+      <img src="Logo-Menu.webp" alt="Medclin" class="h-11 object-contain" onerror="this.style.display='none'">
+      <div style="border-left:1px solid rgba(255,255,255,.1);padding-left:16px">
+        <div class="text-white font-black text-lg leading-tight">NTO Logística Laboratorial</div>
+        <div class="text-sky-400 text-xs font-medium">Laboratórios Medclin — Painel Operacional em Tempo Real</div>
       </div>
     </div>
-    <div class="flex items-center gap-4">
-      <div class="text-right">
-        <div class="text-white text-2xl font-bold font-mono" id="tvClock"></div>
-        <div class="text-blue-400 text-xs" id="tvDate"></div>
+
+    <div class="flex items-center gap-5">
+      <!-- Stats pills -->
+      <div id="tvStatsPending" class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)">
+        <span class="w-2 h-2 rounded-full bg-yellow-400 tv-blink inline-block"></span>
+        <span class="text-yellow-300 text-sm font-bold" id="tvPendingCount">0 pendente(s)</span>
       </div>
-      <button class="btn btn-outline text-white border-white hover:bg-blue-900 btn-sm" onclick="closeTV()">
-        <i class="fas fa-times"></i> Fechar
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3)">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+        <span class="text-emerald-300 text-sm font-bold" id="tvProgressCount">0 em andamento</span>
+      </div>
+
+      <!-- Clock -->
+      <div class="text-right">
+        <div class="text-white text-2xl font-black font-mono tracking-wide" id="tvClock"></div>
+        <div class="text-slate-500 text-xs" id="tvDate"></div>
+      </div>
+
+      <button onclick="closeTV()" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Fechar">
+        <i class="fas fa-times"></i>
       </button>
     </div>
   </div>
 
-  <!-- TV Content -->
-  <div class="flex-1 overflow-hidden grid grid-cols-2 gap-0 h-full" style="height: calc(100vh - 68px)">
-    <!-- Chamados -->
-    <div class="border-r border-blue-900 flex flex-col overflow-hidden">
-      <div class="px-5 py-3 border-b border-blue-900 flex items-center justify-between">
-        <h2 class="text-white font-bold text-lg"><i class="fas fa-bell text-yellow-400 mr-2"></i>Chamados — Retirada de Amostras</h2>
-        <span id="tvCallsCount" class="badge" style="background:#1a3550;color:#93c5fd;font-size:13px"></span>
+  <!-- TV Body -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 64px);overflow:hidden">
+
+    <!-- Coluna: Chamados -->
+    <div style="display:flex;flex-direction:column;overflow:hidden;border-right:1px solid rgba(255,255,255,.05)">
+      <div class="tv-col-header">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(251,191,36,.15)">
+            <i class="fas fa-vial text-yellow-400"></i>
+          </div>
+          <span class="text-white font-bold text-base">Retirada de Amostras</span>
+        </div>
+        <span id="tvCallsCount" class="tv-badge tv-badge-pending"></span>
       </div>
-      <div id="tvCallsList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+      <div id="tvCallsList" class="flex-1 overflow-y-auto p-4" style="gap:10px;display:flex;flex-direction:column"></div>
     </div>
 
-    <!-- Envios/Retiradas -->
-    <div class="flex flex-col overflow-hidden">
-      <div class="px-5 py-3 border-b border-blue-900 flex items-center justify-between">
-        <h2 class="text-white font-bold text-lg"><i class="fas fa-box text-blue-400 mr-2"></i>Envios / Retiradas</h2>
-        <span id="tvShipsCount" class="badge" style="background:#1a3550;color:#93c5fd;font-size:13px"></span>
+    <!-- Coluna: Envios -->
+    <div style="display:flex;flex-direction:column;overflow:hidden">
+      <div class="tv-col-header">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(99,102,241,.15)">
+            <i class="fas fa-box text-indigo-400"></i>
+          </div>
+          <span class="text-white font-bold text-base">Envios / Retiradas</span>
+        </div>
+        <span id="tvShipsCount" class="tv-badge tv-badge-pending"></span>
       </div>
-      <div id="tvShipsList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+      <div id="tvShipsList" class="flex-1 overflow-y-auto p-4" style="gap:10px;display:flex;flex-direction:column"></div>
     </div>
   </div>
 </div>
@@ -233,15 +381,20 @@ body { background: #f1f5f9; }
 
   <!-- Content Area -->
   <div class="flex-1 overflow-y-auto" id="contentArea">
-    <div class="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+    <div class="topbar px-4 py-3 flex items-center justify-between sticky top-0 z-10" style="box-shadow:0 1px 0 var(--border)">
       <div class="flex items-center gap-3">
-        <button class="md:hidden text-gray-500 text-xl p-1" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+        <button class="md:hidden p-1 rounded-lg" style="color:var(--text-muted)" onclick="openSidebar()"><i class="fas fa-bars text-xl"></i></button>
         <div>
-          <h2 class="font-bold text-gray-800 text-sm md:text-base" id="pageTitle">Dashboard</h2>
-          <p class="text-gray-400 text-xs hidden md:block" id="pageSubtitle"></p>
+          <h2 class="font-bold text-sm md:text-base" style="color:var(--text)" id="pageTitle">Dashboard</h2>
+          <p class="text-xs hidden md:block" style="color:var(--text-muted)" id="pageSubtitle"></p>
         </div>
       </div>
-      <span class="text-gray-400 text-sm font-mono" id="clockDisplay"></span>
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-mono hidden md:block" style="color:var(--text-muted)" id="clockDisplay"></span>
+        <button class="theme-btn" onclick="toggleDarkMode()" title="Alternar modo escuro/claro" id="themeBtn">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
     </div>
     <div class="p-6" id="viewContainer">
       <div class="flex items-center justify-center h-64 text-gray-400">
@@ -442,6 +595,8 @@ async function refreshTV() {
 
   document.getElementById('tvCallsCount').textContent = `${calls.length} ativo(s)`;
   document.getElementById('tvShipsCount').textContent = `${ships.length} ativo(s)`;
+  document.getElementById('tvPendingCount').textContent = `${pending.length} pendente(s)`;
+  document.getElementById('tvProgressCount').textContent = `${inProg.length} em andamento`;
 
   // Som do TV: toca a cada 4s enquanto houver chamado pendente
   if (pending.length > 0) {
@@ -1393,9 +1548,26 @@ function badgeClass(s) {
 }
 
 // ================================================
+// DARK MODE
+// ================================================
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('nto_theme', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+
+// ================================================
 // INIT
 // ================================================
 (function init() {
+  // Restore theme preference
+  if (localStorage.getItem('nto_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+
   const token = localStorage.getItem('nto_token');
   const user  = localStorage.getItem('nto_user');
   if (token && user) {
