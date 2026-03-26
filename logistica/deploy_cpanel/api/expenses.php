@@ -27,13 +27,13 @@ switch ($method) {
         }
 
         if ($action === 'pending-approval') {
-            requireRoles('admin', 'approval');
+            requireRoles('admin', 'financial');
             $stmt = $pdo->query("SELECT * FROM expenses WHERE status = 'pending' ORDER BY created_at DESC");
             jsonResponse($stmt->fetchAll());
         }
 
         // Lista completa por role
-        if (in_array($user['role'], ['admin', 'financial', 'approval'])) {
+        if (in_array($user['role'], ['admin', 'financial'])) {
             $status = $_GET['status'] ?? null;
             $sql    = "SELECT * FROM expenses WHERE 1=1";
             $params = [];
@@ -118,11 +118,11 @@ switch ($method) {
         $data = getJsonInput();
 
         if ($action === 'approve') {
-            requireRoles('admin', 'approval');
+            requireRoles('admin', 'financial');
             $stmt = $pdo->prepare("UPDATE expenses SET status='approved', approved_by_id=?, approved_by_name=?, approved_at=NOW() WHERE id=? AND status='pending'");
             $stmt->execute([$user['user_id'], $user['name'], $id]);
         } elseif ($action === 'reject') {
-            requireRoles('admin', 'approval');
+            requireRoles('admin', 'financial');
             $stmt = $pdo->prepare("UPDATE expenses SET status='rejected', approved_by_id=?, approved_by_name=?, approved_at=NOW(), rejection_reason=? WHERE id=? AND status='pending'");
             $stmt->execute([$user['user_id'], $user['name'], $data['reason'] ?? null, $id]);
         } elseif ($action === 'release') {

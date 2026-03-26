@@ -419,7 +419,7 @@ let state = {
   locations: [],
 };
 
-const ROLE_LABELS = { admin:'Administrador', driver:'Motorista', emergency:'Unidade de Emergência', sector:'Setor Interno', approval:'Aprovador', financial:'Financeiro' };
+const ROLE_LABELS = { admin:'Administrador', driver:'Motorista', emergency:'Unidade de Emergência', sector:'Setor Interno', financial:'Financeiro' };
 const STATUS_LABELS = { pending:'Pendente', in_progress:'Em Andamento', completed:'Concluído', cancelled:'Cancelado', approved:'Aprovado', rejected:'Rejeitado', released:'Liberado' };
 const PRIORITY_LABELS = { normal:'Normal', urgent:'Urgente', emergency:'Emergência' };
 
@@ -464,7 +464,7 @@ function startPendingCallsSound() {
   document.getElementById('soundIndicator').style.display = 'block';
   state.soundInterval = setInterval(() => {
     if (state.hasPendingCalls) playNotification(); else stopPendingCallsSound();
-  }, 3 * 60 * 1000);
+  }, 2 * 60 * 1000);
 }
 function stopPendingCallsSound() {
   clearInterval(state.soundInterval); state.soundInterval = null;
@@ -548,7 +548,6 @@ function defaultView() {
   if (r === 'driver')    return 'chamados';
   if (r === 'emergency') return 'chamados';
   if (r === 'sector')    return 'envios';
-  if (r === 'approval')  return 'despesas';
   if (r === 'financial') return 'despesas';
   return 'dashboard';
 }
@@ -657,8 +656,8 @@ const NAV_ITEMS = [
   { id:'dashboard', label:'Dashboard',         icon:'fa-chart-bar',   roles:['admin'] },
   { id:'chamados',  label:'Chamados',           icon:'fa-bell',        roles:['admin','driver','emergency'] },
   { id:'envios',    label:'Envios / Retiradas', icon:'fa-box',         roles:['admin','driver','sector'] },
-  { id:'despesas',  label:'Despesas',           icon:'fa-dollar-sign', roles:['admin','sector','approval','financial'] },
-  { id:'relatorios',label:'Relatórios',         icon:'fa-file-alt',    roles:['admin','approval','financial'] },
+  { id:'despesas',  label:'Despesas',           icon:'fa-dollar-sign', roles:['admin','sector','financial'] },
+  { id:'relatorios',label:'Relatórios',         icon:'fa-file-alt',    roles:['admin','financial'] },
   { id:'usuarios',  label:'Usuários',           icon:'fa-users',       roles:['admin'] },
 ];
 
@@ -727,7 +726,7 @@ async function poll() {
       state.pendingShipIds = new Set(pending.map(s => s.id));
     }
   }
-  if (['admin','approval','financial'].includes(role)) {
+  if (['admin','financial'].includes(role)) {
     const r = await apiGet('/expenses.php?status=pending');
     if (r.ok) {
       const pending = r.data.filter(e => e.status === 'pending');
@@ -1084,7 +1083,7 @@ async function renderDespesas() {
   if (!r.ok) { setView('<p class="text-red-500">Erro ao carregar despesas.</p>'); return; }
   const expenses  = r.data;
   const canCreate = ['admin','sector'].includes(state.user.role);
-  const canApprove= ['admin','approval'].includes(state.user.role);
+  const canApprove= ['admin','financial'].includes(state.user.role);
   const canRelease= ['admin','financial'].includes(state.user.role);
 
   setView(`
@@ -1913,17 +1912,21 @@ function escHtml(s) {
 }
 function fmtDate(dt) {
   if (!dt) return '-';
-  return new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  // Garante que strings MySQL (com espaço) sejam interpretadas como horário local
+  return new Date(dt.replace(' ','T')).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function fmtDateOnly(dt) {
   if (!dt) return '-';
-  const d = new Date(dt + (dt.length===10?'T00:00:00':''));
-  return d.toLocaleDateString('pt-BR');
+  const s = dt.length === 10 ? dt + 'T00:00:00' : dt.replace(' ','T');
+  return new Date(s).toLocaleDateString('pt-BR');
 }
 function fmtMoney(v) {
   return 'R$ ' + parseFloat(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 }
-function today() { return new Date().toISOString().slice(0,10); }
+function today() {
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+}
 
 function openSidebar() {
   document.querySelector('.sidebar').classList.add('open');
