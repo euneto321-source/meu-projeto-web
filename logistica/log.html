@@ -234,7 +234,7 @@ const API = '/api';
 let state = {
   user: null, token: null, view: 'dashboard',
   pendingCallIds: new Set(), pendingShipIds: new Set(), pendingExpIds: new Set(),
-  soundInterval: null, pollInterval: null, tvInterval: null, hasPendingCalls: false,
+  soundInterval: null, pollInterval: null, tvInterval: null, tvSoundInterval: null, hasPendingCalls: false,
   locations: [],
 };
 
@@ -290,6 +290,19 @@ function stopPendingCallsSound() {
   document.getElementById('soundIndicator').style.display = 'none';
 }
 
+// Som do painel de TV: toca a cada 4s enquanto houver chamado pendente
+function startTVSound() {
+  if (state.tvSoundInterval) return;
+  playNotification();
+  state.tvSoundInterval = setInterval(() => {
+    if (state.hasPendingCalls) playNotification(); else stopTVSound();
+  }, 4000);
+}
+function stopTVSound() {
+  clearInterval(state.tvSoundInterval);
+  state.tvSoundInterval = null;
+}
+
 // ================================================
 // API
 // ================================================
@@ -329,6 +342,7 @@ function showLoginError(msg) {
 function doLogout() {
   state.token = null; state.user = null;
   stopPendingCallsSound();
+  stopTVSound();
   clearInterval(state.pollInterval);
   clearInterval(state.tvInterval);
   localStorage.removeItem('nto_token');
@@ -384,6 +398,7 @@ function openTV() {
 function closeTV() {
   document.getElementById('tvPanel').style.display = 'none';
   clearInterval(state.tvInterval);
+  stopTVSound();
 }
 
 async function refreshTV() {
@@ -400,17 +415,14 @@ async function refreshTV() {
   document.getElementById('tvCallsCount').textContent = `${calls.length} ativo(s)`;
   document.getElementById('tvShipsCount').textContent = `${ships.length} ativo(s)`;
 
-  // Sound for pending calls on TV
+  // Som do TV: toca a cada 4s enquanto houver chamado pendente
   if (pending.length > 0) {
-    const newIds = pending.map(c=>c.id);
-    const hasNew = newIds.some(id => !state.pendingCallIds.has(id));
-    if (hasNew) playNotification();
-    state.pendingCallIds = new Set(newIds);
+    state.pendingCallIds = new Set(pending.map(c=>c.id));
     state.hasPendingCalls = true;
-    if (!state.soundInterval) startPendingCallsSound();
+    startTVSound();
   } else {
     state.hasPendingCalls = false;
-    stopPendingCallsSound();
+    stopTVSound();
   }
 
   // Render calls
