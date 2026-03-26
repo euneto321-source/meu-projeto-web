@@ -69,13 +69,37 @@ body { background: #f1f5f9; }
 @keyframes tv-blink { 0%,100%{opacity:1}50%{opacity:.4} }
 .tv-blink { animation: tv-blink 1.5s ease-in-out infinite; }
 
-#soundIndicator { position: fixed; top: 16px; right: 16px; background: #ef4444; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 300; display: none; }
+#soundIndicator { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #ef4444; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 300; display: none; box-shadow: 0 4px 16px rgba(239,68,68,.4); white-space: nowrap; }
+@keyframes snd-pulse { 0%,100%{opacity:1}50%{opacity:.6} }
+#soundIndicator { animation: snd-pulse 1s ease-in-out infinite; }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
 .hidden { display: none !important; }
+
+/* Mobile sidebar toggle */
+@media (max-width: 768px) {
+  #mainApp { position: relative; }
+  .sidebar { position: fixed; left: -240px; top: 0; height: 100%; z-index: 100; transition: left .3s; }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
+  .sidebar-overlay.show { display: block; }
+  #contentArea { margin-left: 0 !important; }
+}
+
+/* Driver card mobile */
+.driver-call-card { border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 2px solid #fbbf24; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.driver-call-card.in_progress { border-color: #10b981; background: #f0fdf4; }
+.driver-call-card.completed { border-color: #c7d2fe; background: #f5f3ff; opacity: .8; }
+.driver-btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+.driver-btn-assume  { background: #10b981; color: #fff; }
+.driver-btn-complete{ background: #1a3550; color: #fff; }
+.driver-btn-assume:active, .driver-btn-complete:active { opacity: .85; transform: scale(.98); }
+
+/* Simple call form */
+.call-form-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.1); width: 100%; max-width: 480px; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -208,11 +232,14 @@ body { background: #f1f5f9; }
   </div>
 
   <!-- Content Area -->
-  <div class="flex-1 overflow-y-auto">
-    <div class="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-      <div>
-        <h2 class="font-bold text-gray-800" id="pageTitle">Dashboard</h2>
-        <p class="text-gray-400 text-xs" id="pageSubtitle"></p>
+  <div class="flex-1 overflow-y-auto" id="contentArea">
+    <div class="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+      <div class="flex items-center gap-3">
+        <button class="md:hidden text-gray-500 text-xl p-1" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+        <div>
+          <h2 class="font-bold text-gray-800 text-sm md:text-base" id="pageTitle">Dashboard</h2>
+          <p class="text-gray-400 text-xs hidden md:block" id="pageSubtitle"></p>
+        </div>
       </div>
       <span class="text-gray-400 text-sm font-mono" id="clockDisplay"></span>
     </div>
@@ -224,6 +251,7 @@ body { background: #f1f5f9; }
   </div>
 </div>
 
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="modalContainer"></div>
 
 <script>
@@ -502,6 +530,7 @@ function navigateTo(view) {
   const [title, sub] = titles[view] || ['',''];
   document.getElementById('pageTitle').textContent    = title;
   document.getElementById('pageSubtitle').textContent = sub;
+  closeSidebar();
   const views = { dashboard:renderDashboard, chamados:renderChamados, envios:renderEnvios, despesas:renderDespesas, relatorios:renderRelatorios, usuarios:renderUsuarios };
   if (views[view]) views[view]();
 }
@@ -618,66 +647,123 @@ async function renderChamados() {
     </div>`);
 }
 
+// Card genérico (admin / visualização)
 function callCard(c, canAssume) {
   const prog = c.status==='in_progress', done = c.status==='completed';
   const prioClass = c.priority==='emergency' ? 'emergency' : c.priority==='urgent' ? 'urgent' : '';
+  const isMyCall = canAssume && prog && c.assigned_driver_id===state.user?.id;
+
+  // Motoristas recebem card especial mobile-friendly
+  if (state.user?.role === 'driver') return driverCallCard(c);
+
   return `
   <div class="card p-4 call-card ${prog?'in_progress':done?'completed':prioClass}">
-    <div class="flex items-start justify-between gap-3">
-      <div class="flex-1">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap mb-1">
           <span class="font-bold text-gray-800">${escHtml(c.origin_name)}</span>
           <span class="badge badge-${badgeClass(c.status)}">${STATUS_LABELS[c.status]||c.status}</span>
           ${c.priority!=='normal'?`<span class="badge" style="background:#fee2e2;color:#991b1b">${PRIORITY_LABELS[c.priority]}</span>`:''}
         </div>
-        <p class="text-sm text-gray-500"><i class="fas fa-tag mr-1 text-gray-400"></i>Retirada de Amostras</p>
+        <p class="text-sm text-gray-500"><i class="fas fa-vial mr-1 text-gray-400"></i>Retirada de Amostras</p>
         ${c.description?`<p class="text-sm text-gray-500 mt-1">${escHtml(c.description)}</p>`:''}
         ${prog?`<p class="text-sm text-green-700 font-semibold mt-1"><i class="fas fa-user mr-1"></i>Motorista: ${escHtml(c.assigned_driver_name||'')}</p>`:''}
-        ${done?`<p class="text-sm text-indigo-600 font-semibold mt-1"><i class="fas fa-check-circle mr-1"></i>Concluído por: ${escHtml(c.assigned_driver_name||'')}</p>`:''}
+        ${done?`<p class="text-sm text-indigo-600 font-semibold mt-1"><i class="fas fa-check-circle mr-1"></i>Concluído: ${escHtml(c.assigned_driver_name||'')}</p>`:''}
       </div>
-      <div class="text-right flex-shrink-0">
-        <p class="text-xs text-gray-400 mb-2">${fmtDate(c.created_at)}</p>
+      <div class="flex flex-col items-end gap-2">
+        <p class="text-xs text-gray-400">${fmtDate(c.created_at)}</p>
         ${canAssume && c.status==='pending' ? `<button class="btn btn-success btn-sm" onclick="assumeCall('${c.id}')"><i class="fas fa-hand-paper"></i> Assumir</button>` : ''}
-        ${canAssume && prog && c.assigned_driver_id===state.user.id ? `<button class="btn btn-primary btn-sm" onclick="completeCall('${c.id}')"><i class="fas fa-check"></i> Concluir</button>` : ''}
+        ${isMyCall ? `<button class="btn btn-primary btn-sm" onclick="completeCall('${c.id}')"><i class="fas fa-check"></i> Concluir</button>` : ''}
       </div>
     </div>
   </div>`;
 }
 
+// Card do motorista — otimizado para mobile com botões grandes
+function driverCallCard(c) {
+  const prog = c.status==='in_progress', done = c.status==='completed';
+  const isMyCall = prog && c.assigned_driver_id === state.user?.id;
+  const bgBorder = prog ? 'in_progress' : done ? 'completed' : (c.priority==='emergency'?'emergency':c.priority==='urgent'?'urgent':'');
+  const prioColor = c.priority==='emergency' ? '#ef4444' : c.priority==='urgent' ? '#f97316' : '#6b7280';
+
+  return `
+  <div class="driver-call-card ${bgBorder}">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-lg font-bold text-gray-900">${escHtml(c.origin_name)}</span>
+          <span class="badge badge-${badgeClass(c.status)}" style="font-size:13px">${STATUS_LABELS[c.status]||c.status}</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-0.5"><i class="fas fa-vial mr-1"></i>Retirada de Amostras</p>
+      </div>
+      ${c.priority!=='normal'?`<span class="font-bold text-sm px-3 py-1 rounded-full" style="background:${prioColor}20;color:${prioColor}">${PRIORITY_LABELS[c.priority]}</span>`:''}
+    </div>
+    ${c.description?`<p class="text-sm text-gray-600 mb-2 p-2 bg-gray-50 rounded-lg">${escHtml(c.description)}</p>`:''}
+    ${prog?`<div class="flex items-center gap-2 mb-2 p-2 rounded-lg" style="background:#d1fae5"><i class="fas fa-user text-green-600"></i><span class="text-green-800 font-semibold text-sm">${escHtml(c.assigned_driver_name||'')}</span></div>`:''}
+    ${done?`<div class="flex items-center gap-2 mb-2 p-2 rounded-lg" style="background:#e0e7ff"><i class="fas fa-check-circle text-indigo-600"></i><span class="text-indigo-800 font-semibold text-sm">Concluído por ${escHtml(c.assigned_driver_name||'')}</span></div>`:''}
+    <p class="text-xs text-gray-400 mb-2"><i class="fas fa-clock mr-1"></i>${fmtDate(c.created_at)}</p>
+    ${c.status==='pending' ? `<button class="driver-btn driver-btn-assume" onclick="assumeCall('${c.id}')"><i class="fas fa-hand-paper"></i> Assumir Chamado</button>` : ''}
+    ${isMyCall ? `<button class="driver-btn driver-btn-complete" onclick="completeCall('${c.id}')"><i class="fas fa-check-circle"></i> Marcar como Concluído</button>` : ''}
+  </div>`;
+}
+
 async function openChamadoForm() {
   if (state.locations.length === 0) await loadLocations();
+  const allLocs = [
+    ...state.locations.filter(l=>l.type==='emergency_unit'),
+    ...state.locations.filter(l=>l.type==='internal_sector')
+  ];
+  const locOptions = allLocs.length
+    ? `<option value="">Selecione o local...</option>` + allLocs.map(l=>`<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
+    : `<option value="">Nenhum local cadastrado</option>`;
+
   openModal(`
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-lg text-gray-800">Novo Chamado</h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    <div class="p-5">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-bold text-lg text-gray-800">Novo Chamado</h3>
+          <p class="text-xs text-gray-400">Retirada de Amostras</p>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center"><i class="fas fa-times"></i></button>
       </div>
-      <div class="form-group">
-        <label class="form-label">Tipo de Chamado</label>
-        <input class="form-input bg-gray-50" value="Retirada de Amostras" readonly>
-      </div>
+
       <div class="form-group">
         <label class="form-label">Local de Origem</label>
-        <select id="cOrigin" class="form-input">
-          ${locationOptions('emergency_unit')}
-          ${state.locations.filter(l=>l.type==='internal_sector').map(l=>`<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')}
+        <select id="cOrigin" class="form-input" style="font-size:16px;padding:12px">
+          ${locOptions}
         </select>
       </div>
+
       <div class="form-group">
         <label class="form-label">Prioridade</label>
-        <select id="cPriority" class="form-input">
-          <option value="normal">Normal</option>
-          <option value="urgent">Urgente</option>
-          <option value="emergency">Emergência</option>
-        </select>
+        <div class="grid grid-cols-3 gap-2 mt-1">
+          <label class="flex flex-col items-center gap-1 p-3 border-2 rounded-xl cursor-pointer border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input type="radio" name="cPrioRadio" value="normal" checked class="hidden" onchange="document.getElementById('cPriority').value=this.value">
+            <i class="fas fa-circle text-gray-400 text-lg"></i>
+            <span class="text-xs font-semibold text-gray-600">Normal</span>
+          </label>
+          <label class="flex flex-col items-center gap-1 p-3 border-2 rounded-xl cursor-pointer border-gray-200 has-[:checked]:border-orange-500 has-[:checked]:bg-orange-50">
+            <input type="radio" name="cPrioRadio" value="urgent" class="hidden" onchange="document.getElementById('cPriority').value=this.value">
+            <i class="fas fa-exclamation-circle text-orange-400 text-lg"></i>
+            <span class="text-xs font-semibold text-gray-600">Urgente</span>
+          </label>
+          <label class="flex flex-col items-center gap-1 p-3 border-2 rounded-xl cursor-pointer border-gray-200 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+            <input type="radio" name="cPrioRadio" value="emergency" class="hidden" onchange="document.getElementById('cPriority').value=this.value">
+            <i class="fas fa-bolt text-red-400 text-lg"></i>
+            <span class="text-xs font-semibold text-gray-600">Emergência</span>
+          </label>
+        </div>
+        <input type="hidden" id="cPriority" value="normal">
       </div>
+
       <div class="form-group">
-        <label class="form-label">Descrição <span class="text-gray-400 font-normal">(opcional)</span></label>
-        <textarea id="cDesc" class="form-input" rows="2" placeholder="Informações adicionais..."></textarea>
+        <label class="form-label">Observação <span class="text-gray-400 font-normal">(opcional)</span></label>
+        <textarea id="cDesc" class="form-input" rows="2" placeholder="Ex: Material frágil, aguardar portaria..." style="font-size:16px"></textarea>
       </div>
-      <div class="flex gap-3 mt-4">
-        <button class="btn btn-outline flex-1" style="justify-content:center" onclick="closeModal()">Cancelar</button>
-        <button class="btn btn-primary flex-1" style="justify-content:center" onclick="submitChamado()"><i class="fas fa-bell"></i> Abrir Chamado</button>
+
+      <div class="grid grid-cols-2 gap-3 mt-2">
+        <button class="btn btn-outline" style="justify-content:center;padding:12px" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" style="justify-content:center;padding:12px;font-size:15px" onclick="submitChamado()"><i class="fas fa-bell"></i> Abrir</button>
       </div>
     </div>`);
 }
@@ -1293,6 +1379,15 @@ function fmtMoney(v) {
   return 'R$ ' + parseFloat(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 }
 function today() { return new Date().toISOString().slice(0,10); }
+
+function openSidebar() {
+  document.querySelector('.sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
 function badgeClass(s) {
   return {pending:'pending',in_progress:'progress',completed:'completed',approved:'approved',rejected:'rejected',released:'released',cancelled:'completed'}[s]||'pending';
 }
