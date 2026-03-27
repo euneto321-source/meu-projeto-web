@@ -556,16 +556,16 @@ function importDRE(ab,name){
     const ws=wb.Sheets[sheetName];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
     dreEntries=[];
-    const MESES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    // Layout real: col[0]=vazio, col[1]=Flag, col[2]=Data, col[3]=HISTÓRICO, col[4]=VALOR, col[5]=PLANO DE CONTAS
     for(const row of rows){
-      if(!row||row.length<5) continue;
-      const historico=String(row[2]||'').trim();
-      const plano    =String(row[4]||'').trim();
-      const valor    =parseFloat(row[3]);
-      const flag     =String(row[0]||'').trim();
+      if(!row||row.length<6) continue;
+      const flag     =String(row[1]||'').trim();
+      const historico=String(row[3]||'').trim();
+      const plano    =String(row[5]||'').trim();
+      const valor    =parseFloat(row[4]);
       if(!historico||!plano||isNaN(valor)||valor<=0) continue;
-      if(['plano de contas','historico','histórico','flag','check1','check2'].includes(normalizeStr(plano))) continue;
-      const dateStr=excelDateToStr(row[1]);
+      if(['plano de contas','historico','histórico','flag','check1','check2','valor'].includes(normalizeStr(plano))) continue;
+      const dateStr=excelDateToStr(row[2]);
       // Parse mes from flag: "12026" = Jan 2026, "22026" = Feb 2026
       let mesLabel='';
       if(/^\d{5,6}$/.test(flag)){
