@@ -98,47 +98,75 @@ html.dark .call-card.in_progress { background: rgba(16,185,129,.08); }
 .avisos-box li { font-size: 12px; color: #78350f; margin-bottom: 4px; line-height: 1.5; }
 
 /* ── TV PANEL ──────────────────────────────────────── */
-#tvPanel { display: none; position: fixed; inset: 0; z-index: 200; overflow: hidden; flex-direction: column; background: #040d18; }
+#tvPanel { display: none; position: fixed; inset: 0; z-index: 200; overflow: hidden; flex-direction: column; background: #020b14; }
 
-/* TV header gradient */
-.tv-header { background: linear-gradient(90deg, #071627 0%, #0f2d4a 50%, #071627 100%); border-bottom: 1px solid rgba(14,165,233,.25); padding: 12px 24px; }
+/* TV animated background */
+#tvPanel::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse 80% 50% at 20% 0%, rgba(14,165,233,.07) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 80% 100%, rgba(99,102,241,.06) 0%, transparent 60%);
+}
+
+/* TV header */
+.tv-header {
+  background: linear-gradient(90deg, #071627 0%, #0c2340 40%, #071a30 70%, #071627 100%);
+  border-bottom: 1px solid rgba(14,165,233,.2);
+  padding: 14px 28px;
+  position: relative; z-index: 1;
+  box-shadow: 0 2px 24px rgba(0,0,0,.5);
+}
 
 /* TV column headers */
-.tv-col-header { padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.06); }
+.tv-col-header {
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  background: rgba(255,255,255,.015);
+  position: relative; z-index: 1;
+}
 
 /* TV call cards */
 .tv-card {
-  border-radius: 14px; padding: 16px 18px;
+  border-radius: 16px; padding: 18px 20px;
   border: 1px solid rgba(255,255,255,.07);
-  background: rgba(255,255,255,.03);
+  background: rgba(255,255,255,.025);
   transition: all .4s;
+  position: relative; overflow: hidden;
+}
+.tv-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
 }
 .tv-card-pending {
-  border-color: rgba(251,191,36,.5);
-  background: linear-gradient(135deg, rgba(251,191,36,.06) 0%, rgba(245,158,11,.03) 100%);
-  box-shadow: 0 0 20px rgba(251,191,36,.08);
+  border-color: rgba(251,191,36,.45);
+  background: linear-gradient(135deg, rgba(251,191,36,.07) 0%, rgba(245,158,11,.02) 100%);
 }
 .tv-card-progress {
-  border-color: rgba(16,185,129,.5);
-  background: linear-gradient(135deg, rgba(16,185,129,.08) 0%, rgba(5,150,105,.04) 100%);
-  box-shadow: 0 0 20px rgba(16,185,129,.12);
+  border-color: rgba(16,185,129,.45);
+  background: linear-gradient(135deg, rgba(16,185,129,.08) 0%, rgba(5,150,105,.03) 100%);
 }
 .tv-card-emergency {
-  border-color: rgba(239,68,68,.6);
-  background: linear-gradient(135deg, rgba(239,68,68,.1) 0%, rgba(220,38,38,.05) 100%);
-  box-shadow: 0 0 24px rgba(239,68,68,.15);
+  border-color: rgba(239,68,68,.55);
+  background: linear-gradient(135deg, rgba(239,68,68,.1) 0%, rgba(220,38,38,.04) 100%);
 }
 
-@keyframes tv-blink { 0%,100%{opacity:1}50%{opacity:.35} }
-.tv-blink { animation: tv-blink 1.2s ease-in-out infinite; }
-@keyframes tv-glow  { 0%,100%{box-shadow:0 0 16px rgba(251,191,36,.1)}50%{box-shadow:0 0 32px rgba(251,191,36,.25)} }
-.tv-card-pending { animation: tv-glow 2s ease-in-out infinite; }
+@keyframes tv-blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.tv-blink { animation: tv-blink 1.4s ease-in-out infinite; }
+@keyframes tv-glow-pending { 0%,100%{box-shadow:0 0 18px rgba(251,191,36,.12),0 4px 20px rgba(0,0,0,.4)} 50%{box-shadow:0 0 36px rgba(251,191,36,.28),0 4px 20px rgba(0,0,0,.4)} }
+.tv-card-pending { animation: tv-glow-pending 2.4s ease-in-out infinite; }
+@keyframes tv-glow-progress { 0%,100%{box-shadow:0 0 14px rgba(16,185,129,.1),0 4px 16px rgba(0,0,0,.4)} 50%{box-shadow:0 0 28px rgba(16,185,129,.22),0 4px 16px rgba(0,0,0,.4)} }
+.tv-card-progress { animation: tv-glow-progress 3s ease-in-out infinite; }
 
 /* TV badge */
-.tv-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-.tv-badge-pending  { background: rgba(251,191,36,.2); color: #fbbf24; border: 1px solid rgba(251,191,36,.4); }
-.tv-badge-progress { background: rgba(16,185,129,.2); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
-.tv-badge-emergency{ background: rgba(239,68,68,.25); color: #f87171; border: 1px solid rgba(239,68,68,.4); }
+.tv-badge { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing:.3px; }
+.tv-badge-pending  { background: rgba(251,191,36,.15); color: #fcd34d; border: 1px solid rgba(251,191,36,.35); }
+.tv-badge-progress { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.35); }
+.tv-badge-emergency{ background: rgba(239,68,68,.2);   color: #f87171; border: 1px solid rgba(239,68,68,.4); }
+
+/* TV scrollbar */
+#tvCallsList::-webkit-scrollbar, #tvShipsList::-webkit-scrollbar { width: 3px; }
+#tvCallsList::-webkit-scrollbar-track, #tvShipsList::-webkit-scrollbar-track { background: transparent; }
+#tvCallsList::-webkit-scrollbar-thumb, #tvShipsList::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
 
 /* ── SOUND INDICATOR ───────────────────────────────── */
 #soundIndicator { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#ef4444,#dc2626); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 13px; font-weight: 700; z-index: 300; display: none; box-shadow: 0 4px 20px rgba(239,68,68,.5); white-space: nowrap; }
@@ -198,27 +226,31 @@ html.dark .btn-outline:hover { background: #1e293b; }
     <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none"></div>
 
     <div class="relative z-10 text-center max-w-md">
-      <img src="Logo-Menu.webp" alt="Medclin" class="h-28 mx-auto mb-8 object-contain drop-shadow-xl"
-           onerror="this.style.display='none';document.getElementById('lgFallback').style.display='flex'">
-      <div id="lgFallback" style="display:none" class="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-8 shadow-2xl">
-        <i class="fas fa-truck-medical text-white text-4xl"></i>
+      <!-- Logo principal -->
+      <div style="margin-bottom:32px">
+        <img src="Logo-Menu.webp" alt="Medclin"
+             style="height:120px;margin:0 auto;object-fit:contain;filter:drop-shadow(0 0 24px rgba(14,165,233,.4)) drop-shadow(0 4px 12px rgba(0,0,0,.5))"
+             onerror="this.style.display='none';document.getElementById('lgFallback').style.display='flex'">
+        <div id="lgFallback" style="display:none;width:100px;height:100px;border-radius:28px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);align-items:center;justify-content:center;margin:0 auto;box-shadow:0 8px 32px rgba(14,165,233,.4)">
+          <i class="fas fa-truck-medical" style="color:#fff;font-size:40px"></i>
+        </div>
       </div>
-      <h1 class="text-white text-3xl font-black mb-2 tracking-tight">NTO Logística Laboratorial</h1>
-      <p class="text-sky-400 font-semibold text-lg mb-1">Laboratórios Medclin</p>
-      <p class="text-slate-500 text-sm mt-4 leading-relaxed">Gestão inteligente de chamados,<br>envios e controle financeiro.</p>
+      <h1 style="color:#fff;font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px">NTO Logística Laboratorial</h1>
+      <p style="color:#38bdf8;font-weight:700;font-size:16px;margin-bottom:4px">Laboratórios Medclin</p>
+      <p style="color:#334155;font-size:13px;margin-top:12px;line-height:1.6">Gestão inteligente de chamados,<br>envios e controle financeiro.</p>
 
-      <div class="mt-10 grid grid-cols-3 gap-4">
-        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
-          <i class="fas fa-bell text-yellow-400 text-2xl mb-2 block"></i>
-          <p class="text-white text-xs font-semibold">Chamados</p>
+      <div style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
+          <i class="fas fa-bell" style="color:#fbbf24;font-size:22px;display:block;margin-bottom:8px"></i>
+          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Chamados</p>
         </div>
-        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
-          <i class="fas fa-box text-sky-400 text-2xl mb-2 block"></i>
-          <p class="text-white text-xs font-semibold">Logística</p>
+        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
+          <i class="fas fa-box" style="color:#38bdf8;font-size:22px;display:block;margin-bottom:8px"></i>
+          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Logística</p>
         </div>
-        <div class="rounded-2xl p-4 text-center" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
-          <i class="fas fa-dollar-sign text-emerald-400 text-2xl mb-2 block"></i>
-          <p class="text-white text-xs font-semibold">Financeiro</p>
+        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
+          <i class="fas fa-dollar-sign" style="color:#34d399;font-size:22px;display:block;margin-bottom:8px"></i>
+          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Financeiro</p>
         </div>
       </div>
     </div>
@@ -229,8 +261,12 @@ html.dark .btn-outline:hover { background: #1e293b; }
 
     <!-- Mobile logo -->
     <div class="md:hidden text-center mb-8">
-      <img src="Logo-Menu.webp" alt="Medclin" class="h-16 mx-auto mb-3 object-contain"
-           onerror="this.style.display='none'">
+      <img src="Logo-Menu.webp" alt="Medclin"
+           style="height:72px;margin:0 auto 12px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(14,165,233,.35))"
+           onerror="this.style.display='none';document.getElementById('lgMobileFallback').style.display='flex'">
+      <div id="lgMobileFallback" style="display:none;width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="fas fa-truck-medical" style="color:#fff;font-size:26px"></i>
+      </div>
       <h1 class="text-white text-xl font-black">NTO Logística Laboratorial</h1>
       <p class="text-sky-400 text-sm mt-1">Laboratórios Medclin</p>
     </div>
@@ -276,65 +312,80 @@ html.dark .btn-outline:hover { background: #1e293b; }
   <!-- TV Header -->
   <div class="tv-header flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <img src="Logo-Menu.webp" alt="Medclin" class="h-11 object-contain" onerror="this.style.display='none'">
-      <div style="border-left:1px solid rgba(255,255,255,.1);padding-left:16px">
-        <div class="text-white font-black text-lg leading-tight">NTO Logística Laboratorial</div>
-        <div class="text-sky-400 text-xs font-medium">Laboratórios Medclin — Painel Operacional em Tempo Real</div>
+      <!-- Logo com fallback -->
+      <img src="Logo-Menu.webp" alt="Medclin" style="height:44px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(14,165,233,.3))"
+           onerror="this.style.display='none';document.getElementById('tvLogoFallback').style.display='flex'">
+      <div id="tvLogoFallback" style="display:none;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);align-items:center;justify-content:center">
+        <i class="fas fa-truck-medical" style="color:#fff;font-size:20px"></i>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,.08);padding-left:16px">
+        <div style="color:#fff;font-weight:900;font-size:17px;letter-spacing:-.3px;line-height:1.2">NTO Logística Laboratorial</div>
+        <div style="color:#38bdf8;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px">Laboratórios Medclin · Painel Operacional</div>
       </div>
     </div>
 
-    <div class="flex items-center gap-5">
+    <div class="flex items-center gap-4">
       <!-- Stats pills -->
-      <div id="tvStatsPending" class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)">
-        <span class="w-2 h-2 rounded-full bg-yellow-400 tv-blink inline-block"></span>
-        <span class="text-yellow-300 text-sm font-bold" id="tvPendingCount">0 pendente(s)</span>
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25)">
+        <span class="tv-blink inline-block" style="width:8px;height:8px;border-radius:50%;background:#fbbf24"></span>
+        <span style="color:#fcd34d;font-size:13px;font-weight:700" id="tvPendingCount">0 pendente(s)</span>
       </div>
-      <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3)">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-        <span class="text-emerald-300 text-sm font-bold" id="tvProgressCount">0 em andamento</span>
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25)">
+        <span class="inline-block" style="width:8px;height:8px;border-radius:50%;background:#10b981"></span>
+        <span style="color:#34d399;font-size:13px;font-weight:700" id="tvProgressCount">0 em andamento</span>
       </div>
+
+      <!-- Divider -->
+      <div style="width:1px;height:32px;background:rgba(255,255,255,.08)"></div>
 
       <!-- Clock -->
       <div class="text-right">
-        <div class="text-white text-2xl font-black font-mono tracking-wide" id="tvClock"></div>
-        <div class="text-slate-500 text-xs" id="tvDate"></div>
+        <div style="color:#fff;font-size:26px;font-weight:900;font-family:monospace;letter-spacing:1px;line-height:1" id="tvClock"></div>
+        <div style="color:#475569;font-size:11px;margin-top:3px" id="tvDate"></div>
       </div>
 
-      <button onclick="closeTV()" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Fechar">
+      <button onclick="closeTV()" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s"
+              onmouseover="this.style.background='rgba(255,255,255,.12)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.05)';this.style.color='#94a3b8'">
         <i class="fas fa-times"></i>
       </button>
     </div>
   </div>
 
   <!-- TV Body -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 64px);overflow:hidden">
+  <div style="display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 73px);overflow:hidden;position:relative;z-index:1">
 
     <!-- Coluna: Chamados -->
-    <div style="display:flex;flex-direction:column;overflow:hidden;border-right:1px solid rgba(255,255,255,.05)">
+    <div style="display:flex;flex-direction:column;overflow:hidden;border-right:1px solid rgba(255,255,255,.04)">
       <div class="tv-col-header">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(251,191,36,.15)">
-            <i class="fas fa-vial text-yellow-400"></i>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.2);display:flex;align-items:center;justify-content:center">
+            <i class="fas fa-vial" style="color:#fbbf24;font-size:15px"></i>
           </div>
-          <span class="text-white font-bold text-base">Retirada de Amostras</span>
+          <div>
+            <div style="color:#fff;font-weight:700;font-size:15px">Retirada de Amostras</div>
+            <div style="color:#64748b;font-size:11px">Chamados em aberto</div>
+          </div>
         </div>
         <span id="tvCallsCount" class="tv-badge tv-badge-pending"></span>
       </div>
-      <div id="tvCallsList" class="flex-1 overflow-y-auto p-4" style="gap:10px;display:flex;flex-direction:column"></div>
+      <div id="tvCallsList" class="flex-1 overflow-y-auto" style="padding:16px;gap:10px;display:flex;flex-direction:column"></div>
     </div>
 
     <!-- Coluna: Envios -->
     <div style="display:flex;flex-direction:column;overflow:hidden">
       <div class="tv-col-header">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(99,102,241,.15)">
-            <i class="fas fa-box text-indigo-400"></i>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);display:flex;align-items:center;justify-content:center">
+            <i class="fas fa-box" style="color:#818cf8;font-size:15px"></i>
           </div>
-          <span class="text-white font-bold text-base">Envios / Retiradas</span>
+          <div>
+            <div style="color:#fff;font-weight:700;font-size:15px">Envios / Retiradas</div>
+            <div style="color:#64748b;font-size:11px">Demandas em aberto</div>
+          </div>
         </div>
-        <span id="tvShipsCount" class="tv-badge tv-badge-pending"></span>
+        <span id="tvShipsCount" class="tv-badge tv-badge-progress"></span>
       </div>
-      <div id="tvShipsList" class="flex-1 overflow-y-auto p-4" style="gap:10px;display:flex;flex-direction:column"></div>
+      <div id="tvShipsList" class="flex-1 overflow-y-auto" style="padding:16px;gap:10px;display:flex;flex-direction:column"></div>
     </div>
   </div>
 </div>
@@ -471,13 +522,13 @@ function stopPendingCallsSound() {
   document.getElementById('soundIndicator').style.display = 'none';
 }
 
-// Som do painel de TV: toca a cada 4s enquanto houver chamado pendente
+// Som do painel de TV: toca a cada 2 minutos enquanto houver chamado pendente
 function startTVSound() {
   if (state.tvSoundInterval) return;
   playNotification();
   state.tvSoundInterval = setInterval(() => {
     if (state.hasPendingCalls) playNotification(); else stopTVSound();
-  }, 4000);
+  }, 2 * 60 * 1000);
 }
 function stopTVSound() {
   clearInterval(state.tvSoundInterval);
@@ -609,42 +660,74 @@ async function refreshTV() {
 
   // Render calls
   document.getElementById('tvCallsList').innerHTML = calls.length === 0
-    ? `<div class="text-center text-blue-600 mt-10 text-lg opacity-50"><i class="fas fa-check-circle text-4xl mb-3 block"></i>Nenhum chamado ativo</div>`
+    ? `<div style="text-align:center;margin-top:60px;opacity:.35">
+         <i class="fas fa-check-circle" style="font-size:48px;color:#22c55e;display:block;margin-bottom:12px"></i>
+         <p style="color:#94a3b8;font-size:16px;font-weight:600">Nenhum chamado ativo</p>
+       </div>`
     : calls.map(c => {
         const prog = c.status === 'in_progress';
-        const cls  = prog ? 'tv-card-progress' : 'tv-card-pending';
-        const prio = c.priority !== 'normal' ? `<span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:#7f1d1d;color:#fca5a5">${PRIORITY_LABELS[c.priority]}</span>` : '';
-        return `<div class="${cls}">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-white font-bold text-base">${escHtml(c.origin_name)}</span>
-            <span class="${prog ? 'text-green-400' : 'text-yellow-400 tv-blink'} font-bold text-sm">● ${prog ? 'Em Andamento' : 'Aguardando'}</span>
+        const isEmg = c.priority === 'emergency';
+        const cls   = isEmg ? 'tv-card-emergency' : prog ? 'tv-card-progress' : 'tv-card-pending';
+        const statusColor = prog ? '#34d399' : isEmg ? '#f87171' : '#fcd34d';
+        const statusLabel = prog ? 'Em Andamento' : isEmg ? '🚨 Emergência' : 'Aguardando';
+        const prio = c.priority === 'urgent' ? `<span style="background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-left:6px">URGENTE</span>` : '';
+        return `<div class="tv-card ${cls}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+            <div style="flex:1;min-width:0">
+              <div style="color:#fff;font-weight:800;font-size:17px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.origin_name)}</div>
+              <div style="color:#64748b;font-size:12px;margin-top:3px"><i class="fas fa-vial" style="margin-right:4px;color:#475569"></i>Retirada de Amostras${prio}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+              <span class="${prog?'':'tv-blink'}" style="width:7px;height:7px;border-radius:50%;background:${statusColor};display:inline-block"></span>
+              <span style="color:${statusColor};font-size:12px;font-weight:700">${statusLabel}</span>
+            </div>
           </div>
-          <div class="text-blue-300 text-sm mb-1"><i class="fas fa-tag mr-1"></i>Retirada de Amostras${prio}</div>
-          ${c.description ? `<div class="text-gray-400 text-sm">${escHtml(c.description)}</div>` : ''}
-          ${prog ? `<div class="text-green-300 text-sm mt-1 font-semibold"><i class="fas fa-user mr-1"></i>${escHtml(c.assigned_driver_name||'')}</div>` : ''}
-          <div class="text-gray-500 text-xs mt-1">${fmtDate(c.created_at)}</div>
+          ${c.description ? `<div style="color:#94a3b8;font-size:13px;margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05)">${escHtml(c.description)}</div>` : ''}
+          ${prog ? `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:6px">
+            <i class="fas fa-user-tie" style="color:#34d399;font-size:12px"></i>
+            <span style="color:#6ee7b7;font-size:13px;font-weight:600">${escHtml(c.assigned_driver_name||'')}</span>
+          </div>` : ''}
+          <div style="color:#334155;font-size:11px;display:flex;align-items:center;gap:4px">
+            <i class="fas fa-clock"></i>${fmtDate(c.created_at)}
+          </div>
         </div>`;
       }).join('');
 
   // Render shipments
   document.getElementById('tvShipsList').innerHTML = ships.length === 0
-    ? `<div class="text-center text-blue-600 mt-10 text-lg opacity-50"><i class="fas fa-check-circle text-4xl mb-3 block"></i>Nenhuma demanda ativa</div>`
+    ? `<div style="text-align:center;margin-top:60px;opacity:.35">
+         <i class="fas fa-check-circle" style="font-size:48px;color:#22c55e;display:block;margin-bottom:12px"></i>
+         <p style="color:#94a3b8;font-size:16px;font-weight:600">Nenhuma demanda ativa</p>
+       </div>`
     : ships.map(s => {
         const prog = s.status === 'in_progress';
         const cls  = prog ? 'tv-card-progress' : 'tv-card-pending';
         const tipo = s.type === 'send' ? 'Envio' : 'Retirada';
-        return `<div class="${cls}">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-white font-bold text-base">${escHtml(s.origin_sector)}</span>
-            <span class="${prog ? 'text-green-400' : 'text-yellow-400 tv-blink'} font-bold text-sm">● ${prog ? 'Em Andamento' : 'Aguardando'}</span>
+        const tipoIcon = s.type === 'send' ? 'fa-arrow-right' : 'fa-arrow-left';
+        const statusColor = prog ? '#34d399' : '#fcd34d';
+        return `<div class="tv-card ${cls}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+            <div style="flex:1;min-width:0">
+              <div style="color:#fff;font-weight:800;font-size:17px;line-height:1.2">${escHtml(s.origin_sector)}</div>
+              <div style="color:#64748b;font-size:12px;margin-top:3px;display:flex;align-items:center;gap:5px">
+                <i class="fas ${tipoIcon}" style="color:#475569"></i>
+                <span>${escHtml(s.destination_name)}</span>
+                <span style="background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700">${tipo}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+              <span class="${prog?'':'tv-blink'}" style="width:7px;height:7px;border-radius:50%;background:${statusColor};display:inline-block"></span>
+              <span style="color:${statusColor};font-size:12px;font-weight:700">${prog?'Em Andamento':'Aguardando'}</span>
+            </div>
           </div>
-          <div class="text-blue-300 text-sm mb-1">
-            <i class="fas fa-arrow-right mr-1"></i>${escHtml(s.destination_name)}
-            <span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:#1e3a5f;color:#93c5fd">${tipo}</span>
+          ${s.description ? `<div style="color:#94a3b8;font-size:13px;margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05)">${escHtml(s.description)}</div>` : ''}
+          ${prog ? `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:6px">
+            <i class="fas fa-user-tie" style="color:#34d399;font-size:12px"></i>
+            <span style="color:#6ee7b7;font-size:13px;font-weight:600">${escHtml(s.assigned_driver_name||'')}</span>
+          </div>` : ''}
+          <div style="color:#334155;font-size:11px;display:flex;align-items:center;gap:4px">
+            <i class="fas fa-clock"></i>${fmtDate(s.created_at)}
           </div>
-          ${s.description ? `<div class="text-gray-400 text-sm">${escHtml(s.description)}</div>` : ''}
-          ${prog ? `<div class="text-green-300 text-sm mt-1 font-semibold"><i class="fas fa-user mr-1"></i>${escHtml(s.assigned_driver_name||'')}</div>` : ''}
-          <div class="text-gray-500 text-xs mt-1">${fmtDate(s.created_at)}</div>
         </div>`;
       }).join('');
 }
@@ -787,17 +870,21 @@ async function renderChamados() {
   const r = await apiGet('/calls.php');
   if (!r.ok) { setView('<p class="text-red-500">Erro ao carregar chamados.</p>'); return; }
   const calls     = r.data;
-  const canCreate = ['admin','emergency','sector'].includes(state.user.role);
+  const canCreate = ['emergency'].includes(state.user.role);
   const canAssume = ['admin','driver'].includes(state.user.role);
+  // Usuários de unidade/setor veem apenas seus próprios chamados
+  const visibleCalls = ['emergency','sector'].includes(state.user.role)
+    ? calls.filter(c => c.created_by_id === state.user.id)
+    : calls;
 
   setView(`
     <div class="flex items-center justify-between mb-4">
-      <h3 class="font-bold text-gray-700">${calls.length} chamado(s)</h3>
+      <h3 class="font-bold text-gray-700">${visibleCalls.length} chamado(s)</h3>
       ${canCreate ? `<button class="btn btn-primary btn-sm" onclick="openChamadoForm()"><i class="fas fa-plus"></i> Novo Chamado</button>` : ''}
     </div>
     <div class="space-y-3">
-      ${calls.length===0 ? '<div class="card p-8 text-center text-gray-400">Nenhum chamado encontrado</div>'
-        : calls.map(c => callCard(c, canAssume)).join('')}
+      ${visibleCalls.length===0 ? '<div class="card p-8 text-center text-gray-400">Nenhum chamado encontrado</div>'
+        : visibleCalls.map(c => callCard(c, canAssume)).join('')}
     </div>`);
 }
 
@@ -953,7 +1040,7 @@ async function renderEnvios() {
   const r = await apiGet('/shipments.php');
   if (!r.ok) { setView('<p class="text-red-500">Erro ao carregar envios.</p>'); return; }
   const ships     = r.data;
-  const canCreate = ['admin','sector'].includes(state.user.role);
+  const canCreate = ['sector'].includes(state.user.role);
   const canAssume = ['admin','driver'].includes(state.user.role);
 
   setView(`
