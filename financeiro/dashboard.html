@@ -481,7 +481,8 @@ function excelDateToStr(val){
 function parseBoletosSheet(ws,label){
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
   const result=[];
-  const skip=['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total','flag','data','dia 0','dia 1','dia 2','dia 3'];
+  const skip=['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total','flag','data','dia 0','dia 1','dia 2','dia 3',
+    'produto','contrato','internet','item','servico','servico','tipo','categoria','descricao','historico','observacao','subtotal','mes','semana'];
   for(const row of rows){
     if(!row||row.length<2) continue;
     const raw0=row[0];
@@ -881,8 +882,9 @@ function renderDREImpact(){
     const hasPend=contas.length>0;
     const pct=reg>0?Math.min(100,Math.round((pend/reg)*100)):0;
     const barColor=hasOverdue?'#ef4444':hasPend?'#f59e0b':'#10b981';
+    const isSemCat=plano==='(Sem categoria)';
     return`<tr class="${hasOverdue?'row-atrasado':hasPend?'row-hoje':''}">
-      <td class="font-semibold" style="font-size:13px">${escHtml(plano)}</td>
+      <td class="font-semibold" style="font-size:13px">${isSemCat?`<span style="color:#f59e0b" title="Fornecedores sem correspondência no DRE. Acesse a aba Correlação para atribuir categorias manualmente.">⚠️ Sem categoria</span>`:`${escHtml(plano)}`}</td>
       <td class="text-right">${reg>0?fmtMoney(reg):'<span style="color:var(--muted)">—</span>'}</td>
       <td class="text-right font-bold" style="color:${pend>0?(hasOverdue?'#ef4444':'#f59e0b'):'var(--muted)'}">${pend>0?fmtMoney(pend):'—'}</td>
       <td class="text-right font-bold">${fmtMoney(proj)}</td>
