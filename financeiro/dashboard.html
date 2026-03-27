@@ -10,314 +10,365 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg:       #f0f4f8;
-  --card:     #ffffff;
-  --topbar:   #1e3a5f;
-  --text:     #1e293b;
-  --muted:    #64748b;
-  --border:   #e2e8f0;
-  --input:    #ffffff;
-  --primary:  #1e3a5f;
-  --blue:     #2563eb;
-  --green:    #10b981;
-  --yellow:   #f59e0b;
-  --red:      #ef4444;
-  --purple:   #7c3aed;
+  --bg:#f0f4f8; --card:#fff; --topbar:#1e3a5f; --text:#1e293b; --muted:#64748b;
+  --border:#e2e8f0; --input:#fff; --primary:#1e3a5f; --blue:#2563eb;
+  --green:#10b981; --yellow:#f59e0b; --red:#ef4444; --purple:#7c3aed;
 }
 html.dark {
-  --bg:       #0f172a;
-  --card:     #1e293b;
-  --topbar:   #0f172a;
-  --text:     #f1f5f9;
-  --muted:    #94a3b8;
-  --border:   #334155;
-  --input:    #0f172a;
+  --bg:#0f172a; --card:#1e293b; --topbar:#0f172a; --text:#f1f5f9; --muted:#94a3b8;
+  --border:#334155; --input:#0f172a;
 }
-* { font-family: 'Segoe UI', system-ui, sans-serif; }
-body { background: var(--bg); color: var(--text); min-height: 100vh; }
-
-.card { background: var(--card); border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-.form-input { background: var(--input); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 7px 11px; font-size: 13px; outline: none; transition: border .2s; }
-.form-input:focus { border-color: var(--blue); }
-.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-  border: none; display: inline-flex; align-items: center; gap: 6px; transition: opacity .2s; }
-.btn:hover { opacity: .87; }
-.btn-primary { background: var(--primary); color: #fff; }
-.btn-blue    { background: var(--blue);    color: #fff; }
-.btn-green   { background: var(--green);   color: #fff; }
-.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--muted); }
-.btn-sm { padding: 5px 11px; font-size: 12px; }
-
-.badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
-.badge-aberto   { background:#dbeafe; color:#1d4ed8; }
-.badge-atrasado { background:#fee2e2; color:#991b1b; }
-.badge-hoje     { background:#fef3c7; color:#92400e; }
-.badge-semana   { background:#ede9fe; color:#5b21b6; }
-.badge-pago     { background:#d1fae5; color:#065f46; }
-
-.stat-card { background: var(--card); border-radius: 14px; padding: 20px; display: flex;
-  align-items: center; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-.stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; }
-
-.alert-bar { padding: 10px 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-.tbl { width:100%; font-size:13px; border-collapse:collapse; }
-.tbl th { padding:10px 12px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase;
-  color:var(--muted); background:var(--bg); border-bottom:2px solid var(--border); white-space:nowrap; }
-.tbl td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
-.tbl tr:hover td { background: rgba(37,99,235,.04); }
-.tbl tr.row-atrasado td { background: rgba(239,68,68,.04); }
-.tbl tr.row-hoje td    { background: rgba(245,158,11,.05); }
-
-.tab-btn { padding:8px 18px; border-radius:8px 8px 0 0; font-size:13px; font-weight:600; cursor:pointer;
-  border:none; border-bottom:2px solid transparent; transition:all .2s; background:transparent; color:var(--muted); }
-.tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); background:var(--card); }
-
-.drop-zone { border:2px dashed var(--border); border-radius:14px; padding:40px; text-align:center;
-  cursor:pointer; transition:border .2s; }
-.drop-zone.over { border-color:var(--blue); background:rgba(37,99,235,.04); }
-
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:#475569; border-radius:3px; }
-
-.hidden { display:none !important; }
-.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; }
-.modal { background:var(--card); color:var(--text); border-radius:16px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
-
-@media(max-width:768px) {
-  .stat-grid { grid-template-columns:1fr 1fr !important; }
-  .hide-mobile { display:none; }
-}
+*{font-family:'Segoe UI',system-ui,sans-serif;}
+body{background:var(--bg);color:var(--text);min-height:100vh;}
+.card{background:var(--card);border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.form-input{background:var(--input);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;outline:none;transition:border .2s;}
+.form-input:focus{border-color:var(--blue);}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s;}
+.btn:hover{opacity:.85;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-yellow{background:var(--yellow);color:#fff;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-aberto{background:#dbeafe;color:#1d4ed8;}
+.badge-atrasado{background:#fee2e2;color:#991b1b;}
+.badge-hoje{background:#fef3c7;color:#92400e;}
+.badge-semana{background:#ede9fe;color:#5b21b6;}
+.badge-pago{background:#d1fae5;color:#065f46;}
+.stat-card{background:var(--card);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.tbl{width:100%;font-size:13px;border-collapse:collapse;}
+.tbl th{padding:9px 11px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:2px solid var(--border);white-space:nowrap;}
+.tbl td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(37,99,235,.03);}
+.tbl tr.row-atrasado td{background:rgba(239,68,68,.04);}
+.tbl tr.row-hoje td{background:rgba(245,158,11,.04);}
+.tab-btn{padding:8px 18px;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);transition:all .2s;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--card);}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;}
+.drop-zone:hover,.drop-zone.over{border-color:var(--blue);background:rgba(37,99,235,.03);}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:var(--card);color:var(--text);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.dre-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;margin-bottom:4px;cursor:pointer;transition:background .15s;}
+.dre-row:hover{background:rgba(37,99,235,.05);}
+.dre-row.has-pending{border-left:3px solid var(--yellow);}
+.dre-row.has-overdue{border-left:3px solid var(--red);}
+.progress-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s;}
+.conf-high{color:#10b981;}
+.conf-med{color:#f59e0b;}
+.conf-low{color:#94a3b8;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:3px;}
+.hidden{display:none!important;}
+@media(max-width:768px){.hide-mobile{display:none;}.stat-grid{grid-template-columns:1fr 1fr!important;}}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div style="background:var(--topbar)" class="sticky top-0 z-40 shadow-md">
-  <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
+  <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
     <div class="flex items-center gap-3">
       <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:8px">
         <i class="fas fa-file-invoice-dollar text-white text-lg"></i>
       </div>
       <div>
-        <div class="text-white font-bold text-base leading-tight">Contas a Pagar</div>
-        <div style="color:rgba(255,255,255,.6);font-size:11px">Medclin Laboratórios</div>
+        <div class="text-white font-bold text-sm leading-tight">Contas a Pagar — DRE</div>
+        <div style="color:rgba(255,255,255,.55);font-size:11px">Medclin Laboratórios</div>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <span id="fileInfo" style="color:rgba(255,255,255,.6);font-size:12px" class="hide-mobile"></span>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="document.getElementById('fileInput').click()">
-        <i class="fas fa-upload"></i> Importar Excel
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-1 hide-mobile">
+        <div id="boletosDot" style="width:8px;height:8px;border-radius:50%;background:#94a3b8"></div>
+        <span style="color:rgba(255,255,255,.6);font-size:11px" id="boletosInfo">Boletos não importado</span>
+      </div>
+      <div class="flex items-center gap-1 hide-mobile">
+        <div id="dreDot" style="width:8px;height:8px;border-radius:50%;background:#94a3b8"></div>
+        <span style="color:rgba(255,255,255,.6);font-size:11px" id="dreInfo">DRE não importado</span>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="document.getElementById('boletosInput').click()">
+        <i class="fas fa-upload"></i> Boletos
       </button>
-      <button onclick="toggleDark()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center" id="themeBtn">
+      <button class="btn btn-sm" style="background:rgba(16,185,129,.25);color:#fff" onclick="document.getElementById('dreInput').click()">
+        <i class="fas fa-chart-bar"></i> DRE
+      </button>
+      <button onclick="toggleDark()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center" id="themeBtn">
         <i class="fas fa-moon"></i>
       </button>
-      <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden" onchange="handleFile(event)">
     </div>
   </div>
 </div>
+<input type="file" id="boletosInput" accept=".xlsx,.xls" class="hidden" onchange="handleBoletos(event)">
+<input type="file" id="dreInput"     accept=".xlsx,.xls" class="hidden" onchange="handleDRE(event)">
 
-<!-- ALERT BAR -->
-<div id="alertBar" class="hidden max-w-screen-xl mx-auto px-4 mt-3"></div>
+<!-- ALERTS -->
+<div id="alertBar" class="max-w-screen-xl mx-auto px-4 mt-3"></div>
 
 <!-- MAIN -->
-<div class="max-w-screen-xl mx-auto px-4 py-4" id="mainContent">
+<div class="max-w-screen-xl mx-auto px-4 py-4">
 
   <!-- EMPTY STATE -->
   <div id="emptyState">
-    <div class="drop-zone mt-8" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <i class="fas fa-file-excel text-5xl mb-4" style="color:var(--muted)"></i>
-      <p class="text-lg font-bold mb-1" style="color:var(--text)">Arraste o arquivo Excel aqui</p>
-      <p style="color:var(--muted);font-size:13px">ou clique para selecionar — BOLETOS ATUALIZADO.xlsx</p>
-      <p style="color:var(--muted);font-size:12px;margin-top:6px">Lê automaticamente as abas: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX</p>
+    <div class="grid md:grid-cols-2 gap-4 mt-6">
+      <div class="drop-zone" id="dropZoneBoletos" onclick="document.getElementById('boletosInput').click()">
+        <i class="fas fa-file-excel text-4xl mb-3" style="color:#10b981"></i>
+        <p class="font-bold mb-1">1. Importar Boletos</p>
+        <p style="color:var(--muted);font-size:12px">BOLETOS ATUALIZADO xx.xlsx</p>
+        <p style="color:var(--muted);font-size:11px;margin-top:4px">Abas: PENDENTES, IMPOSTOS, FGTS, PIX</p>
+      </div>
+      <div class="drop-zone" onclick="document.getElementById('dreInput').click()">
+        <i class="fas fa-chart-bar text-4xl mb-3" style="color:#2563eb"></i>
+        <p class="font-bold mb-1">2. Importar DRE</p>
+        <p style="color:var(--muted);font-size:12px">DRE Medclin - 2026.xlsx</p>
+        <p style="color:var(--muted);font-size:11px;margin-top:4px">Aba: DESPESAS - DRE</p>
+      </div>
     </div>
   </div>
 
-  <!-- DASHBOARD (hidden until file loaded) -->
+  <!-- DASHBOARD -->
   <div id="dashboard" class="hidden">
 
     <!-- CARDS -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 stat-grid">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 stat-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background:#dbeafe"><i class="fas fa-file-invoice-dollar" style="color:#2563eb"></i></div>
-        <div>
-          <div class="text-xs font-semibold" style="color:var(--muted)">Total em Aberto</div>
-          <div class="text-xl font-bold" id="cardAberto" style="color:var(--text)">—</div>
-          <div class="text-xs" style="color:var(--muted)" id="cardAbertoQtd"></div>
-        </div>
+        <div><div class="text-xs font-semibold" style="color:var(--muted)">Total em Aberto</div>
+          <div class="text-lg font-bold" id="cardAberto">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardAbertoQtd"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:#fee2e2"><i class="fas fa-exclamation-triangle" style="color:#ef4444"></i></div>
-        <div>
-          <div class="text-xs font-semibold" style="color:var(--muted)">Atrasadas</div>
-          <div class="text-xl font-bold text-red-600" id="cardAtrasado">—</div>
-          <div class="text-xs" style="color:var(--muted)" id="cardAtrasadoQtd"></div>
-        </div>
+        <div><div class="text-xs font-semibold" style="color:var(--muted)">Atrasadas</div>
+          <div class="text-lg font-bold text-red-600" id="cardAtrasado">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardAtrasadoQtd"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:#fef3c7"><i class="fas fa-calendar-day" style="color:#f59e0b"></i></div>
-        <div>
-          <div class="text-xs font-semibold" style="color:var(--muted)">Vencendo Hoje</div>
-          <div class="text-xl font-bold" style="color:#f59e0b" id="cardHoje">—</div>
-          <div class="text-xs" style="color:var(--muted)" id="cardHojeQtd"></div>
-        </div>
+        <div><div class="text-xs font-semibold" style="color:var(--muted)">Vencendo Hoje</div>
+          <div class="text-lg font-bold" style="color:#f59e0b" id="cardHoje">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardHojeQtd"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:#d1fae5"><i class="fas fa-check-circle" style="color:#10b981"></i></div>
-        <div>
-          <div class="text-xs font-semibold" style="color:var(--muted)">Pagas (mês)</div>
-          <div class="text-xl font-bold text-green-600" id="cardPago">—</div>
-          <div class="text-xs" style="color:var(--muted)" id="cardPagoQtd"></div>
-        </div>
+        <div><div class="text-xs font-semibold" style="color:var(--muted)">Pagas (mês)</div>
+          <div class="text-lg font-bold text-green-600" id="cardPago">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardPagoQtd"></div></div>
       </div>
     </div>
 
     <!-- TABS -->
-    <div style="border-bottom:2px solid var(--border)" class="flex gap-1 mb-0">
+    <div style="border-bottom:2px solid var(--border)" class="flex gap-1 flex-wrap">
       <button class="tab-btn active" onclick="switchTab('pagamentos')" id="tab_pagamentos"><i class="fas fa-calendar-check mr-1"></i>Pagamentos do Dia</button>
-      <button class="tab-btn" onclick="switchTab('contas')" id="tab_contas"><i class="fas fa-list mr-1"></i>Todas as Contas</button>
-      <button class="tab-btn" onclick="switchTab('dre')" id="tab_dre"><i class="fas fa-chart-bar mr-1"></i>DRE / Impacto</button>
+      <button class="tab-btn" onclick="switchTab('contas')"    id="tab_contas"><i class="fas fa-list mr-1"></i>Todas as Contas</button>
+      <button class="tab-btn" onclick="switchTab('dre')"       id="tab_dre"><i class="fas fa-chart-bar mr-1"></i>Impacto no DRE</button>
+      <button class="tab-btn" onclick="switchTab('correlacao')" id="tab_correlacao"><i class="fas fa-link mr-1"></i>Correlação</button>
       <button class="tab-btn" onclick="switchTab('tendencias')" id="tab_tendencias"><i class="fas fa-chart-line mr-1"></i>Tendências</button>
     </div>
 
-    <!-- ── TAB: PAGAMENTOS DO DIA ── -->
-    <div id="panel_pagamentos" class="card p-5 rounded-t-none" style="border-radius:0 0 14px 14px">
-      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div class="flex gap-2">
-          <button class="btn btn-sm btn-outline" id="btnHoje" onclick="setDayFilter('hoje')">Hoje</button>
-          <button class="btn btn-sm btn-outline" id="btnSemana" onclick="setDayFilter('semana')">Esta semana</button>
-          <button class="btn btn-sm btn-outline" id="btnMes" onclick="setDayFilter('mes')">Este mês</button>
-          <button class="btn btn-sm btn-outline" id="btnTodas" onclick="setDayFilter('todas')">Todas em aberto</button>
-        </div>
-        <div style="color:var(--muted);font-size:12px" id="dayFilterLabel"></div>
+    <!-- ══ PAGAMENTOS DO DIA ══ -->
+    <div id="panel_pagamentos" class="card p-5" style="border-radius:0 0 14px 14px">
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <button class="btn btn-sm btn-outline" id="btnHoje"   onclick="setDayFilter('hoje')">Hoje</button>
+        <button class="btn btn-sm btn-outline" id="btnSemana" onclick="setDayFilter('semana')">Esta semana</button>
+        <button class="btn btn-sm btn-outline" id="btnMes"    onclick="setDayFilter('mes')">Este mês</button>
+        <button class="btn btn-sm btn-outline" id="btnTodas"  onclick="setDayFilter('todas')">Todas em aberto</button>
+        <span style="color:var(--muted);font-size:12px;margin-left:auto" id="dayFilterLabel"></span>
       </div>
       <div class="overflow-x-auto">
         <table class="tbl">
           <thead><tr>
-            <th>Fornecedor</th>
-            <th>Documento</th>
-            <th>Vencimento</th>
-            <th>Aba</th>
-            <th class="text-right">Valor</th>
-            <th>Status</th>
-            <th>Ação</th>
+            <th>Fornecedor</th><th>Documento</th><th>Vencimento</th><th>Aba</th>
+            <th>Plano de Contas (DRE)</th><th class="text-right">Valor</th><th>Status</th><th>Ação</th>
           </tr></thead>
-          <tbody id="dayTableBody"></tbody>
+          <tbody id="dayBody"></tbody>
         </table>
       </div>
-      <div class="flex justify-between items-center mt-3 pt-3" style="border-top:1px solid var(--border)">
-        <span style="color:var(--muted);font-size:12px" id="dayTableInfo"></span>
-        <span class="font-bold" id="dayTableTotal"></span>
+      <div class="flex justify-between mt-3 pt-3" style="border-top:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px" id="dayInfo"></span>
+        <span class="font-bold" id="dayTotal"></span>
       </div>
     </div>
 
-    <!-- ── TAB: TODAS AS CONTAS ── -->
-    <div id="panel_contas" class="hidden card p-5 rounded-t-none" style="border-radius:0 0 14px 14px">
-      <!-- Filters -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-        <input type="text" id="fFornecedor" class="form-input" placeholder="Fornecedor..." oninput="renderContas()">
+    <!-- ══ TODAS AS CONTAS ══ -->
+    <div id="panel_contas" class="hidden card p-5" style="border-radius:0 0 14px 14px">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+        <input type="text"  id="fForn"   class="form-input" placeholder="Fornecedor..." oninput="renderContas()">
         <select id="fStatus" class="form-input" onchange="renderContas()">
-          <option value="">Todos os status</option>
-          <option value="atrasado">Atrasado</option>
-          <option value="hoje">Vence Hoje</option>
-          <option value="semana">Esta Semana</option>
-          <option value="aberto">Em Aberto</option>
+          <option value="">Todos status</option>
+          <option value="atrasado">Atrasado</option><option value="hoje">Vence Hoje</option>
+          <option value="semana">Esta Semana</option><option value="aberto">Em Aberto</option>
           <option value="pago">Pago</option>
         </select>
         <select id="fAba" class="form-input" onchange="renderContas()">
           <option value="">Todas as abas</option>
-          <option value="PENDENTES">Pendentes</option>
-          <option value="IMPOSTOS">Impostos</option>
-          <option value="FGTS">FGTS/Rescisões</option>
-          <option value="PIX">PIX</option>
+          <option value="PENDENTES">Pendentes</option><option value="IMPOSTOS">Impostos</option>
+          <option value="FGTS">FGTS/Rescisões</option><option value="PIX">PIX</option>
         </select>
-        <input type="date" id="fDe" class="form-input" onchange="renderContas()" title="Vencimento de">
-        <input type="date" id="fAte" class="form-input" onchange="renderContas()" title="Vencimento até">
+        <input type="date" id="fDe"  class="form-input" onchange="renderContas()">
+        <input type="date" id="fAte" class="form-input" onchange="renderContas()">
       </div>
-      <div class="flex gap-2 mb-4">
+      <div class="flex gap-2 mb-3">
         <button class="btn btn-sm btn-outline" onclick="clearFilters()"><i class="fas fa-times mr-1"></i>Limpar</button>
-        <button class="btn btn-sm btn-outline" onclick="exportCSV()"><i class="fas fa-download mr-1"></i>Exportar CSV</button>
+        <button class="btn btn-sm btn-outline" onclick="exportCSV()"><i class="fas fa-download mr-1"></i>CSV</button>
       </div>
       <div class="overflow-x-auto">
         <table class="tbl">
           <thead><tr>
-            <th onclick="sortBy('fornecedor')" style="cursor:pointer">Fornecedor <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+            <th onclick="sortBy('fornecedor')" class="cursor-pointer">Fornecedor</th>
             <th>Documento</th>
-            <th onclick="sortBy('vencimento')" style="cursor:pointer">Vencimento <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+            <th onclick="sortBy('vencimento')" class="cursor-pointer">Vencimento</th>
             <th>Aba</th>
-            <th onclick="sortBy('valor')" style="cursor:pointer" class="text-right">Valor <i class="fas fa-sort text-gray-300 ml-1"></i></th>
-            <th>Status</th>
-            <th>Ação</th>
+            <th>Plano de Contas</th>
+            <th onclick="sortBy('valor')" class="cursor-pointer text-right">Valor</th>
+            <th>Status</th><th>Ação</th>
           </tr></thead>
-          <tbody id="contasTableBody"></tbody>
+          <tbody id="contasBody"></tbody>
         </table>
       </div>
-      <div class="flex justify-between items-center mt-3 pt-3" style="border-top:1px solid var(--border)">
+      <div class="flex justify-between mt-3 pt-3" style="border-top:1px solid var(--border)">
         <span style="color:var(--muted);font-size:12px" id="contasInfo"></span>
         <span class="font-bold" id="contasTotal"></span>
       </div>
     </div>
 
-    <!-- ── TAB: DRE ── -->
-    <div id="panel_dre" class="hidden rounded-t-none" style="border-radius:0 0 14px 14px">
-      <div class="grid md:grid-cols-3 gap-4 mb-4">
-        <!-- DRE inputs -->
-        <div class="card p-5 md:col-span-1">
-          <h3 class="font-bold mb-4" style="color:var(--text)"><i class="fas fa-calculator mr-2 text-blue-500"></i>Receitas (manual)</h3>
-          <div class="mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Receita Bruta (R$)</label>
-            <input type="number" id="dreReceita" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
-          </div>
-          <div class="mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">(-) Impostos s/ Receita</label>
-            <input type="number" id="dreImpostosRec" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
-          </div>
-          <div class="mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">(-) Outras Despesas</label>
-            <input type="number" id="dreOutrasDespesas" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
-          </div>
-          <div class="mb-3">
-            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Filtrar mês/ano</label>
-            <input type="month" id="dreMes" class="form-input w-full" oninput="renderDRE()">
-          </div>
-        </div>
+    <!-- ══ IMPACTO NO DRE ══ -->
+    <div id="panel_dre" class="hidden" style="border-radius:0 0 14px 14px">
 
-        <!-- DRE result -->
-        <div class="card p-5 md:col-span-2">
-          <h3 class="font-bold mb-4" style="color:var(--text)"><i class="fas fa-chart-bar mr-2 text-blue-500"></i>DRE — Demonstrativo de Resultados</h3>
-          <div id="dreResult"></div>
-        </div>
+      <!-- DRE não importado -->
+      <div id="dreNotLoaded" class="card p-8 text-center">
+        <i class="fas fa-chart-bar text-4xl mb-3" style="color:var(--muted)"></i>
+        <p class="font-bold mb-2">Importe o arquivo DRE para ver o impacto</p>
+        <button class="btn btn-blue" onclick="document.getElementById('dreInput').click()">
+          <i class="fas fa-upload"></i> Importar DRE Medclin - 2026.xlsx
+        </button>
       </div>
 
-      <!-- Category breakdown -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="card p-5">
-          <h3 class="font-bold mb-3" style="color:var(--text)">Despesas por Fornecedor (Top 10)</h3>
-          <canvas id="chartFornecedor" height="280"></canvas>
+      <!-- DRE carregado -->
+      <div id="dreLoaded" class="hidden">
+        <div class="card p-4 mb-4" style="border-radius:0">
+          <div class="flex items-center gap-3 flex-wrap">
+            <div>
+              <label class="text-xs font-semibold mr-1" style="color:var(--muted)">Filtrar mês:</label>
+              <select id="dreMesFiltro" class="form-input" onchange="renderDREImpact()" style="width:auto">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold mr-1" style="color:var(--muted)">Receita Bruta (R$):</label>
+              <input type="number" id="dreReceita" class="form-input" placeholder="0" oninput="renderDREImpact()" style="width:140px">
+            </div>
+            <div class="ml-auto flex gap-2">
+              <span class="badge" style="background:#fef3c7;color:#92400e"><span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;margin-right:4px"></span>Tem contas a pagar</span>
+              <span class="badge" style="background:#fee2e2;color:#991b1b"><span style="width:8px;height:8px;background:#ef4444;border-radius:50%;display:inline-block;margin-right:4px"></span>Tem atrasadas</span>
+            </div>
+          </div>
         </div>
-        <div class="card p-5">
-          <h3 class="font-bold mb-3" style="color:var(--text)">Despesas por Aba / Tipo</h3>
-          <canvas id="chartAba" height="280"></canvas>
+
+        <!-- DRE Summary -->
+        <div class="grid md:grid-cols-3 gap-3 mb-4">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dbeafe"><i class="fas fa-check-circle" style="color:#2563eb"></i></div>
+            <div><div class="text-xs font-semibold" style="color:var(--muted)">Já Registrado no DRE</div>
+              <div class="text-lg font-bold" id="dreRegTotal">—</div>
+              <div class="text-xs" style="color:var(--muted)" id="dreRegInfo"></div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7"><i class="fas fa-clock" style="color:#f59e0b"></i></div>
+            <div><div class="text-xs font-semibold" style="color:var(--muted)">Pendente (Boletos)</div>
+              <div class="text-lg font-bold" style="color:#f59e0b" id="drePendTotal">—</div>
+              <div class="text-xs" style="color:var(--muted)" id="drePendInfo"></div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ede9fe"><i class="fas fa-calculator" style="color:#7c3aed"></i></div>
+            <div><div class="text-xs font-semibold" style="color:var(--muted)">Total Projetado</div>
+              <div class="text-lg font-bold" style="color:#7c3aed" id="dreProjetado">—</div>
+              <div class="text-xs" style="color:var(--muted)" id="dreProjetadoInfo"></div></div>
+          </div>
+        </div>
+
+        <!-- DRE Table by Plano de Contas -->
+        <div class="card overflow-hidden mb-4">
+          <div class="overflow-x-auto">
+            <table class="tbl">
+              <thead><tr>
+                <th style="width:30%">Plano de Contas (DRE)</th>
+                <th class="text-right">Registrado DRE</th>
+                <th class="text-right">Contas Abertas</th>
+                <th class="text-right">Projetado</th>
+                <th style="width:20%">Impacto</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="dreTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Resultado DRE -->
+        <div id="dreResultado" class="card p-5 mb-4 hidden">
+          <h3 class="font-bold mb-4"><i class="fas fa-calculator mr-2 text-purple-500"></i>Resultado Projetado</h3>
+          <div id="dreResultadoContent"></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="card p-5">
+            <h3 class="font-bold mb-3 text-sm">Registrado vs Pendente por Categoria (Top 12)</h3>
+            <canvas id="chartDRE" height="300"></canvas>
+          </div>
+          <div class="card p-5">
+            <h3 class="font-bold mb-3 text-sm">Distribuição do Total Pendente</h3>
+            <canvas id="chartDREPie" height="300"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ── TAB: TENDÊNCIAS ── -->
-    <div id="panel_tendencias" class="hidden rounded-t-none" style="border-radius:0 0 14px 14px">
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="card p-5">
-          <h3 class="font-bold mb-3" style="color:var(--text)">Vencimentos por Dia (próximos 30 dias)</h3>
-          <canvas id="chartDias" height="260"></canvas>
+    <!-- ══ CORRELAÇÃO ══ -->
+    <div id="panel_correlacao" class="hidden card p-5" style="border-radius:0 0 14px 14px">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h3 class="font-bold">Correlação Fornecedor → Plano de Contas</h3>
+          <p style="color:var(--muted);font-size:12px">Mapeamento automático entre boletos e linhas do DRE. Clique em uma linha para alterar a categoria.</p>
         </div>
-        <div class="card p-5">
-          <h3 class="font-bold mb-3" style="color:var(--text)">Total por Mês (vencimento)</h3>
-          <canvas id="chartMes" height="260"></canvas>
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-outline" onclick="resetMapping()"><i class="fas fa-redo mr-1"></i>Refazer auto</button>
+          <button class="btn btn-sm btn-outline" onclick="exportCorrelacao()"><i class="fas fa-download mr-1"></i>CSV</button>
         </div>
       </div>
-      <div class="card p-5 mt-4">
-        <h3 class="font-bold mb-3" style="color:var(--text)">Distribuição por Status</h3>
+      <div id="dreNotLoadedCorr" class="hidden text-center py-8" style="color:var(--muted)">
+        <i class="fas fa-info-circle mr-1"></i> Importe o arquivo DRE para ver a correlação
+      </div>
+      <div class="overflow-x-auto">
+        <table class="tbl" id="corrTable">
+          <thead><tr>
+            <th>Fornecedor (Boleto)</th><th>Aba</th>
+            <th class="text-right">Total Aberto</th>
+            <th>Plano de Contas (DRE)</th>
+            <th>Confiança</th><th>Ação</th>
+          </tr></thead>
+          <tbody id="corrBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TENDÊNCIAS ══ -->
+    <div id="panel_tendencias" class="hidden" style="border-radius:0 0 14px 14px">
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="card p-5">
+          <h3 class="font-bold mb-3 text-sm">Vencimentos próximos 30 dias</h3>
+          <canvas id="chartDias" height="240"></canvas>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-bold mb-3 text-sm">Total por Mês</h3>
+          <canvas id="chartMes" height="240"></canvas>
+        </div>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-bold mb-3 text-sm">Distribuição por Status</h3>
         <div class="grid md:grid-cols-2 gap-6 items-center">
           <canvas id="chartStatus" height="220"></canvas>
           <div id="statusLegend"></div>
@@ -328,451 +379,429 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; }
   </div><!-- /dashboard -->
 </div><!-- /main -->
 
-<!-- MODAL -->
 <div id="modalContainer"></div>
 
 <script>
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // STATE
-// ══════════════════════════════════════════
-let accounts = [];
-let sortField = 'vencimento';
-let sortAsc   = true;
-let dayFilter = 'hoje';
-let charts    = {};
+// ══════════════════════════════════════════════════════
+let accounts  = [];       // boletos
+let dreEntries = [];      // DRE rows: {historico, valor, plano, data, mes}
+let dreMapping = {};      // {fornecedorNorm: {plano, conf, manual}}
+let sortField  = 'vencimento';
+let sortAsc    = true;
+let dayFilter  = 'hoje';
+let charts     = {};
 
+// ── HELPERS ──
 const today = () => {
-  const d = new Date();
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+  const d=new Date();
+  return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 };
 const todayStr = today();
 
-function addDays(dateStr, n) {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + n);
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+function addDays(s,n){
+  const d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n);
+  return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 }
-function fmtMoney(v) {
-  return 'R$ ' + parseFloat(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+function fmtMoney(v){
+  return 'R$ '+parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-function fmtDate(str) {
-  if (!str) return '—';
-  const [y,m,d] = str.split('-');
-  return `${d}/${m}/${y}`;
+function fmtDate(s){
+  if(!s)return'—'; const[y,m,d]=s.split('-'); return`${d}/${m}/${y}`;
 }
-function getStatus(acc) {
-  if (acc.pago) return 'pago';
-  if (!acc.vencimento) return 'aberto';
-  if (acc.vencimento < todayStr) return 'atrasado';
-  if (acc.vencimento === todayStr) return 'hoje';
-  const semana = addDays(todayStr, 7);
-  if (acc.vencimento <= semana) return 'semana';
-  return 'aberto';
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function normalizeStr(s){
+  return String(s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
 }
-function badgeHtml(status) {
-  const map = {
-    atrasado: ['badge-atrasado','Atrasado'],
-    hoje:     ['badge-hoje',    'Vence Hoje'],
-    semana:   ['badge-semana',  'Esta Semana'],
-    aberto:   ['badge-aberto',  'Em Aberto'],
-    pago:     ['badge-pago',    'Pago'],
-  };
-  const [cls, label] = map[status] || ['badge-aberto', status];
-  return `<span class="badge ${cls}">${label}</span>`;
+function getStatus(a){
+  if(a.pago) return'pago';
+  if(!a.vencimento) return'aberto';
+  if(a.vencimento<todayStr) return'atrasado';
+  if(a.vencimento===todayStr) return'hoje';
+  if(a.vencimento<=addDays(todayStr,7)) return'semana';
+  return'aberto';
 }
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function badgeHtml(s){
+  const m={atrasado:['badge-atrasado','Atrasado'],hoje:['badge-hoje','Vence Hoje'],
+    semana:['badge-semana','Esta Semana'],aberto:['badge-aberto','Em Aberto'],pago:['badge-pago','Pago']};
+  const[cls,lbl]=m[s]||['badge-aberto',s];
+  return`<span class="badge ${cls}">${lbl}</span>`;
 }
-function loadState() {
-  try {
-    const saved = localStorage.getItem('medclin_contas');
-    if (saved) {
-      const obj = JSON.parse(saved);
-      accounts = obj.accounts || [];
-      return true;
-    }
-  } catch(e) {}
+
+// ── PERSIST ──
+function saveState(){
+  localStorage.setItem('medclin_ap',JSON.stringify({accounts,dreMapping,ts:Date.now()}));
+}
+function loadState(){
+  try{
+    const s=localStorage.getItem('medclin_ap');
+    if(s){const o=JSON.parse(s);accounts=o.accounts||[];dreMapping=o.dreMapping||{};return true;}
+  }catch(e){}
   return false;
 }
-function saveState() {
-  localStorage.setItem('medclin_contas', JSON.stringify({ accounts, ts: Date.now() }));
+
+// ══════════════════════════════════════════════════════
+// EXCEL IMPORT — BOLETOS
+// ══════════════════════════════════════════════════════
+function handleBoletos(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>importBoletos(ev.target.result,f.name);
+  r.readAsArrayBuffer(f);
 }
-
-// ══════════════════════════════════════════
-// EXCEL IMPORT
-// ══════════════════════════════════════════
-function handleFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => importExcel(ev.target.result, file.name);
-  reader.readAsArrayBuffer(file);
-}
-
-// drag and drop
-document.getElementById('dropZone').addEventListener('dragover', e => {
-  e.preventDefault();
-  document.getElementById('dropZone').classList.add('over');
-});
-document.getElementById('dropZone').addEventListener('dragleave', () => {
-  document.getElementById('dropZone').classList.remove('over');
-});
-document.getElementById('dropZone').addEventListener('drop', e => {
-  e.preventDefault();
-  document.getElementById('dropZone').classList.remove('over');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => importExcel(ev.target.result, file.name);
-  reader.readAsArrayBuffer(file);
+document.getElementById('dropZoneBoletos').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('over');});
+document.getElementById('dropZoneBoletos').addEventListener('dragleave',e=>e.currentTarget.classList.remove('over'));
+document.getElementById('dropZoneBoletos').addEventListener('drop',e=>{
+  e.preventDefault();e.currentTarget.classList.remove('over');
+  const f=e.dataTransfer.files[0];if(!f)return;
+  const r=new FileReader();r.onload=ev=>importBoletos(ev.target.result,f.name);r.readAsArrayBuffer(f);
 });
 
-function excelDateToStr(val) {
-  if (!val) return null;
-  if (typeof val === 'string') {
-    // Try DD/MM/YYYY
-    const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
-    // YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.slice(0,10);
+function excelDateToStr(val){
+  if(!val) return null;
+  if(typeof val==='string'){
+    const m=val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    if(/^\d{4}-\d{2}-\d{2}/.test(val)) return val.slice(0,10);
     return null;
   }
-  if (typeof val === 'number' && val > 40000 && val < 60000) {
-    // Excel serial → JS Date
-    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
-    const y = d.getUTCFullYear(), mo = d.getUTCMonth()+1, dy = d.getUTCDate();
-    return `${y}-${String(mo).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
+  if(typeof val==='number'&&val>40000&&val<60000){
+    const d=new Date(Math.round((val-25569)*86400*1000));
+    return[d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,'0'),String(d.getUTCDate()).padStart(2,'0')].join('-');
   }
-  if (val instanceof Date) {
-    const y = val.getFullYear(), mo = val.getMonth()+1, dy = val.getDate();
-    return `${y}-${String(mo).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
+  if(val instanceof Date){
+    return[val.getFullYear(),String(val.getMonth()+1).padStart(2,'0'),String(val.getDate()).padStart(2,'0')].join('-');
   }
   return null;
 }
 
-function parseSheetRows(ws, abaLabel) {
-  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
-  const result = [];
-  const skipWords = ['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total'];
-
-  for (const row of rows) {
-    if (!row || row.length < 3) continue;
-    const col0 = String(row[0]||'').trim();
-    const col0l = col0.toLowerCase();
-    if (!col0 || skipWords.some(w => col0l.includes(w))) continue;
-
-    let fornecedor = col0;
-    let documento  = String(row[1]||'').trim();
-    let vencimento = null;
-    let valor      = null;
-
-    // Detect structure: PENDENTES = cols 0,1,2,3 | PIX = cols 0,1,...,4,5
-    // Try col index 2/3 first (PENDENTES layout), then 4/5 (PIX layout)
-    const v2 = excelDateToStr(row[2]);
-    const v5 = excelDateToStr(row[5]);
-    const n3 = parseFloat(row[3]);
-    const n4 = parseFloat(row[4]);
-    const n6 = parseFloat(row[6]);
-
-    if (v2 && !isNaN(n3) && n3 > 0) {
-      vencimento = v2; valor = n3;
-    } else if (v5 && !isNaN(n4) && n4 > 0) {
-      vencimento = v5; valor = n4;
-    } else if (!isNaN(n4) && n4 > 0 && !vencimento) {
-      // PIX sheet: no date, just value
-      valor = n4;
-    } else if (!isNaN(n3) && n3 > 0) {
-      valor = n3;
-    }
-
-    if (!valor || valor <= 0) continue;
-
-    // Check if this is already in existing accounts (by key)
-    const key = `${fornecedor}|${documento}|${vencimento}|${valor}`;
-    const existing = accounts.find(a => a._key === key);
-
+function parseBoletosSheet(ws,label){
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+  const result=[];
+  const skip=['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total','flag','data'];
+  for(const row of rows){
+    if(!row||row.length<2) continue;
+    const c0=String(row[0]||'').trim();
+    if(!c0||skip.some(w=>normalizeStr(c0).startsWith(w))) continue;
+    let forn=c0,doc=String(row[1]||'').trim(),venc=null,val=null;
+    const v2=excelDateToStr(row[2]),v5=excelDateToStr(row[5]);
+    const n3=parseFloat(row[3]),n4=parseFloat(row[4]);
+    if(v2&&!isNaN(n3)&&n3>0){venc=v2;val=n3;}
+    else if(v5&&!isNaN(n4)&&n4>0){venc=v5;val=n4;}
+    else if(!isNaN(n4)&&n4>0){val=n4;}
+    else if(!isNaN(n3)&&n3>0){val=n3;}
+    if(!val||val<=0) continue;
+    const key=`${forn}|${doc}|${venc}|${val}`;
+    const ex=accounts.find(a=>a._key===key);
     result.push({
-      id:          existing ? existing.id : crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
-      _key:        key,
-      fornecedor,
-      documento,
-      vencimento,
-      valor,
-      aba:         abaLabel,
-      pago:        existing ? existing.pago : false,
-      data_pagamento: existing ? existing.data_pagamento : null,
-      obs:         existing ? existing.obs : '',
+      id:   ex?ex.id:(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)),
+      _key: key, fornecedor:forn, documento:doc, vencimento:venc, valor:val,
+      aba:  label, pago:ex?ex.pago:false,
+      data_pagamento:ex?ex.data_pagamento:null, obs:ex?ex.obs:'',
     });
   }
   return result;
 }
 
-function importExcel(arrayBuffer, fileName) {
-  try {
-    const wb = XLSX.read(arrayBuffer, {type:'array', cellDates:false});
-    const newAccounts = [];
-
-    const abaMap = {
-      'PENDENTES':         'PENDENTES',
-      'IMPOSTOS ':         'IMPOSTOS',
-      'IMPOSTOS':          'IMPOSTOS',
-      'FGTS E RESCISÕES ': 'FGTS',
-      'FGTS E RESCISÕES':  'FGTS',
-      'PIX':               'PIX',
-    };
-
-    for (const [sheetName, label] of Object.entries(abaMap)) {
-      const ws = wb.Sheets[sheetName];
-      if (!ws) continue;
-      const parsed = parseSheetRows(ws, label);
-      newAccounts.push(...parsed);
+function importBoletos(ab,name){
+  try{
+    const wb=XLSX.read(ab,{type:'array',cellDates:false});
+    const abaMap={'PENDENTES':'PENDENTES','IMPOSTOS ':'IMPOSTOS','IMPOSTOS':'IMPOSTOS',
+      'FGTS E RESCISÕES ':'FGTS','FGTS E RESCISÕES':'FGTS','PIX':'PIX'};
+    const all=[];
+    for(const[sn,label] of Object.entries(abaMap)){
+      const ws=wb.Sheets[sn];if(!ws)continue;
+      all.push(...parseBoletosSheet(ws,label));
     }
-
-    if (newAccounts.length === 0) {
-      alert('Nenhuma conta encontrada no arquivo. Verifique se as abas estão com os nomes: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX');
-      return;
-    }
-
-    accounts = newAccounts;
-    saveState();
-
-    document.getElementById('fileInfo').textContent = `${fileName} — ${accounts.length} contas`;
-    showDashboard();
-
-  } catch(err) {
-    console.error(err);
-    alert('Erro ao ler o arquivo: ' + err.message);
-  }
+    if(!all.length){alert('Nenhuma conta encontrada. Verifique as abas: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX');return;}
+    accounts=all;
+    document.getElementById('boletosDot').style.background='#10b981';
+    document.getElementById('boletosInfo').textContent=`${name} — ${accounts.length} contas`;
+    if(dreEntries.length) buildMapping();
+    saveState(); showDashboard();
+  }catch(err){console.error(err);alert('Erro ao ler boletos: '+err.message);}
 }
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// EXCEL IMPORT — DRE
+// ══════════════════════════════════════════════════════
+function handleDRE(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>importDRE(ev.target.result,f.name);
+  r.readAsArrayBuffer(f);
+}
+
+function importDRE(ab,name){
+  try{
+    const wb=XLSX.read(ab,{type:'array',cellDates:false});
+    // Find the DESPESAS-DRE sheet
+    const sheetName=wb.SheetNames.find(n=>normalizeStr(n).includes('despesas'));
+    if(!sheetName){alert('Aba "DESPESAS - DRE" não encontrada no arquivo.');return;}
+    const ws=wb.Sheets[sheetName];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+    dreEntries=[];
+    const MESES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    for(const row of rows){
+      if(!row||row.length<5) continue;
+      const historico=String(row[2]||'').trim();
+      const plano    =String(row[4]||'').trim();
+      const valor    =parseFloat(row[3]);
+      const flag     =String(row[0]||'').trim();
+      if(!historico||!plano||isNaN(valor)||valor<=0) continue;
+      if(['plano de contas','historico','histórico','flag','check1','check2'].includes(normalizeStr(plano))) continue;
+      const dateStr=excelDateToStr(row[1]);
+      // Parse mes from flag: "12026" = Jan 2026, "22026" = Feb 2026
+      let mesLabel='';
+      if(/^\d{5,6}$/.test(flag)){
+        const flagN=parseInt(flag);
+        const ano=flagN%10000, mes=Math.floor(flagN/10000);
+        if(mes>=1&&mes<=12) mesLabel=`${ano}-${String(mes).padStart(2,'0')}`;
+      }
+      dreEntries.push({historico,plano,valor,data:dateStr,mes:mesLabel||'',flag});
+    }
+    if(!dreEntries.length){alert('Nenhum lançamento encontrado na aba DESPESAS - DRE.');return;}
+    // Build months for filter
+    const months=[...new Set(dreEntries.map(e=>e.mes).filter(Boolean))].sort();
+    const sel=document.getElementById('dreMesFiltro');
+    sel.innerHTML='<option value="">Todos os meses</option>'+months.map(m=>{
+      const[y,mo]=m.split('-');
+      const MNOM=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      return`<option value="${m}">${MNOM[parseInt(mo)-1]}/${y}</option>`;
+    }).join('');
+    document.getElementById('dreDot').style.background='#10b981';
+    document.getElementById('dreInfo').textContent=`${name} — ${dreEntries.length} lançamentos`;
+    document.getElementById('dreNotLoaded').classList.add('hidden');
+    document.getElementById('dreLoaded').classList.remove('hidden');
+    document.getElementById('dreNotLoadedCorr')?.classList.add('hidden');
+    if(accounts.length) buildMapping();
+    saveState(); renderDREImpact(); renderCorrelacao();
+  }catch(err){console.error(err);alert('Erro ao ler DRE: '+err.message);}
+}
+
+// ══════════════════════════════════════════════════════
+// CORRELAÇÃO — FUZZY MATCH
+// ══════════════════════════════════════════════════════
+function buildMapping(){
+  // Group DRE entries: historico → plano (with frequency)
+  const histPlano={};
+  for(const e of dreEntries){
+    const key=normalizeStr(e.historico);
+    if(!histPlano[key]) histPlano[key]={plano:e.plano,count:0};
+    histPlano[key].count++;
+  }
+  // For each unique fornecedor, find best matching plano
+  const fornecedores=[...new Set(accounts.map(a=>a.fornecedor))];
+  for(const forn of fornecedores){
+    const fNorm=normalizeStr(forn);
+    if(dreMapping[fNorm]?.manual) continue; // keep manual overrides
+    const scores={};
+    const fWords=fNorm.split(/\s+/).filter(w=>w.length>2);
+    for(const[hist,info] of Object.entries(histPlano)){
+      let sc=0;
+      // Word match score
+      for(const w of fWords){if(hist.includes(w)) sc+=2;}
+      // Reverse: hist words in fornecedor
+      const hWords=hist.split(/\s+/).filter(w=>w.length>2);
+      for(const w of hWords){if(fNorm.includes(w)) sc+=1;}
+      if(sc>0) scores[info.plano]=(scores[info.plano]||0)+sc*info.count;
+    }
+    const best=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    if(best.length){
+      const topScore=best[0][1];
+      const maxPossible=fWords.length*2*10;
+      const conf=Math.min(1,topScore/Math.max(maxPossible,topScore));
+      dreMapping[fNorm]={plano:best[0][0],score:topScore,conf,manual:false};
+    }
+  }
+  saveState();
+}
+
+function getPlanoForAccount(a){
+  const fNorm=normalizeStr(a.fornecedor);
+  return dreMapping[fNorm]?.plano||null;
+}
+function getConfForAccount(a){
+  const fNorm=normalizeStr(a.fornecedor);
+  const c=dreMapping[fNorm]?.conf||0;
+  return c;
+}
+
+// ══════════════════════════════════════════════════════
 // RENDER DASHBOARD
-// ══════════════════════════════════════════
-function showDashboard() {
+// ══════════════════════════════════════════════════════
+function showDashboard(){
   document.getElementById('emptyState').classList.add('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
   renderAll();
 }
-
-function renderAll() {
-  renderCards();
-  renderAlerts();
-  renderDayTable();
-  renderContas();
-  renderDRE();
-  renderCharts();
+function renderAll(){
+  renderCards(); renderAlerts(); renderDayTable();
+  if(document.getElementById('panel_contas')&&!document.getElementById('panel_contas').classList.contains('hidden')) renderContas();
 }
 
-function renderCards() {
-  const open     = accounts.filter(a => !a.pago);
-  const atrasado = open.filter(a => a.vencimento && a.vencimento < todayStr);
-  const hoje     = open.filter(a => a.vencimento === todayStr);
-  const mesStr   = todayStr.slice(0,7);
-  const pago     = accounts.filter(a => a.pago && (a.data_pagamento||'').startsWith(mesStr));
-
-  const totalAberto   = open.reduce((s,a) => s+a.valor, 0);
-  const totalAtrasado = atrasado.reduce((s,a) => s+a.valor, 0);
-  const totalHoje     = hoje.reduce((s,a) => s+a.valor, 0);
-  const totalPago     = pago.reduce((s,a) => s+a.valor, 0);
-
-  document.getElementById('cardAberto').textContent    = fmtMoney(totalAberto);
-  document.getElementById('cardAbertoQtd').textContent = `${open.length} conta(s)`;
-  document.getElementById('cardAtrasado').textContent  = fmtMoney(totalAtrasado);
-  document.getElementById('cardAtrasadoQtd').textContent = `${atrasado.length} conta(s)`;
-  document.getElementById('cardHoje').textContent      = fmtMoney(totalHoje);
-  document.getElementById('cardHojeQtd').textContent   = `${hoje.length} conta(s)`;
-  document.getElementById('cardPago').textContent      = fmtMoney(totalPago);
-  document.getElementById('cardPagoQtd').textContent   = `${pago.length} conta(s)`;
+function renderCards(){
+  const open=accounts.filter(a=>!a.pago);
+  const atr =open.filter(a=>a.vencimento&&a.vencimento<todayStr);
+  const hoj =open.filter(a=>a.vencimento===todayStr);
+  const mes =todayStr.slice(0,7);
+  const pag =accounts.filter(a=>a.pago&&(a.data_pagamento||'').startsWith(mes));
+  const s=(arr,k)=>arr.reduce((t,i)=>t+i[k],0);
+  document.getElementById('cardAberto').textContent  =fmtMoney(s(open,'valor'));
+  document.getElementById('cardAbertoQtd').textContent=`${open.length} conta(s)`;
+  document.getElementById('cardAtrasado').textContent =fmtMoney(s(atr,'valor'));
+  document.getElementById('cardAtrasadoQtd').textContent=`${atr.length} conta(s)`;
+  document.getElementById('cardHoje').textContent    =fmtMoney(s(hoj,'valor'));
+  document.getElementById('cardHojeQtd').textContent =`${hoj.length} conta(s)`;
+  document.getElementById('cardPago').textContent    =fmtMoney(s(pag,'valor'));
+  document.getElementById('cardPagoQtd').textContent =`${pag.length} conta(s)`;
 }
 
-function renderAlerts() {
-  const atrasado = accounts.filter(a => !a.pago && a.vencimento && a.vencimento < todayStr);
-  const hoje     = accounts.filter(a => !a.pago && a.vencimento === todayStr);
-  const amanha   = accounts.filter(a => !a.pago && a.vencimento === addDays(todayStr,1));
-  const bar      = document.getElementById('alertBar');
-
-  if (atrasado.length === 0 && hoje.length === 0 && amanha.length === 0) {
-    bar.classList.add('hidden'); return;
-  }
-  bar.classList.remove('hidden');
-  bar.innerHTML = '';
-
-  if (atrasado.length > 0) {
-    const total = atrasado.reduce((s,a)=>s+a.valor,0);
-    bar.innerHTML += `<div class="alert-bar rounded-xl mb-2" style="background:#fee2e2;color:#991b1b">
-      <i class="fas fa-exclamation-circle"></i>
-      <strong>${atrasado.length} conta(s) ATRASADA(S)</strong> — Total: <strong>${fmtMoney(total)}</strong>
-      <span style="margin-left:4px">${atrasado.map(a=>`<span style="background:#fecaca;padding:2px 8px;border-radius:12px;font-size:11px;margin:2px">${escHtml(a.fornecedor)} (${fmtDate(a.vencimento)})</span>`).join('')}</span>
+function renderAlerts(){
+  const atr=accounts.filter(a=>!a.pago&&a.vencimento&&a.vencimento<todayStr);
+  const hoj=accounts.filter(a=>!a.pago&&a.vencimento===todayStr);
+  const amh=accounts.filter(a=>!a.pago&&a.vencimento===addDays(todayStr,1));
+  const bar=document.getElementById('alertBar');
+  bar.innerHTML='';
+  if(atr.length){
+    const t=atr.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML+=`<div style="background:#fee2e2;color:#991b1b;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <i class="fas fa-exclamation-circle"></i><span>${atr.length} conta(s) <strong>ATRASADA(S)</strong> — Total: ${fmtMoney(t)}</span>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-left:8px">${atr.map(a=>`<span style="background:#fecaca;padding:2px 8px;border-radius:10px;font-size:11px">${escHtml(a.fornecedor)} (${fmtDate(a.vencimento)})</span>`).join('')}</div>
     </div>`;
   }
-  if (hoje.length > 0) {
-    const total = hoje.reduce((s,a)=>s+a.valor,0);
-    bar.innerHTML += `<div class="alert-bar rounded-xl mb-2" style="background:#fef3c7;color:#92400e">
-      <i class="fas fa-clock"></i>
-      <strong>${hoje.length} conta(s) vencem HOJE</strong> — Total: <strong>${fmtMoney(total)}</strong>
+  if(hoj.length){
+    const t=hoj.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML+=`<div style="background:#fef3c7;color:#92400e;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <i class="fas fa-clock"></i>${hoj.length} conta(s) vencem <strong>HOJE</strong> — Total: ${fmtMoney(t)}
     </div>`;
   }
-  if (amanha.length > 0) {
-    const total = amanha.reduce((s,a)=>s+a.valor,0);
-    bar.innerHTML += `<div class="alert-bar rounded-xl" style="background:#ede9fe;color:#5b21b6">
-      <i class="fas fa-bell"></i>
-      <strong>${amanha.length} conta(s) vencem AMANHÃ</strong> — Total: <strong>${fmtMoney(total)}</strong>
+  if(amh.length){
+    const t=amh.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML+=`<div style="background:#ede9fe;color:#5b21b6;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <i class="fas fa-bell"></i>${amh.length} conta(s) vencem <strong>AMANHÃ</strong> — Total: ${fmtMoney(t)}
     </div>`;
   }
 }
 
-// ── DAY FILTER ──
-function setDayFilter(f) {
-  dayFilter = f;
-  ['hoje','semana','mes','todas'].forEach(id => {
-    const b = document.getElementById('btn' + id.charAt(0).toUpperCase() + id.slice(1));
-    if (b) b.style.background = f === id ? 'var(--primary)' : '';
-    if (b) b.style.color = f === id ? '#fff' : '';
-    if (b) b.style.borderColor = f === id ? 'var(--primary)' : 'var(--border)';
+// ── DAY TABLE ──
+function setDayFilter(f){
+  dayFilter=f;
+  ['hoje','semana','mes','todas'].forEach(id=>{
+    const b=document.getElementById('btn'+id[0].toUpperCase()+id.slice(1));
+    if(!b)return;
+    if(f===id){b.style.background='var(--primary)';b.style.color='#fff';b.style.borderColor='var(--primary)';}
+    else{b.style.background='';b.style.color='';b.style.borderColor='';}
   });
   renderDayTable();
 }
 
-function renderDayTable() {
-  let data = accounts.filter(a => !a.pago);
-  const semanaFim = addDays(todayStr, 7);
-  const mesFim    = todayStr.slice(0,7) + '-31';
-  const labels    = { hoje:'vencimento hoje', semana:'vencimento esta semana', mes:'vencimento este mês', todas:'todas em aberto' };
-
-  if (dayFilter === 'hoje')   data = data.filter(a => a.vencimento === todayStr);
-  if (dayFilter === 'semana') data = data.filter(a => a.vencimento && a.vencimento >= todayStr && a.vencimento <= semanaFim);
-  if (dayFilter === 'mes')    data = data.filter(a => a.vencimento && a.vencimento.startsWith(todayStr.slice(0,7)));
-
-  // sort by vencimento then valor desc
-  data.sort((a,b) => {
-    if (!a.vencimento && !b.vencimento) return 0;
-    if (!a.vencimento) return 1;
-    if (!b.vencimento) return -1;
-    return a.vencimento.localeCompare(b.vencimento) || b.valor - a.valor;
+function renderDayTable(){
+  let data=accounts.filter(a=>!a.pago);
+  if(dayFilter==='hoje')   data=data.filter(a=>a.vencimento===todayStr);
+  if(dayFilter==='semana') data=data.filter(a=>a.vencimento&&a.vencimento>=todayStr&&a.vencimento<=addDays(todayStr,7));
+  if(dayFilter==='mes')    data=data.filter(a=>a.vencimento&&a.vencimento.startsWith(todayStr.slice(0,7)));
+  data.sort((a,b)=>{
+    if(!a.vencimento&&!b.vencimento)return 0;
+    if(!a.vencimento)return 1;if(!b.vencimento)return-1;
+    return a.vencimento.localeCompare(b.vencimento)||b.valor-a.valor;
   });
-
-  document.getElementById('dayFilterLabel').textContent = `Mostrando: ${labels[dayFilter]}`;
-  const total = data.reduce((s,a)=>s+a.valor,0);
-
-  document.getElementById('dayTableBody').innerHTML = data.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta para este período</td></tr>`
-    : data.map(a => {
-        const st = getStatus(a);
-        const rowCls = st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':'';
-        return `<tr class="${rowCls}">
-          <td class="font-semibold">${escHtml(a.fornecedor)}</td>
-          <td style="color:var(--muted)">${escHtml(a.documento)||'—'}</td>
-          <td>${a.vencimento ? fmtDate(a.vencimento) : '—'}</td>
-          <td><span style="background:var(--bg);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
-          <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
-          <td>${badgeHtml(st)}</td>
-          <td>
-            <button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i> Pago</button>
-          </td>
-        </tr>`;
-      }).join('');
-
-  document.getElementById('dayTableInfo').textContent = `${data.length} conta(s)`;
-  document.getElementById('dayTableTotal').textContent = fmtMoney(total);
+  const lbl={hoje:'hoje',semana:'esta semana',mes:'este mês',todas:'todas em aberto'};
+  document.getElementById('dayFilterLabel').textContent=`Mostrando: ${lbl[dayFilter]}`;
+  const total=data.reduce((s,a)=>s+a.valor,0);
+  document.getElementById('dayBody').innerHTML=data.length===0
+    ?`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta para este período</td></tr>`
+    :data.map(a=>{
+      const st=getStatus(a);
+      const plano=getPlanoForAccount(a);
+      const planoHtml=plano?`<span style="background:var(--bg);padding:2px 8px;border-radius:10px;font-size:11px;color:var(--muted)">${escHtml(plano)}</span>`:`<span style="color:var(--muted);font-size:11px">—</span>`;
+      return`<tr class="${st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':''}">
+        <td class="font-semibold">${escHtml(a.fornecedor)}</td>
+        <td style="color:var(--muted);font-size:12px">${escHtml(a.documento)||'—'}</td>
+        <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${fmtDate(a.vencimento)}</td>
+        <td><span style="background:var(--bg);padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
+        <td>${planoHtml}</td>
+        <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+        <td>${badgeHtml(st)}</td>
+        <td><button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i></button></td>
+      </tr>`;
+    }).join('');
+  document.getElementById('dayInfo').textContent=`${data.length} conta(s)`;
+  document.getElementById('dayTotal').textContent=fmtMoney(total);
 }
 
-// ── ALL ACCOUNTS TABLE ──
-function renderContas() {
-  let data = [...accounts];
-  const forn   = document.getElementById('fFornecedor')?.value.toLowerCase() || '';
-  const status = document.getElementById('fStatus')?.value || '';
-  const aba    = document.getElementById('fAba')?.value || '';
-  const de     = document.getElementById('fDe')?.value || '';
-  const ate    = document.getElementById('fAte')?.value || '';
-
-  if (forn)   data = data.filter(a => a.fornecedor.toLowerCase().includes(forn));
-  if (aba)    data = data.filter(a => a.aba === aba);
-  if (de)     data = data.filter(a => a.vencimento && a.vencimento >= de);
-  if (ate)    data = data.filter(a => a.vencimento && a.vencimento <= ate);
-  if (status) data = data.filter(a => getStatus(a) === status);
-
-  // sort
-  data.sort((a,b) => {
-    let av = a[sortField], bv = b[sortField];
-    if (sortField === 'valor') return sortAsc ? av-bv : bv-av;
-    if (!av && !bv) return 0;
-    if (!av) return sortAsc ? 1 : -1;
-    if (!bv) return sortAsc ? -1 : 1;
-    return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+// ── ALL ACCOUNTS ──
+function renderContas(){
+  let data=[...accounts];
+  const forn=(document.getElementById('fForn')?.value||'').toLowerCase();
+  const status=document.getElementById('fStatus')?.value||'';
+  const aba=document.getElementById('fAba')?.value||'';
+  const de=document.getElementById('fDe')?.value||'';
+  const ate=document.getElementById('fAte')?.value||'';
+  if(forn) data=data.filter(a=>a.fornecedor.toLowerCase().includes(forn));
+  if(aba)  data=data.filter(a=>a.aba===aba);
+  if(de)   data=data.filter(a=>a.vencimento&&a.vencimento>=de);
+  if(ate)  data=data.filter(a=>a.vencimento&&a.vencimento<=ate);
+  if(status) data=data.filter(a=>getStatus(a)===status);
+  data.sort((a,b)=>{
+    let av=a[sortField],bv=b[sortField];
+    if(sortField==='valor') return sortAsc?av-bv:bv-av;
+    if(!av&&!bv)return 0;if(!av)return sortAsc?1:-1;if(!bv)return sortAsc?-1:1;
+    return sortAsc?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));
   });
-
-  const total = data.reduce((s,a)=>s+a.valor,0);
-
-  document.getElementById('contasTableBody').innerHTML = data.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta encontrada</td></tr>`
-    : data.map(a => {
-        const st = getStatus(a);
-        const rowCls = st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':'';
-        return `<tr class="${rowCls}">
-          <td class="font-semibold">${escHtml(a.fornecedor)}</td>
-          <td style="color:var(--muted);font-size:12px">${escHtml(a.documento)||'—'}</td>
-          <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${a.vencimento ? fmtDate(a.vencimento) : '—'}</td>
-          <td><span style="background:var(--bg);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
-          <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
-          <td>${badgeHtml(st)}</td>
-          <td class="flex gap-1">
-            ${a.pago
-              ? `<button class="btn btn-sm btn-outline" onclick="desmarcarPago('${a.id}')"><i class="fas fa-undo"></i></button>`
-              : `<button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i></button>`}
-            <button class="btn btn-sm btn-outline" onclick="openObs('${a.id}')"><i class="fas fa-comment"></i></button>
-          </td>
-        </tr>`;
-      }).join('');
-
-  document.getElementById('contasInfo').textContent = `${data.length} de ${accounts.length} conta(s)`;
-  document.getElementById('contasTotal').textContent = fmtMoney(total);
+  const total=data.reduce((s,a)=>s+a.valor,0);
+  document.getElementById('contasBody').innerHTML=data.length===0
+    ?`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta encontrada</td></tr>`
+    :data.map(a=>{
+      const st=getStatus(a);
+      const plano=getPlanoForAccount(a);
+      return`<tr class="${st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':''}">
+        <td class="font-semibold">${escHtml(a.fornecedor)}</td>
+        <td style="font-size:12px;color:var(--muted)">${escHtml(a.documento)||'—'}</td>
+        <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${fmtDate(a.vencimento)}</td>
+        <td><span style="background:var(--bg);padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
+        <td style="font-size:12px">${plano?escHtml(plano):'<span style="color:var(--muted)">—</span>'}</td>
+        <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+        <td>${badgeHtml(st)}</td>
+        <td class="flex gap-1">
+          ${a.pago
+            ?`<button class="btn btn-sm btn-outline" onclick="desmarcarPago('${a.id}')"><i class="fas fa-undo"></i></button>`
+            :`<button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i></button>`}
+          <button class="btn btn-sm btn-outline" onclick="openObs('${a.id}')"><i class="fas fa-comment"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  document.getElementById('contasInfo').textContent=`${data.length} de ${accounts.length} conta(s)`;
+  document.getElementById('contasTotal').textContent=fmtMoney(total);
 }
-
-function clearFilters() {
-  ['fFornecedor','fStatus','fAba','fDe','fAte'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  renderContas();
-}
-
-function sortBy(field) {
-  if (sortField === field) sortAsc = !sortAsc;
-  else { sortField = field; sortAsc = true; }
-  renderContas();
-}
+function clearFilters(){['fForn','fStatus','fAba','fDe','fAte'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderContas();}
+function sortBy(f){if(sortField===f)sortAsc=!sortAsc;else{sortField=f;sortAsc=true;}renderContas();}
 
 // ── MARK PAID ──
-function marcarPago(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (!acc) return;
-  acc.pago = true;
-  acc.data_pagamento = todayStr;
-  saveState();
-  renderAll();
+function marcarPago(id){
+  const a=accounts.find(a=>a.id===id);if(!a)return;
+  a.pago=true;a.data_pagamento=todayStr;saveState();renderAll();
 }
-function desmarcarPago(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (!acc) return;
-  acc.pago = false;
-  acc.data_pagamento = null;
-  saveState();
-  renderAll();
+function desmarcarPago(id){
+  const a=accounts.find(a=>a.id===id);if(!a)return;
+  a.pago=false;a.data_pagamento=null;saveState();renderAll();
 }
 
 // ── OBS MODAL ──
-function openObs(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (!acc) return;
-  document.getElementById('modalContainer').innerHTML = `
-    <div class="modal-backdrop">
-      <div class="modal p-6" style="max-width:420px">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-base">${escHtml(acc.fornecedor)}</h3>
-          <button onclick="closeModal()" style="color:var(--muted);background:none;border:none;cursor:pointer;font-size:18px">×</button>
+function openObs(id){
+  const a=accounts.find(a=>a.id===id);if(!a)return;
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal p-6">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold">${escHtml(a.fornecedor)}</h3>
+          <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
         </div>
-        <div class="mb-2 text-sm" style="color:var(--muted)">Vencimento: ${fmtDate(acc.vencimento)} | Valor: ${fmtMoney(acc.valor)}</div>
-        <textarea id="obsInput" class="form-input w-full mt-3" rows="4" placeholder="Observação...">${escHtml(acc.obs||'')}</textarea>
+        <p style="color:var(--muted);font-size:13px">${fmtDate(a.vencimento)} — ${fmtMoney(a.valor)}</p>
+        <textarea id="obsInput" class="form-input w-full mt-3" rows="4" placeholder="Observação...">${escHtml(a.obs||'')}</textarea>
         <div class="flex gap-2 mt-4">
           <button class="btn btn-outline flex-1" onclick="closeModal()">Cancelar</button>
           <button class="btn btn-primary flex-1" onclick="saveObs('${id}')">Salvar</button>
@@ -780,244 +809,360 @@ function openObs(id) {
       </div>
     </div>`;
 }
-function saveObs(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (acc) { acc.obs = document.getElementById('obsInput').value; saveState(); }
-  closeModal();
-  renderContas();
+function saveObs(id){
+  const a=accounts.find(a=>a.id===id);
+  if(a){a.obs=document.getElementById('obsInput').value;saveState();}
+  closeModal();renderContas();
 }
-function closeModal() { document.getElementById('modalContainer').innerHTML = ''; }
+function closeModal(){document.getElementById('modalContainer').innerHTML='';}
 
-// ── DRE ──
-function renderDRE() {
-  const receita    = parseFloat(document.getElementById('dreReceita')?.value) || 0;
-  const impRec     = parseFloat(document.getElementById('dreImpostosRec')?.value) || 0;
-  const outrasDes  = parseFloat(document.getElementById('dreOutrasDespesas')?.value) || 0;
-  const mesFiltro  = document.getElementById('dreMes')?.value || '';
+// ══════════════════════════════════════════════════════
+// DRE IMPACTO
+// ══════════════════════════════════════════════════════
+function renderDREImpact(){
+  if(!dreEntries.length) return;
+  const mesFiltro=document.getElementById('dreMesFiltro')?.value||'';
+  const receita=parseFloat(document.getElementById('dreReceita')?.value)||0;
 
-  let data = accounts.filter(a => !a.pago);
-  if (mesFiltro) data = data.filter(a => (a.vencimento||'').startsWith(mesFiltro));
+  // Filter DRE entries by month
+  const dreF=mesFiltro?dreEntries.filter(e=>e.mes===mesFiltro):dreEntries;
 
-  // group by aba
-  const byAba = {};
-  for (const a of data) {
-    byAba[a.aba] = (byAba[a.aba]||0) + a.valor;
+  // Group DRE by plano
+  const dreByPlano={};
+  for(const e of dreF){
+    if(!dreByPlano[e.plano]) dreByPlano[e.plano]={registrado:0,entries:[]};
+    dreByPlano[e.plano].registrado+=e.valor;
+    dreByPlano[e.plano].entries.push(e);
   }
-  const totalAP = data.reduce((s,a)=>s+a.valor,0);
 
-  const recLiq    = receita - impRec;
-  const lucro     = recLiq - totalAP - outrasDes;
+  // Group BOLETOS (open, not paid) by plano
+  const boletosByPlano={};
+  for(const a of accounts.filter(a=>!a.pago)){
+    if(mesFiltro&&a.vencimento&&!a.vencimento.startsWith(mesFiltro)) continue;
+    const plano=getPlanoForAccount(a)||'(Sem categoria)';
+    if(!boletosByPlano[plano]) boletosByPlano[plano]={total:0,contas:[]};
+    boletosByPlano[plano].total+=a.valor;
+    boletosByPlano[plano].contas.push(a);
+  }
 
-  const dreRow = (label, valor, color='', indent=false, bold=false, separator=false) => `
-    <div class="flex justify-between items-center py-2 ${separator?'border-t-2':'border-b'}" style="${separator?'border-color:var(--text)':'border-color:var(--border)'}">
-      <span style="${indent?'padding-left:16px':''}; ${bold?'font-weight:700':''}; color:${color||'var(--text)'}; font-size:13px">${label}</span>
-      <span style="font-weight:${bold?'700':'600'}; color:${color||'var(--text)'}; font-size:13px">${fmtMoney(valor)}</span>
-    </div>`;
+  // Merge all planos
+  const allPlanos=[...new Set([...Object.keys(dreByPlano),...Object.keys(boletosByPlano)])].sort();
 
-  document.getElementById('dreResult').innerHTML = `
-    ${receita > 0 ? `
-      ${dreRow('(+) Receita Bruta', receita, '', false, true)}
-      ${dreRow('(-) Impostos s/ Receita', impRec, '#ef4444', true)}
-      ${dreRow('(=) Receita Líquida', recLiq, '#1d4ed8', false, true)}
-    ` : '<div style="color:var(--muted);font-size:12px;margin-bottom:12px">💡 Preencha a Receita Bruta à esquerda para ver o DRE completo</div>'}
-    <div class="text-xs font-bold uppercase mb-1 mt-3" style="color:var(--muted)">Contas a Pagar em Aberto${mesFiltro?' ('+mesFiltro+')':''}</div>
-    ${Object.entries(byAba).map(([aba,val]) => dreRow(`(-) ${aba}`, val, '#ef4444', true)).join('')}
-    ${outrasDes > 0 ? dreRow('(-) Outras Despesas', outrasDes, '#ef4444', true) : ''}
-    ${dreRow('(=) Total Despesas AP', totalAP + outrasDes, '#991b1b', false, true)}
-    ${receita > 0 ? `
-      ${dreRow('(=) Resultado Projetado', lucro, lucro >= 0 ? '#10b981' : '#ef4444', false, true, true)}
-      <div class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold" style="background:${lucro>=0?'#d1fae5':'#fee2e2'};color:${lucro>=0?'#065f46':'#991b1b'}">
-        ${lucro >= 0 ? '✅ Resultado positivo' : '⚠️ Resultado negativo — despesas superam a receita'}
-        (${((lucro/receita)*100).toFixed(1)}% da receita bruta)
+  let totalReg=0,totalPend=0;
+  for(const e of dreF) totalReg+=e.valor;
+  for(const a of accounts.filter(a=>!a.pago)) totalPend+=a.valor;
+
+  document.getElementById('dreRegTotal').textContent=fmtMoney(totalReg);
+  document.getElementById('dreRegInfo').textContent=`${dreF.length} lançamentos`;
+  document.getElementById('drePendTotal').textContent=fmtMoney(totalPend);
+  document.getElementById('drePendInfo').textContent=`${accounts.filter(a=>!a.pago).length} contas`;
+  document.getElementById('dreProjetado').textContent=fmtMoney(totalReg+totalPend);
+  document.getElementById('dreProjetadoInfo').textContent=mesFiltro?`Filtro: ${mesFiltro}`:'Acumulado total';
+
+  // Table
+  const tbody=document.getElementById('dreTableBody');
+  tbody.innerHTML=allPlanos.map(plano=>{
+    const reg=dreByPlano[plano]?.registrado||0;
+    const pend=boletosByPlano[plano]?.total||0;
+    const proj=reg+pend;
+    const contas=boletosByPlano[plano]?.contas||[];
+    const hasOverdue=contas.some(a=>getStatus(a)==='atrasado');
+    const hasPend=contas.length>0;
+    const pct=reg>0?Math.min(100,Math.round((pend/reg)*100)):0;
+    const barColor=hasOverdue?'#ef4444':hasPend?'#f59e0b':'#10b981';
+    return`<tr class="${hasOverdue?'row-atrasado':hasPend?'row-hoje':''}">
+      <td class="font-semibold" style="font-size:13px">${escHtml(plano)}</td>
+      <td class="text-right">${reg>0?fmtMoney(reg):'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="text-right font-bold" style="color:${pend>0?(hasOverdue?'#ef4444':'#f59e0b'):'var(--muted)'}">${pend>0?fmtMoney(pend):'—'}</td>
+      <td class="text-right font-bold">${fmtMoney(proj)}</td>
+      <td>
+        ${pend>0?`<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,pct)}%;background:${barColor}"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${contas.length} conta(s)${hasOverdue?' ⚠️ atrasada':''}</div>`:'<span style="color:var(--muted);font-size:11px">sem pendentes</span>'}
+      </td>
+      <td>
+        ${hasPend?`<button class="btn btn-sm btn-outline" onclick="expandDREPlano('${escHtml(plano).replace(/'/g,'\\\'')}')" style="font-size:11px"><i class="fas fa-eye"></i></button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Resultado
+  if(receita>0){
+    document.getElementById('dreResultado').classList.remove('hidden');
+    const despTotal=totalReg+totalPend;
+    const resultado=receita-despTotal;
+    document.getElementById('dreResultadoContent').innerHTML=`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Receita Bruta</span><span class="font-bold">${fmtMoney(receita)}</span>
       </div>
-    ` : ''}
-  `;
+      <div style="display:flex;justify-content:space-between;padding:8px 0 8px 16px;border-bottom:1px solid var(--border)">
+        <span style="color:#ef4444">(-) Registrado no DRE</span><span class="font-bold" style="color:#ef4444">${fmtMoney(totalReg)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0 8px 16px;border-bottom:1px solid var(--border)">
+        <span style="color:#f59e0b">(-) Contas Abertas (boletos)</span><span class="font-bold" style="color:#f59e0b">${fmtMoney(totalPend)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--text)">
+        <span class="font-bold">(=) Resultado Projetado</span>
+        <span class="font-bold" style="color:${resultado>=0?'#10b981':'#ef4444'};font-size:16px">${fmtMoney(resultado)}</span>
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;background:${resultado>=0?'#d1fae5':'#fee2e2'};color:${resultado>=0?'#065f46':'#991b1b'}">
+        ${resultado>=0?'✅ Resultado positivo':'⚠️ Resultado negativo — despesas superam a receita'}
+        &nbsp;(${((resultado/receita)*100).toFixed(1)}% da receita)
+      </div>`;
+  } else {
+    document.getElementById('dreResultado').classList.add('hidden');
+  }
 
   // Charts
-  renderDRECharts(data);
+  const top=allPlanos.filter(p=>dreByPlano[p]||boletosByPlano[p])
+    .sort((a,b)=>((dreByPlano[b]?.registrado||0)+(boletosByPlano[b]?.total||0))-((dreByPlano[a]?.registrado||0)+(boletosByPlano[a]?.total||0)))
+    .slice(0,12);
+
+  renderGroupedBar('chartDRE',
+    top,
+    top.map(p=>dreByPlano[p]?.registrado||0),
+    top.map(p=>boletosByPlano[p]?.total||0));
+
+  const pendPlanos=allPlanos.filter(p=>boletosByPlano[p]?.total>0);
+  renderDoughnut('chartDREPie',
+    pendPlanos,
+    pendPlanos.map(p=>boletosByPlano[p].total),
+    pendPlanos.map((_,i)=>`hsl(${(i*37)%360},65%,55%)`));
 }
 
-function renderDRECharts(data) {
-  // Top 10 fornecedores
-  const byForn = {};
-  for (const a of data) byForn[a.fornecedor] = (byForn[a.fornecedor]||0)+a.valor;
-  const sorted = Object.entries(byForn).sort((a,b)=>b[1]-a[1]).slice(0,10);
-
-  renderBarChart('chartFornecedor', sorted.map(([k])=>k), sorted.map(([,v])=>v),
-    'Valor (R$)', '#2563eb');
-
-  // By aba
-  const byAba = {};
-  for (const a of data) byAba[a.aba] = (byAba[a.aba]||0)+a.valor;
-  const abaColors = { PENDENTES:'#2563eb', IMPOSTOS:'#f59e0b', FGTS:'#7c3aed', PIX:'#10b981' };
-
-  renderDoughnut('chartAba',
-    Object.keys(byAba),
-    Object.values(byAba),
-    Object.keys(byAba).map(k => abaColors[k]||'#94a3b8'));
+function expandDREPlano(plano){
+  const contas=accounts.filter(a=>!a.pago&&(getPlanoForAccount(a)||'(Sem categoria)')===plano);
+  const dreRows=dreEntries.filter(e=>e.plano===plano);
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal p-5" style="max-width:700px">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold">${escHtml(plano)}</h3>
+          <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+        </div>
+        ${contas.length?`
+        <h4 class="font-semibold text-sm mb-2" style="color:#f59e0b"><i class="fas fa-clock mr-1"></i>Contas em Aberto (Boletos) — ${fmtMoney(contas.reduce((s,a)=>s+a.valor,0))}</h4>
+        <table class="tbl mb-4"><thead><tr><th>Fornecedor</th><th>Documento</th><th>Vencimento</th><th class="text-right">Valor</th><th>Status</th></tr></thead>
+        <tbody>${contas.map(a=>`<tr class="${getStatus(a)==='atrasado'?'row-atrasado':getStatus(a)==='hoje'?'row-hoje':''}">
+          <td class="font-semibold">${escHtml(a.fornecedor)}</td>
+          <td style="font-size:12px;color:var(--muted)">${escHtml(a.documento)||'—'}</td>
+          <td>${fmtDate(a.vencimento)}</td>
+          <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+          <td>${badgeHtml(getStatus(a))}</td>
+        </tr>`).join('')}</tbody></table>`:''}
+        ${dreRows.length?`
+        <h4 class="font-semibold text-sm mb-2" style="color:#2563eb"><i class="fas fa-check mr-1"></i>Lançamentos no DRE — ${fmtMoney(dreRows.reduce((s,e)=>s+e.valor,0))}</h4>
+        <div style="max-height:240px;overflow-y:auto">
+        <table class="tbl"><thead><tr><th>Data</th><th>Histórico</th><th class="text-right">Valor</th></tr></thead>
+        <tbody>${dreRows.slice(0,50).map(e=>`<tr>
+          <td style="font-size:12px;color:var(--muted)">${fmtDate(e.data)}</td>
+          <td style="font-size:12px">${escHtml(e.historico)}</td>
+          <td class="text-right font-semibold">${fmtMoney(e.valor)}</td>
+        </tr>`).join('')}</tbody></table></div>`:''}
+        <button class="btn btn-outline w-full mt-4" onclick="closeModal()">Fechar</button>
+      </div>
+    </div>`;
 }
 
-// ── TENDÊNCIAS CHARTS ──
-function renderCharts() {
-  // Next 30 days
-  const days = Array.from({length:30},(_,i)=>addDays(todayStr,i));
-  const dayTotals = days.map(d => accounts.filter(a=>!a.pago&&a.vencimento===d).reduce((s,a)=>s+a.valor,0));
-  renderBarChart('chartDias',
-    days.map(d => {
-      const [y,m,dy] = d.split('-');
-      return `${dy}/${m}`;
-    }),
-    dayTotals, 'Vencimento (R$)', '#ef4444', days.map((d,i)=>d===todayStr?'#f59e0b':dayTotals[i]>0?'#ef4444':'#e2e8f0'));
-
-  // Monthly
-  const months = {};
-  for (const a of accounts) {
-    if (!a.vencimento) continue;
-    const m = a.vencimento.slice(0,7);
-    months[m] = (months[m]||0) + a.valor;
+// ══════════════════════════════════════════════════════
+// CORRELAÇÃO TABLE
+// ══════════════════════════════════════════════════════
+function renderCorrelacao(){
+  if(!dreEntries.length){
+    document.getElementById('dreNotLoadedCorr')?.classList.remove('hidden');
+    document.getElementById('corrTable')?.classList.add('hidden');
+    return;
   }
-  const mKeys = Object.keys(months).sort();
-  renderBarChart('chartMes',
-    mKeys.map(m => { const [y,mo] = m.split('-'); const names=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return names[parseInt(mo)-1]+'/'+y.slice(2); }),
-    mKeys.map(k=>months[k]),
-    'Total (R$)', '#2563eb');
-
-  // Status doughnut
-  const countByStatus = {atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
-  const valByStatus   = {atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
-  for (const a of accounts) {
-    const st = getStatus(a);
-    countByStatus[st] = (countByStatus[st]||0)+1;
-    valByStatus[st]   = (valByStatus[st]||0)+a.valor;
+  document.getElementById('corrTable')?.classList.remove('hidden');
+  // Group accounts by fornecedor
+  const byForn={};
+  for(const a of accounts.filter(a=>!a.pago)){
+    if(!byForn[a.fornecedor]) byForn[a.fornecedor]={total:0,abas:new Set(),count:0};
+    byForn[a.fornecedor].total+=a.valor;
+    byForn[a.fornecedor].abas.add(a.aba);
+    byForn[a.fornecedor].count++;
   }
-  const statusLabels = {atrasado:'Atrasado',hoje:'Vence Hoje',semana:'Esta Semana',aberto:'Em Aberto',pago:'Pago'};
-  const statusColors = {atrasado:'#ef4444',hoje:'#f59e0b',semana:'#7c3aed',aberto:'#2563eb',pago:'#10b981'};
-  const sKeys = ['atrasado','hoje','semana','aberto','pago'].filter(k=>countByStatus[k]>0);
+  const sorted=Object.entries(byForn).sort((a,b)=>b[1].total-a[1].total);
+  // Get all unique planos for dropdown
+  const planos=[...new Set(dreEntries.map(e=>e.plano))].sort();
 
-  renderDoughnut('chartStatus', sKeys.map(k=>statusLabels[k]), sKeys.map(k=>countByStatus[k]),
-    sKeys.map(k=>statusColors[k]));
+  document.getElementById('corrBody').innerHTML=sorted.map(([forn,info])=>{
+    const fNorm=normalizeStr(forn);
+    const map=dreMapping[fNorm];
+    const plano=map?.plano||'';
+    const conf=map?.conf||0;
+    const isManual=map?.manual||false;
+    const confHtml=!plano?'<span style="color:var(--muted);font-size:11px">—</span>'
+      :isManual?'<span style="color:#7c3aed;font-size:11px;font-weight:700"><i class="fas fa-user mr-1"></i>Manual</span>'
+      :conf>0.6?'<span class="conf-high font-bold text-xs"><i class="fas fa-check-circle mr-1"></i>Alta</span>'
+      :conf>0.2?'<span class="conf-med font-bold text-xs"><i class="fas fa-exclamation-circle mr-1"></i>Média</span>'
+      :'<span class="conf-low font-bold text-xs"><i class="fas fa-question-circle mr-1"></i>Baixa</span>';
+    return`<tr>
+      <td class="font-semibold">${escHtml(forn)}</td>
+      <td>${[...info.abas].map(a=>`<span style="background:var(--bg);padding:2px 7px;border-radius:8px;font-size:11px;color:var(--muted)">${escHtml(a)}</span>`).join(' ')}</td>
+      <td class="text-right font-bold">${fmtMoney(info.total)}<div style="font-size:11px;color:var(--muted)">${info.count} conta(s)</div></td>
+      <td>
+        <select class="form-input" style="font-size:12px" onchange="setManualPlano('${fNorm.replace(/'/g,'\\\'').replace(/"/g,'&quot;')}',this.value)">
+          <option value="">— Sem categoria —</option>
+          ${planos.map(p=>`<option value="${escHtml(p)}" ${plano===p?'selected':''}>${escHtml(p)}</option>`).join('')}
+        </select>
+      </td>
+      <td>${confHtml}</td>
+      <td>
+        ${plano?`<button class="btn btn-sm btn-outline" onclick="expandDREPlano('${escHtml(plano).replace(/'/g,'\\\'')}')" title="Ver lançamentos DRE"><i class="fas fa-eye"></i></button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
 
-  document.getElementById('statusLegend').innerHTML = sKeys.map(k=>`
-    <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border)">
-      <div class="flex items-center gap-2">
-        <div style="width:12px;height:12px;border-radius:50%;background:${statusColors[k]};flex-shrink:0"></div>
-        <span style="color:var(--text);font-size:13px">${statusLabels[k]}</span>
+function setManualPlano(fNorm,plano){
+  dreMapping[fNorm]={plano,conf:1,manual:true};
+  if(!plano) delete dreMapping[fNorm];
+  saveState();
+  renderDREImpact();
+  renderDayTable();
+  if(!document.getElementById('panel_contas').classList.contains('hidden')) renderContas();
+}
+
+function resetMapping(){
+  // Clear non-manual mappings and rebuild
+  for(const k of Object.keys(dreMapping)){if(!dreMapping[k].manual) delete dreMapping[k];}
+  buildMapping(); renderCorrelacao(); renderDREImpact();
+}
+
+function exportCorrelacao(){
+  const byForn={};
+  for(const a of accounts.filter(a=>!a.pago)){
+    if(!byForn[a.fornecedor]){byForn[a.fornecedor]={total:0,count:0};}
+    byForn[a.fornecedor].total+=a.valor;byForn[a.fornecedor].count++;
+  }
+  const headers=['Fornecedor','Total Aberto','Qtd Contas','Plano de Contas','Confiança','Manual'];
+  const rows=Object.entries(byForn).map(([f,i])=>{
+    const fNorm=normalizeStr(f);const m=dreMapping[fNorm];
+    return[f,i.total.toFixed(2).replace('.',','),i.count,m?.plano||'',
+      m?.manual?'Manual':m?.conf>0.6?'Alta':m?.conf>0.2?'Média':'Baixa',
+      m?.manual?'Sim':'Não'];
+  });
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=Object.assign(document.createElement('a'),{href:url,download:`correlacao_${todayStr}.csv`});
+  a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════
+// TENDÊNCIAS CHARTS
+// ══════════════════════════════════════════════════════
+function renderTendencias(){
+  const days=Array.from({length:30},(_,i)=>addDays(todayStr,i));
+  const dayTotals=days.map(d=>accounts.filter(a=>!a.pago&&a.vencimento===d).reduce((s,a)=>s+a.valor,0));
+  const barColors=days.map((d,i)=>d===todayStr?'#f59e0b':dayTotals[i]>0?'#ef4444':'rgba(226,232,240,.5)');
+  renderBarChart('chartDias',days.map(d=>{const[,m,dy]=d.split('-');return`${dy}/${m}`;}),dayTotals,'Valor (R$)','#ef4444',barColors);
+
+  const months={};
+  for(const a of accounts){if(!a.vencimento)continue;const m=a.vencimento.slice(0,7);months[m]=(months[m]||0)+a.valor;}
+  const mKeys=Object.keys(months).sort();
+  const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  renderBarChart('chartMes',mKeys.map(m=>{const[y,mo]=m.split('-');return MN[parseInt(mo)-1]+'/'+y.slice(2);}),mKeys.map(k=>months[k]),'Total','#2563eb');
+
+  const cntS={atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
+  const valS={atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
+  for(const a of accounts){const st=getStatus(a);cntS[st]=(cntS[st]||0)+1;valS[st]=(valS[st]||0)+a.valor;}
+  const sLbl={atrasado:'Atrasado',hoje:'Vence Hoje',semana:'Esta Semana',aberto:'Em Aberto',pago:'Pago'};
+  const sClr={atrasado:'#ef4444',hoje:'#f59e0b',semana:'#7c3aed',aberto:'#2563eb',pago:'#10b981'};
+  const sKeys=['atrasado','hoje','semana','aberto','pago'].filter(k=>cntS[k]>0);
+  renderDoughnut('chartStatus',sKeys.map(k=>sLbl[k]),sKeys.map(k=>cntS[k]),sKeys.map(k=>sClr[k]));
+  document.getElementById('statusLegend').innerHTML=sKeys.map(k=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${sClr[k]}"></div>
+        <span style="font-size:13px">${sLbl[k]}</span>
       </div>
       <div style="text-align:right">
-        <div style="font-weight:700;font-size:13px;color:var(--text)">${fmtMoney(valByStatus[k])}</div>
-        <div style="font-size:11px;color:var(--muted)">${countByStatus[k]} conta(s)</div>
+        <div style="font-weight:700;font-size:13px">${fmtMoney(valS[k])}</div>
+        <div style="font-size:11px;color:var(--muted)">${cntS[k]} conta(s)</div>
       </div>
     </div>`).join('');
 }
 
 // ── CHART HELPERS ──
-function renderBarChart(id, labels, data, label, defaultColor, colors) {
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  if (charts[id]) { charts[id].destroy(); }
-  const isDark = document.documentElement.classList.contains('dark');
-  charts[id] = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label,
-        data,
-        backgroundColor: colors || defaultColor,
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ' R$ ' + parseFloat(ctx.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: isDark?'#94a3b8':'#64748b', font:{size:11} }, grid:{display:false} },
-        y: {
-          ticks: {
-            color: isDark?'#94a3b8':'#64748b', font:{size:11},
-            callback: v => 'R$' + (v>=1000?(v/1000).toFixed(0)+'k':v)
-          },
-          grid:{ color: isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)' }
-        }
-      }
-    }
-  });
+function renderBarChart(id,labels,data,label,color,colors){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  const dk=document.documentElement.classList.contains('dark');
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label,data,
+    backgroundColor:colors||color,borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' R$'+parseFloat(c.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}}},
+      scales:{x:{ticks:{color:dk?'#94a3b8':'#64748b',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:dk?'#94a3b8':'#64748b',font:{size:10},callback:v=>'R$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},
+          grid:{color:dk?'rgba(255,255,255,.05)':'rgba(0,0,0,.04)'}}}}});
 }
-
-function renderDoughnut(id, labels, data, colors) {
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  if (charts[id]) { charts[id].destroy(); }
-  const isDark = document.documentElement.classList.contains('dark');
-  charts[id] = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2,
-      borderColor: isDark?'#1e293b':'#fff' }] },
-    options: {
-      responsive: true,
-      cutout: '62%',
-      plugins: {
-        legend: { position:'bottom', labels:{ color: isDark?'#94a3b8':'#64748b', padding:12, font:{size:12} } },
-        tooltip: { callbacks: { label: ctx => ' R$ ' + parseFloat(ctx.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2}) } }
-      }
-    }
-  });
+function renderGroupedBar(id,labels,data1,data2){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  const dk=document.documentElement.classList.contains('dark');
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {label:'Registrado DRE',data:data1,backgroundColor:'#2563eb',borderRadius:4,borderSkipped:false},
+    {label:'Contas Abertas',data:data2,backgroundColor:'#f59e0b',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{labels:{color:dk?'#94a3b8':'#64748b',font:{size:11}}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: R$${parseFloat(c.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}`}}},
+      scales:{x:{ticks:{color:dk?'#94a3b8':'#64748b',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:dk?'#94a3b8':'#64748b',font:{size:10},callback:v=>'R$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},
+          grid:{color:dk?'rgba(255,255,255,.05)':'rgba(0,0,0,.04)'}}}}});
+}
+function renderDoughnut(id,labels,data,colors){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  const dk=document.documentElement.classList.contains('dark');
+  charts[id]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:dk?'#1e293b':'#fff'}]},
+    options:{responsive:true,cutout:'60%',
+      plugins:{legend:{position:'bottom',labels:{color:dk?'#94a3b8':'#64748b',padding:10,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>' R$'+parseFloat(c.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}}}}});
 }
 
 // ── TABS ──
-function switchTab(tab) {
-  ['pagamentos','contas','dre','tendencias'].forEach(t => {
-    document.getElementById('panel_'+t)?.classList.toggle('hidden', t!==tab);
-    const btn = document.getElementById('tab_'+t);
-    if (btn) btn.classList.toggle('active', t===tab);
+function switchTab(tab){
+  ['pagamentos','contas','dre','correlacao','tendencias'].forEach(t=>{
+    document.getElementById('panel_'+t)?.classList.toggle('hidden',t!==tab);
+    const b=document.getElementById('tab_'+t);if(b)b.classList.toggle('active',t===tab);
   });
-  if (tab==='dre') { renderDRE(); }
-  if (tab==='tendencias') { renderCharts(); }
+  if(tab==='contas')      renderContas();
+  if(tab==='dre')         renderDREImpact();
+  if(tab==='correlacao')  renderCorrelacao();
+  if(tab==='tendencias')  renderTendencias();
 }
 
 // ── EXPORT CSV ──
-function exportCSV() {
-  const headers = ['Fornecedor','Documento','Vencimento','Aba','Valor','Status','Pago','Data Pagamento','Obs'];
-  const rows = accounts.map(a => [
-    a.fornecedor, a.documento||'', a.vencimento?fmtDate(a.vencimento):'',
-    a.aba, a.valor.toFixed(2).replace('.',','),
-    getStatus(a), a.pago?'Sim':'Não',
-    a.data_pagamento?fmtDate(a.data_pagamento):'',
-    a.obs||''
-  ]);
-  const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
-  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url  = URL.createObjectURL(blob);
-  const a    = Object.assign(document.createElement('a'),{href:url,download:`contas_pagar_${todayStr}.csv`});
-  a.click(); URL.revokeObjectURL(url);
+function exportCSV(){
+  const h=['Fornecedor','Documento','Vencimento','Aba','Plano de Contas','Valor','Status','Pago','Data Pag','Obs'];
+  const rows=accounts.map(a=>[a.fornecedor,a.documento||'',a.vencimento?fmtDate(a.vencimento):'',
+    a.aba,getPlanoForAccount(a)||'',a.valor.toFixed(2).replace('.',','),
+    getStatus(a),a.pago?'Sim':'Não',a.data_pagamento?fmtDate(a.data_pagamento):'',a.obs||'']);
+  const csv=[h,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=Object.assign(document.createElement('a'),{href:url,download:`contas_${todayStr}.csv`});
+  a.click();URL.revokeObjectURL(url);
 }
 
 // ── DARK MODE ──
-function toggleDark() {
-  const d = document.documentElement.classList.toggle('dark');
-  localStorage.setItem('fin_theme', d?'dark':'light');
-  document.getElementById('themeBtn').innerHTML = d?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
-  // re-render charts with new theme
-  if (accounts.length > 0) { renderCharts(); renderDRE(); }
+function toggleDark(){
+  const d=document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fin_theme',d?'dark':'light');
+  document.getElementById('themeBtn').innerHTML=d?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+  if(accounts.length){renderTendencias();if(dreEntries.length)renderDREImpact();}
 }
 
 // ── INIT ──
-(function() {
-  if (localStorage.getItem('fin_theme')==='dark') {
+(function(){
+  if(localStorage.getItem('fin_theme')==='dark'){
     document.documentElement.classList.add('dark');
-    document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+    document.getElementById('themeBtn').innerHTML='<i class="fas fa-sun"></i>';
   }
-  if (loadState() && accounts.length > 0) {
-    document.getElementById('fileInfo').textContent = `${accounts.length} contas (cache)`;
+  if(loadState()&&accounts.length){
+    document.getElementById('boletosDot').style.background='#10b981';
+    document.getElementById('boletosInfo').textContent=`${accounts.length} contas (cache)`;
     showDashboard();
     setDayFilter('hoje');
   }
