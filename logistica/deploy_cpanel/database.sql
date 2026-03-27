@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    reset_code VARCHAR(10) NULL,
+    reset_code_expires DATETIME NULL,
     role ENUM('admin', 'driver', 'emergency', 'sector', 'financial', 'approval') NOT NULL DEFAULT 'driver',
     location_id VARCHAR(36) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -19,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS locations (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    type ENUM('emergency_unit', 'internal_sector', 'delivery_point') NOT NULL,
+    type ENUM('emergency_unit', 'internal_sector', 'pickup_point') NOT NULL,
     address VARCHAR(500) NULL,
     contact VARCHAR(255) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,

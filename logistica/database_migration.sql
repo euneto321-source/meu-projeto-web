@@ -27,3 +27,11 @@ ALTER TABLE expenses
 
 -- Verificar estrutura final
 -- DESCRIBE expenses;
+
+-- =============================================
+-- MIGRAÇÃO: Campos de reset de senha para users
+-- Execute este SQL no phpMyAdmin
+-- =============================================
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS reset_code         VARCHAR(10)  NULL AFTER password_hash,
+  ADD COLUMN IF NOT EXISTS reset_code_expires DATETIME     NULL AFTER reset_code;

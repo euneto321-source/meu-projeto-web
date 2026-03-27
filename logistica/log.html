@@ -217,90 +217,120 @@ html.dark .btn-outline:hover { background: #1e293b; }
 <!-- ================================================
      LOGIN PAGE
 ================================================ -->
-<div id="loginPage" class="hidden min-h-screen flex" style="background:#040d18">
+<div id="loginPage" class="hidden min-h-screen flex items-center justify-center" style="background:linear-gradient(135deg,#071627 0%,#0f2d4a 50%,#071627 100%);position:relative;overflow:hidden">
 
-  <!-- Left brand panel (hidden on mobile) -->
-  <div class="hidden md:flex flex-col items-center justify-center flex-1 p-12 relative overflow-hidden">
-    <!-- bg glow blobs -->
-    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.18) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none"></div>
-    <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none"></div>
+  <!-- Background blobs -->
+  <div style="position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.1) 0%,transparent 65%);top:-200px;left:-200px;pointer-events:none"></div>
+  <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 65%);bottom:-150px;right:-150px;pointer-events:none"></div>
+  <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><circle cx=%2220%22 cy=%2220%22 r=%221%22 fill=%22rgba(255,255,255,.03)%22/></svg>');pointer-events:none"></div>
 
-    <div class="relative z-10 text-center max-w-md">
-      <!-- Logo principal -->
-      <div style="margin-bottom:32px">
-        <img src="Logo-Menu.webp" alt="Medclin"
-             style="height:120px;margin:0 auto;object-fit:contain;filter:drop-shadow(0 0 24px rgba(14,165,233,.4)) drop-shadow(0 4px 12px rgba(0,0,0,.5))"
-             onerror="this.style.display='none';document.getElementById('lgFallback').style.display='flex'">
-        <div id="lgFallback" style="display:none;width:100px;height:100px;border-radius:28px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);align-items:center;justify-content:center;margin:0 auto;box-shadow:0 8px 32px rgba(14,165,233,.4)">
-          <i class="fas fa-truck-medical" style="color:#fff;font-size:40px"></i>
+  <!-- Login card -->
+  <div id="loginPanel" style="position:relative;z-index:1;width:100%;max-width:420px;margin:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:44px 40px;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,.6)">
+
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="position:relative;display:inline-block;margin-bottom:18px">
+        <!-- Fallback sempre visível, logo sobrepõe se carregar -->
+        <div id="lgIconFallback" style="width:88px;height:88px;border-radius:24px;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 8px 32px rgba(14,165,233,.45)">
+          <i class="fas fa-truck-medical" style="color:#fff;font-size:36px"></i>
         </div>
+        <img src="Logo-Menu.webp" alt="Medclin" id="loginLogo"
+             style="position:absolute;inset:0;width:88px;height:88px;object-fit:contain;border-radius:24px;display:none;filter:drop-shadow(0 0 16px rgba(14,165,233,.5))"
+             onload="this.style.display='block';document.getElementById('lgIconFallback').style.display='none'"
+             onerror="this.style.display='none'">
       </div>
-      <h1 style="color:#fff;font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px">NTO Logística Laboratorial</h1>
-      <p style="color:#38bdf8;font-weight:700;font-size:16px;margin-bottom:4px">Laboratórios Medclin</p>
-      <p style="color:#334155;font-size:13px;margin-top:12px;line-height:1.6">Gestão inteligente de chamados,<br>envios e controle financeiro.</p>
-
-      <div style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
-          <i class="fas fa-bell" style="color:#fbbf24;font-size:22px;display:block;margin-bottom:8px"></i>
-          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Chamados</p>
-        </div>
-        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
-          <i class="fas fa-box" style="color:#38bdf8;font-size:22px;display:block;margin-bottom:8px"></i>
-          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Logística</p>
-        </div>
-        <div style="border-radius:16px;padding:16px 12px;text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(4px)">
-          <i class="fas fa-dollar-sign" style="color:#34d399;font-size:22px;display:block;margin-bottom:8px"></i>
-          <p style="color:#f1f5f9;font-size:12px;font-weight:700">Financeiro</p>
-        </div>
-      </div>
+      <h1 style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-.4px;margin:0 0 5px">NTO Logística Laboratorial</h1>
+      <p style="color:#38bdf8;font-size:13px;font-weight:600;margin:0;letter-spacing:.3px">Laboratórios Medclin</p>
     </div>
+
+    <!-- Error -->
+    <div id="loginError" class="hidden" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:12px;padding:11px 14px;font-size:13px;font-weight:500;margin-bottom:16px"></div>
+
+    <!-- Form -->
+    <div style="margin-bottom:14px">
+      <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">E-mail</label>
+      <input type="email" id="loginEmail" placeholder="seu@email.com"
+             style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-size:14px;outline:none;transition:border .2s;box-sizing:border-box"
+             onfocus="this.style.borderColor='rgba(14,165,233,.6)'" onblur="this.style.borderColor='rgba(255,255,255,.12)'">
+    </div>
+    <div style="margin-bottom:8px">
+      <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Senha</label>
+      <input type="password" id="loginPassword" placeholder="••••••••"
+             style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-size:14px;outline:none;transition:border .2s;box-sizing:border-box"
+             onfocus="this.style.borderColor='rgba(14,165,233,.6)'" onblur="this.style.borderColor='rgba(255,255,255,.12)'"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+
+    <div style="text-align:right;margin-bottom:22px">
+      <button onclick="showForgotPanel()" style="background:none;border:none;color:#38bdf8;font-size:12px;font-weight:600;cursor:pointer;padding:4px 0">
+        Esqueceu a senha?
+      </button>
+    </div>
+
+    <button onclick="doLogin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(14,165,233,.4);transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px"
+            onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+      <i class="fas fa-sign-in-alt"></i> Entrar
+    </button>
+
+    <button onclick="openTV()" style="width:100%;margin-top:12px;padding:12px;background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3);border-radius:14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px"
+            onmouseover="this.style.background='rgba(124,58,237,.25)'" onmouseout="this.style.background='rgba(124,58,237,.15)'">
+      <i class="fas fa-tv"></i> Abrir Painel de TV
+    </button>
+
+    <p style="text-align:center;color:#334155;font-size:11px;margin-top:28px;margin-bottom:0">Desenvolvido por <span style="color:#475569;font-weight:700">CRSystems</span></p>
   </div>
 
-  <!-- Right login form -->
-  <div class="flex flex-col items-center justify-center w-full md:w-auto md:min-w-96 p-6 md:p-12" style="background:rgba(255,255,255,.025);border-left:1px solid rgba(255,255,255,.06)">
-
-    <!-- Mobile logo -->
-    <div class="md:hidden text-center mb-8">
-      <img src="Logo-Menu.webp" alt="Medclin"
-           style="height:72px;margin:0 auto 12px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(14,165,233,.35))"
-           onerror="this.style.display='none';document.getElementById('lgMobileFallback').style.display='flex'">
-      <div id="lgMobileFallback" style="display:none;width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);align-items:center;justify-content:center;margin:0 auto 12px">
-        <i class="fas fa-truck-medical" style="color:#fff;font-size:26px"></i>
+  <!-- Forgot Password card -->
+  <div id="forgotPanel" style="display:none;position:relative;z-index:1;width:100%;max-width:420px;margin:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:40px;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,.6)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:60px;height:60px;border-radius:18px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <i class="fas fa-key" style="color:#fbbf24;font-size:24px"></i>
       </div>
-      <h1 class="text-white text-xl font-black">NTO Logística Laboratorial</h1>
-      <p class="text-sky-400 text-sm mt-1">Laboratórios Medclin</p>
+      <h2 style="color:#fff;font-size:20px;font-weight:800;margin:0 0 6px">Recuperar Senha</h2>
+      <p style="color:#64748b;font-size:13px;margin:0">Digite seu e-mail para gerar um código de recuperação</p>
     </div>
 
-    <div class="w-full max-w-sm">
-      <div class="mb-6">
-        <h2 class="text-white text-2xl font-bold">Bem-vindo</h2>
-        <p class="text-slate-400 text-sm mt-1">Acesse sua conta para continuar</p>
+    <div id="forgotMsg" style="display:none;border-radius:12px;padding:11px 14px;font-size:13px;font-weight:500;margin-bottom:16px"></div>
+
+    <!-- Step 1: solicitar código -->
+    <div id="forgotStep1">
+      <div style="margin-bottom:14px">
+        <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">E-mail</label>
+        <input type="email" id="forgotEmail" placeholder="seu@email.com"
+               style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-size:14px;outline:none;box-sizing:border-box"
+               onfocus="this.style.borderColor='rgba(14,165,233,.6)'" onblur="this.style.borderColor='rgba(255,255,255,.12)'">
       </div>
-
-      <div id="loginError" class="hidden rounded-xl px-4 py-3 mb-4 text-sm font-medium" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#fca5a5"></div>
-
-      <div class="form-group">
-        <label class="form-label" style="color:#94a3b8">E-mail</label>
-        <input type="email" id="loginEmail" class="form-input" placeholder="seu@email.com"
-               style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#f1f5f9;padding:12px 14px">
-      </div>
-      <div class="form-group">
-        <label class="form-label" style="color:#94a3b8">Senha</label>
-        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••"
-               style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#f1f5f9;padding:12px 14px"
-               onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-
-      <button class="btn w-full mt-2" style="justify-content:center;padding:13px;font-size:15px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);color:#fff;border-radius:12px;font-weight:700;box-shadow:0 4px 16px rgba(14,165,233,.3)" onclick="doLogin()">
-        <i class="fas fa-sign-in-alt"></i> Entrar
-      </button>
-
-      <button class="btn btn-tv w-full mt-3" style="justify-content:center;padding:12px;font-size:14px;border-radius:12px" onclick="openTV()">
-        <i class="fas fa-tv"></i> Abrir Painel de TV
+      <button onclick="doRequestReset()" style="width:100%;padding:13px;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="fas fa-paper-plane"></i> Gerar Código
       </button>
     </div>
 
-    <p class="text-slate-600 text-xs mt-10">Desenvolvido por <span class="text-slate-400 font-semibold">CRSystems</span></p>
+    <!-- Step 2: usar código -->
+    <div id="forgotStep2" style="display:none">
+      <p style="color:#94a3b8;font-size:13px;margin-bottom:16px">Informe o código de 6 dígitos fornecido pelo administrador e defina sua nova senha.</p>
+      <div style="margin-bottom:14px">
+        <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Código de Recuperação</label>
+        <input type="text" id="resetCode" placeholder="000000" maxlength="6"
+               style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fcd34d;font-size:24px;font-weight:900;letter-spacing:8px;outline:none;text-align:center;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Nova Senha</label>
+        <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres"
+               style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-size:14px;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Confirmar Senha</label>
+        <input type="password" id="newPasswordConfirm" placeholder="Repita a senha"
+               style="width:100%;padding:13px 15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-size:14px;outline:none;box-sizing:border-box">
+      </div>
+      <button onclick="doResetPassword()" style="width:100%;padding:13px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="fas fa-lock"></i> Redefinir Senha
+      </button>
+    </div>
+
+    <button onclick="showLoginPanel()" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:18px;padding:10px;background:none;border:none;color:#64748b;font-size:13px;font-weight:600;cursor:pointer">
+      <i class="fas fa-arrow-left" style="font-size:11px"></i> Voltar ao login
+    </button>
   </div>
 </div>
 
@@ -572,6 +602,67 @@ function showLoginError(msg) {
   const el = document.getElementById('loginError');
   el.textContent = msg; el.classList.remove('hidden');
 }
+
+// ── RECUPERAÇÃO DE SENHA ──────────────────────────
+function showForgotPanel() {
+  document.getElementById('loginPanel').style.display  = 'none';
+  document.getElementById('forgotPanel').style.display = 'block';
+  document.getElementById('forgotStep1').style.display = 'block';
+  document.getElementById('forgotStep2').style.display = 'none';
+  const msg = document.getElementById('forgotMsg');
+  msg.style.display = 'none'; msg.textContent = '';
+  const fe = document.getElementById('forgotEmail');
+  if (fe) fe.value = '';
+}
+function showLoginPanel() {
+  document.getElementById('forgotPanel').style.display = 'none';
+  document.getElementById('loginPanel').style.display  = 'block';
+}
+function showForgotMsg(text, isError) {
+  const el = document.getElementById('forgotMsg');
+  el.textContent = text;
+  el.style.display = 'block';
+  el.style.background  = isError ? 'rgba(239,68,68,.15)'   : 'rgba(16,185,129,.15)';
+  el.style.border      = isError ? '1px solid rgba(239,68,68,.3)' : '1px solid rgba(16,185,129,.3)';
+  el.style.color       = isError ? '#fca5a5' : '#6ee7b7';
+}
+async function doRequestReset() {
+  const email = (document.getElementById('forgotEmail').value || '').trim();
+  if (!email) { showForgotMsg('Informe seu e-mail.', true); return; }
+  showForgotMsg('Enviando...', false);
+  const r = await fetch(API + '/auth.php?action=request-reset', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email })
+  }).then(res=>res.json()).catch(()=>({detail:'Erro de conexão'}));
+  if (r.detail && r.detail !== 'Se o e-mail existir, um código foi gerado.') {
+    showForgotMsg(r.detail, true); return;
+  }
+  showForgotMsg('Código gerado! Informe ao administrador para que ele te passe o código.', false);
+  // Guarda email para usar no step 2
+  document.getElementById('forgotPanel').dataset.email = email;
+  setTimeout(() => {
+    document.getElementById('forgotStep1').style.display = 'none';
+    document.getElementById('forgotStep2').style.display = 'block';
+    document.getElementById('forgotMsg').style.display   = 'none';
+  }, 2000);
+}
+async function doResetPassword() {
+  const email   = document.getElementById('forgotPanel').dataset.email || '';
+  const code    = (document.getElementById('resetCode').value || '').trim();
+  const pass    = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('newPasswordConfirm').value;
+  if (!code || code.length < 6)    { showForgotMsg('Informe o código de 6 dígitos.', true); return; }
+  if (!pass || pass.length < 6)    { showForgotMsg('A senha deve ter no mínimo 6 caracteres.', true); return; }
+  if (pass !== confirm)            { showForgotMsg('As senhas não coincidem.', true); return; }
+  showForgotMsg('Redefinindo...', false);
+  const r = await fetch(API + '/auth.php?action=do-reset', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email, code, new_password: pass })
+  }).then(res=>res.json()).catch(()=>({detail:'Erro de conexão'}));
+  if (r.detail && !r.message) { showForgotMsg(r.detail, true); return; }
+  showForgotMsg('Senha redefinida com sucesso! Faça login.', false);
+  setTimeout(showLoginPanel, 2000);
+}
 function doLogout() {
   state.token = null; state.user = null;
   stopPendingCallsSound();
@@ -818,7 +909,7 @@ function navigateTo(view) {
   document.getElementById('pageTitle').textContent    = title;
   document.getElementById('pageSubtitle').textContent = sub;
   closeSidebar();
-  const views = { dashboard:renderDashboard, chamados:renderChamados, envios:renderEnvios, despesas:renderDespesas, relatorios:renderRelatorios, usuarios:renderUsuarios };
+  const views = { dashboard:renderDashboard, chamados:renderChamados, envios:renderEnvios, despesas:renderDespesas, relatorios:renderRelatorios, locais:renderLocais, usuarios:renderUsuarios };
   if (views[view]) views[view]();
 }
 
@@ -1000,13 +1091,10 @@ function driverCallCard(c) {
 
 async function openChamadoForm() {
   if (state.locations.length === 0) await loadLocations();
-  const allLocs = [
-    ...state.locations.filter(l=>l.type==='emergency_unit'),
-    ...state.locations.filter(l=>l.type==='internal_sector')
-  ];
-  const locOptions = allLocs.length
-    ? `<option value="">Selecione o local...</option>` + allLocs.map(l=>`<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
-    : `<option value="">Nenhum local cadastrado</option>`;
+  const emergencyLocs = state.locations.filter(l=>l.type==='emergency_unit');
+  const locOptions = emergencyLocs.length
+    ? `<option value="">Selecione o local...</option>` + emergencyLocs.map(l=>`<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
+    : `<option value="">Nenhum local de emergência cadastrado</option>`;
 
   openModal(`
     <div class="p-5">
@@ -1138,7 +1226,7 @@ async function openEnvioForm() {
   if (state.locations.length === 0) await loadLocations();
   const origOpts = state.locations.filter(l => l.type==='internal_sector')
     .map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('');
-  const destOpts = state.locations.filter(l => l.type!=='internal_sector')
+  const destOpts = state.locations.filter(l => l.type==='pickup_point')
     .map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('');
 
   openModal(`
@@ -1939,6 +2027,112 @@ function exportRepCSV(prefix) {
   const a    = Object.assign(document.createElement('a'),{href:url,download:`relatorio_${prefix}_${today()}.csv`});
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ================================================
+// LOCAIS
+// ================================================
+const LOC_TYPES = [
+  { id:'emergency_unit',  label:'Unidades de Emergência', icon:'fa-hospital',    color:'#ef4444', bg:'#fee2e2' },
+  { id:'internal_sector', label:'Setores Internos',       icon:'fa-building',    color:'#6366f1', bg:'#e0e7ff' },
+  { id:'pickup_point',    label:'Locais de Retirada',     icon:'fa-map-marker-alt', color:'#10b981', bg:'#d1fae5' },
+];
+
+async function renderLocais() {
+  loading();
+  const r = await apiGet('/locations.php');
+  if (!r.ok) { setView('<p class="text-red-500">Erro ao carregar locais.</p>'); return; }
+  state.locations = r.data; // Mantém em sync
+
+  const byType = type => state.locations.filter(l => l.type === type);
+
+  const section = (t) => {
+    const items = byType(t.id);
+    return `
+    <div class="card p-5 mb-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div style="width:38px;height:38px;border-radius:10px;background:${t.bg};display:flex;align-items:center;justify-content:center">
+            <i class="fas ${t.icon}" style="color:${t.color};font-size:16px"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-gray-800" style="color:var(--text)">${t.label}</h3>
+            <p class="text-xs" style="color:var(--text-muted)">${items.length} cadastrado(s)</p>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openLocaisForm('${t.id}','${escHtml(t.label)}')">
+          <i class="fas fa-plus"></i> Adicionar
+        </button>
+      </div>
+      ${items.length === 0
+        ? `<p class="text-sm text-center py-4" style="color:var(--text-muted)">Nenhum local cadastrado</p>`
+        : `<div class="space-y-2">
+            ${items.map(loc => `
+              <div class="flex items-center justify-between px-3 py-2 rounded-xl" style="background:var(--bg);border:1px solid var(--border)">
+                <div>
+                  <span class="font-semibold text-sm" style="color:var(--text)">${escHtml(loc.name)}</span>
+                  ${loc.address ? `<span class="ml-2 text-xs" style="color:var(--text-muted)"><i class="fas fa-map-pin mr-1"></i>${escHtml(loc.address)}</span>` : ''}
+                  ${loc.contact ? `<span class="ml-2 text-xs" style="color:var(--text-muted)"><i class="fas fa-phone mr-1"></i>${escHtml(loc.contact)}</span>` : ''}
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteLocal('${loc.id}','${escHtml(loc.name)}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>`).join('')}
+           </div>`}
+    </div>`;
+  };
+
+  setView(`<div>${LOC_TYPES.map(section).join('')}</div>`);
+}
+
+function openLocaisForm(type, label) {
+  openModal(`
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg text-gray-800">Adicionar: ${escHtml(label)}</h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+      </div>
+      <input type="hidden" id="locType" value="${escHtml(type)}">
+      <div class="form-group">
+        <label class="form-label">Nome *</label>
+        <input type="text" id="locName" class="form-input" placeholder="Ex: UPA Norte">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endereço <span class="text-gray-400 font-normal">(opcional)</span></label>
+        <input type="text" id="locAddress" class="form-input" placeholder="Rua, número, bairro...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contato <span class="text-gray-400 font-normal">(opcional)</span></label>
+        <input type="text" id="locContact" class="form-input" placeholder="Telefone ou e-mail">
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button class="btn btn-outline flex-1" style="justify-content:center" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary flex-1" style="justify-content:center" onclick="submitLocal()">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </div>`);
+}
+
+async function submitLocal() {
+  const name    = document.getElementById('locName').value.trim();
+  const type    = document.getElementById('locType').value;
+  const address = document.getElementById('locAddress').value.trim() || null;
+  const contact = document.getElementById('locContact').value.trim() || null;
+  if (!name) { alert('Informe o nome do local.'); return; }
+  const r = await apiPost('/locations.php', { name, type, address, contact });
+  if (!r.ok) { alert(r.data.detail || 'Erro ao salvar local'); return; }
+  closeModal();
+  await loadLocations();
+  renderLocais();
+}
+
+async function deleteLocal(id, name) {
+  if (!confirm(`Remover o local "${name}"?`)) return;
+  const r = await api(`/locations.php?id=${id}`, { method:'DELETE' });
+  if (!r.ok) { alert(r.data.detail || 'Erro ao remover'); return; }
+  await loadLocations();
+  renderLocais();
 }
 
 // ================================================
