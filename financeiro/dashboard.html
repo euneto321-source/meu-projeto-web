@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Contas a Pagar | Medclin</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #f0f4f8;
+  --card:     #ffffff;
+  --topbar:   #1e3a5f;
+  --text:     #1e293b;
+  --muted:    #64748b;
+  --border:   #e2e8f0;
+  --input:    #ffffff;
+  --primary:  #1e3a5f;
+  --blue:     #2563eb;
+  --green:    #10b981;
+  --yellow:   #f59e0b;
+  --red:      #ef4444;
+  --purple:   #7c3aed;
+}
+html.dark {
+  --bg:       #0f172a;
+  --card:     #1e293b;
+  --topbar:   #0f172a;
+  --text:     #f1f5f9;
+  --muted:    #94a3b8;
+  --border:   #334155;
+  --input:    #0f172a;
+}
+* { font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.card { background: var(--card); border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.form-input { background: var(--input); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 11px; font-size: 13px; outline: none; transition: border .2s; }
+.form-input:focus { border-color: var(--blue); }
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; display: inline-flex; align-items: center; gap: 6px; transition: opacity .2s; }
+.btn:hover { opacity: .87; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-blue    { background: var(--blue);    color: #fff; }
+.btn-green   { background: var(--green);   color: #fff; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--muted); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+
+.badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-aberto   { background:#dbeafe; color:#1d4ed8; }
+.badge-atrasado { background:#fee2e2; color:#991b1b; }
+.badge-hoje     { background:#fef3c7; color:#92400e; }
+.badge-semana   { background:#ede9fe; color:#5b21b6; }
+.badge-pago     { background:#d1fae5; color:#065f46; }
+
+.stat-card { background: var(--card); border-radius: 14px; padding: 20px; display: flex;
+  align-items: center; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; }
+
+.alert-bar { padding: 10px 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.tbl { width:100%; font-size:13px; border-collapse:collapse; }
+.tbl th { padding:10px 12px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase;
+  color:var(--muted); background:var(--bg); border-bottom:2px solid var(--border); white-space:nowrap; }
+.tbl td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+.tbl tr:hover td { background: rgba(37,99,235,.04); }
+.tbl tr.row-atrasado td { background: rgba(239,68,68,.04); }
+.tbl tr.row-hoje td    { background: rgba(245,158,11,.05); }
+
+.tab-btn { padding:8px 18px; border-radius:8px 8px 0 0; font-size:13px; font-weight:600; cursor:pointer;
+  border:none; border-bottom:2px solid transparent; transition:all .2s; background:transparent; color:var(--muted); }
+.tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); background:var(--card); }
+
+.drop-zone { border:2px dashed var(--border); border-radius:14px; padding:40px; text-align:center;
+  cursor:pointer; transition:border .2s; }
+.drop-zone.over { border-color:var(--blue); background:rgba(37,99,235,.04); }
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#475569; border-radius:3px; }
+
+.hidden { display:none !important; }
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; }
+.modal { background:var(--card); color:var(--text); border-radius:16px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+
+@media(max-width:768px) {
+  .stat-grid { grid-template-columns:1fr 1fr !important; }
+  .hide-mobile { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div style="background:var(--topbar)" class="sticky top-0 z-40 shadow-md">
+  <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:8px">
+        <i class="fas fa-file-invoice-dollar text-white text-lg"></i>
+      </div>
+      <div>
+        <div class="text-white font-bold text-base leading-tight">Contas a Pagar</div>
+        <div style="color:rgba(255,255,255,.6);font-size:11px">Medclin Laboratórios</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="fileInfo" style="color:rgba(255,255,255,.6);font-size:12px" class="hide-mobile"></span>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-upload"></i> Importar Excel
+      </button>
+      <button onclick="toggleDark()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center" id="themeBtn">
+        <i class="fas fa-moon"></i>
+      </button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden" onchange="handleFile(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ALERT BAR -->
+<div id="alertBar" class="hidden max-w-screen-xl mx-auto px-4 mt-3"></div>
+
+<!-- MAIN -->
+<div class="max-w-screen-xl mx-auto px-4 py-4" id="mainContent">
+
+  <!-- EMPTY STATE -->
+  <div id="emptyState">
+    <div class="drop-zone mt-8" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <i class="fas fa-file-excel text-5xl mb-4" style="color:var(--muted)"></i>
+      <p class="text-lg font-bold mb-1" style="color:var(--text)">Arraste o arquivo Excel aqui</p>
+      <p style="color:var(--muted);font-size:13px">ou clique para selecionar — BOLETOS ATUALIZADO.xlsx</p>
+      <p style="color:var(--muted);font-size:12px;margin-top:6px">Lê automaticamente as abas: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX</p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (hidden until file loaded) -->
+  <div id="dashboard" class="hidden">
+
+    <!-- CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#dbeafe"><i class="fas fa-file-invoice-dollar" style="color:#2563eb"></i></div>
+        <div>
+          <div class="text-xs font-semibold" style="color:var(--muted)">Total em Aberto</div>
+          <div class="text-xl font-bold" id="cardAberto" style="color:var(--text)">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardAbertoQtd"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fee2e2"><i class="fas fa-exclamation-triangle" style="color:#ef4444"></i></div>
+        <div>
+          <div class="text-xs font-semibold" style="color:var(--muted)">Atrasadas</div>
+          <div class="text-xl font-bold text-red-600" id="cardAtrasado">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardAtrasadoQtd"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7"><i class="fas fa-calendar-day" style="color:#f59e0b"></i></div>
+        <div>
+          <div class="text-xs font-semibold" style="color:var(--muted)">Vencendo Hoje</div>
+          <div class="text-xl font-bold" style="color:#f59e0b" id="cardHoje">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardHojeQtd"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#d1fae5"><i class="fas fa-check-circle" style="color:#10b981"></i></div>
+        <div>
+          <div class="text-xs font-semibold" style="color:var(--muted)">Pagas (mês)</div>
+          <div class="text-xl font-bold text-green-600" id="cardPago">—</div>
+          <div class="text-xs" style="color:var(--muted)" id="cardPagoQtd"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div style="border-bottom:2px solid var(--border)" class="flex gap-1 mb-0">
+      <button class="tab-btn active" onclick="switchTab('pagamentos')" id="tab_pagamentos"><i class="fas fa-calendar-check mr-1"></i>Pagamentos do Dia</button>
+      <button class="tab-btn" onclick="switchTab('contas')" id="tab_contas"><i class="fas fa-list mr-1"></i>Todas as Contas</button>
+      <button class="tab-btn" onclick="switchTab('dre')" id="tab_dre"><i class="fas fa-chart-bar mr-1"></i>DRE / Impacto</button>
+      <button class="tab-btn" onclick="switchTab('tendencias')" id="tab_tendencias"><i class="fas fa-chart-line mr-1"></i>Tendências</button>
+    </div>
+
+    <!-- ── TAB: PAGAMENTOS DO DIA ── -->
+    <div id="panel_pagamentos" class="card p-5 rounded-t-none" style="border-radius:0 0 14px 14px">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-outline" id="btnHoje" onclick="setDayFilter('hoje')">Hoje</button>
+          <button class="btn btn-sm btn-outline" id="btnSemana" onclick="setDayFilter('semana')">Esta semana</button>
+          <button class="btn btn-sm btn-outline" id="btnMes" onclick="setDayFilter('mes')">Este mês</button>
+          <button class="btn btn-sm btn-outline" id="btnTodas" onclick="setDayFilter('todas')">Todas em aberto</button>
+        </div>
+        <div style="color:var(--muted);font-size:12px" id="dayFilterLabel"></div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="tbl">
+          <thead><tr>
+            <th>Fornecedor</th>
+            <th>Documento</th>
+            <th>Vencimento</th>
+            <th>Aba</th>
+            <th class="text-right">Valor</th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr></thead>
+          <tbody id="dayTableBody"></tbody>
+        </table>
+      </div>
+      <div class="flex justify-between items-center mt-3 pt-3" style="border-top:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px" id="dayTableInfo"></span>
+        <span class="font-bold" id="dayTableTotal"></span>
+      </div>
+    </div>
+
+    <!-- ── TAB: TODAS AS CONTAS ── -->
+    <div id="panel_contas" class="hidden card p-5 rounded-t-none" style="border-radius:0 0 14px 14px">
+      <!-- Filters -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <input type="text" id="fFornecedor" class="form-input" placeholder="Fornecedor..." oninput="renderContas()">
+        <select id="fStatus" class="form-input" onchange="renderContas()">
+          <option value="">Todos os status</option>
+          <option value="atrasado">Atrasado</option>
+          <option value="hoje">Vence Hoje</option>
+          <option value="semana">Esta Semana</option>
+          <option value="aberto">Em Aberto</option>
+          <option value="pago">Pago</option>
+        </select>
+        <select id="fAba" class="form-input" onchange="renderContas()">
+          <option value="">Todas as abas</option>
+          <option value="PENDENTES">Pendentes</option>
+          <option value="IMPOSTOS">Impostos</option>
+          <option value="FGTS">FGTS/Rescisões</option>
+          <option value="PIX">PIX</option>
+        </select>
+        <input type="date" id="fDe" class="form-input" onchange="renderContas()" title="Vencimento de">
+        <input type="date" id="fAte" class="form-input" onchange="renderContas()" title="Vencimento até">
+      </div>
+      <div class="flex gap-2 mb-4">
+        <button class="btn btn-sm btn-outline" onclick="clearFilters()"><i class="fas fa-times mr-1"></i>Limpar</button>
+        <button class="btn btn-sm btn-outline" onclick="exportCSV()"><i class="fas fa-download mr-1"></i>Exportar CSV</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="tbl">
+          <thead><tr>
+            <th onclick="sortBy('fornecedor')" style="cursor:pointer">Fornecedor <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+            <th>Documento</th>
+            <th onclick="sortBy('vencimento')" style="cursor:pointer">Vencimento <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+            <th>Aba</th>
+            <th onclick="sortBy('valor')" style="cursor:pointer" class="text-right">Valor <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr></thead>
+          <tbody id="contasTableBody"></tbody>
+        </table>
+      </div>
+      <div class="flex justify-between items-center mt-3 pt-3" style="border-top:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px" id="contasInfo"></span>
+        <span class="font-bold" id="contasTotal"></span>
+      </div>
+    </div>
+
+    <!-- ── TAB: DRE ── -->
+    <div id="panel_dre" class="hidden rounded-t-none" style="border-radius:0 0 14px 14px">
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <!-- DRE inputs -->
+        <div class="card p-5 md:col-span-1">
+          <h3 class="font-bold mb-4" style="color:var(--text)"><i class="fas fa-calculator mr-2 text-blue-500"></i>Receitas (manual)</h3>
+          <div class="mb-3">
+            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Receita Bruta (R$)</label>
+            <input type="number" id="dreReceita" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
+          </div>
+          <div class="mb-3">
+            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">(-) Impostos s/ Receita</label>
+            <input type="number" id="dreImpostosRec" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
+          </div>
+          <div class="mb-3">
+            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">(-) Outras Despesas</label>
+            <input type="number" id="dreOutrasDespesas" class="form-input w-full" placeholder="0,00" oninput="renderDRE()">
+          </div>
+          <div class="mb-3">
+            <label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Filtrar mês/ano</label>
+            <input type="month" id="dreMes" class="form-input w-full" oninput="renderDRE()">
+          </div>
+        </div>
+
+        <!-- DRE result -->
+        <div class="card p-5 md:col-span-2">
+          <h3 class="font-bold mb-4" style="color:var(--text)"><i class="fas fa-chart-bar mr-2 text-blue-500"></i>DRE — Demonstrativo de Resultados</h3>
+          <div id="dreResult"></div>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="card p-5">
+          <h3 class="font-bold mb-3" style="color:var(--text)">Despesas por Fornecedor (Top 10)</h3>
+          <canvas id="chartFornecedor" height="280"></canvas>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-bold mb-3" style="color:var(--text)">Despesas por Aba / Tipo</h3>
+          <canvas id="chartAba" height="280"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: TENDÊNCIAS ── -->
+    <div id="panel_tendencias" class="hidden rounded-t-none" style="border-radius:0 0 14px 14px">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="card p-5">
+          <h3 class="font-bold mb-3" style="color:var(--text)">Vencimentos por Dia (próximos 30 dias)</h3>
+          <canvas id="chartDias" height="260"></canvas>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-bold mb-3" style="color:var(--text)">Total por Mês (vencimento)</h3>
+          <canvas id="chartMes" height="260"></canvas>
+        </div>
+      </div>
+      <div class="card p-5 mt-4">
+        <h3 class="font-bold mb-3" style="color:var(--text)">Distribuição por Status</h3>
+        <div class="grid md:grid-cols-2 gap-6 items-center">
+          <canvas id="chartStatus" height="220"></canvas>
+          <div id="statusLegend"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div id="modalContainer"></div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let accounts = [];
+let sortField = 'vencimento';
+let sortAsc   = true;
+let dayFilter = 'hoje';
+let charts    = {};
+
+const today = () => {
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+};
+const todayStr = today();
+
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+}
+function fmtMoney(v) {
+  return 'R$ ' + parseFloat(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+function getStatus(acc) {
+  if (acc.pago) return 'pago';
+  if (!acc.vencimento) return 'aberto';
+  if (acc.vencimento < todayStr) return 'atrasado';
+  if (acc.vencimento === todayStr) return 'hoje';
+  const semana = addDays(todayStr, 7);
+  if (acc.vencimento <= semana) return 'semana';
+  return 'aberto';
+}
+function badgeHtml(status) {
+  const map = {
+    atrasado: ['badge-atrasado','Atrasado'],
+    hoje:     ['badge-hoje',    'Vence Hoje'],
+    semana:   ['badge-semana',  'Esta Semana'],
+    aberto:   ['badge-aberto',  'Em Aberto'],
+    pago:     ['badge-pago',    'Pago'],
+  };
+  const [cls, label] = map[status] || ['badge-aberto', status];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function loadState() {
+  try {
+    const saved = localStorage.getItem('medclin_contas');
+    if (saved) {
+      const obj = JSON.parse(saved);
+      accounts = obj.accounts || [];
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+function saveState() {
+  localStorage.setItem('medclin_contas', JSON.stringify({ accounts, ts: Date.now() }));
+}
+
+// ══════════════════════════════════════════
+// EXCEL IMPORT
+// ══════════════════════════════════════════
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => importExcel(ev.target.result, file.name);
+  reader.readAsArrayBuffer(file);
+}
+
+// drag and drop
+document.getElementById('dropZone').addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('over');
+});
+document.getElementById('dropZone').addEventListener('dragleave', () => {
+  document.getElementById('dropZone').classList.remove('over');
+});
+document.getElementById('dropZone').addEventListener('drop', e => {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => importExcel(ev.target.result, file.name);
+  reader.readAsArrayBuffer(file);
+});
+
+function excelDateToStr(val) {
+  if (!val) return null;
+  if (typeof val === 'string') {
+    // Try DD/MM/YYYY
+    const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.slice(0,10);
+    return null;
+  }
+  if (typeof val === 'number' && val > 40000 && val < 60000) {
+    // Excel serial → JS Date
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    const y = d.getUTCFullYear(), mo = d.getUTCMonth()+1, dy = d.getUTCDate();
+    return `${y}-${String(mo).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
+  }
+  if (val instanceof Date) {
+    const y = val.getFullYear(), mo = val.getMonth()+1, dy = val.getDate();
+    return `${y}-${String(mo).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
+  }
+  return null;
+}
+
+function parseSheetRows(ws, abaLabel) {
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+  const result = [];
+  const skipWords = ['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total'];
+
+  for (const row of rows) {
+    if (!row || row.length < 3) continue;
+    const col0 = String(row[0]||'').trim();
+    const col0l = col0.toLowerCase();
+    if (!col0 || skipWords.some(w => col0l.includes(w))) continue;
+
+    let fornecedor = col0;
+    let documento  = String(row[1]||'').trim();
+    let vencimento = null;
+    let valor      = null;
+
+    // Detect structure: PENDENTES = cols 0,1,2,3 | PIX = cols 0,1,...,4,5
+    // Try col index 2/3 first (PENDENTES layout), then 4/5 (PIX layout)
+    const v2 = excelDateToStr(row[2]);
+    const v5 = excelDateToStr(row[5]);
+    const n3 = parseFloat(row[3]);
+    const n4 = parseFloat(row[4]);
+    const n6 = parseFloat(row[6]);
+
+    if (v2 && !isNaN(n3) && n3 > 0) {
+      vencimento = v2; valor = n3;
+    } else if (v5 && !isNaN(n4) && n4 > 0) {
+      vencimento = v5; valor = n4;
+    } else if (!isNaN(n4) && n4 > 0 && !vencimento) {
+      // PIX sheet: no date, just value
+      valor = n4;
+    } else if (!isNaN(n3) && n3 > 0) {
+      valor = n3;
+    }
+
+    if (!valor || valor <= 0) continue;
+
+    // Check if this is already in existing accounts (by key)
+    const key = `${fornecedor}|${documento}|${vencimento}|${valor}`;
+    const existing = accounts.find(a => a._key === key);
+
+    result.push({
+      id:          existing ? existing.id : crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+      _key:        key,
+      fornecedor,
+      documento,
+      vencimento,
+      valor,
+      aba:         abaLabel,
+      pago:        existing ? existing.pago : false,
+      data_pagamento: existing ? existing.data_pagamento : null,
+      obs:         existing ? existing.obs : '',
+    });
+  }
+  return result;
+}
+
+function importExcel(arrayBuffer, fileName) {
+  try {
+    const wb = XLSX.read(arrayBuffer, {type:'array', cellDates:false});
+    const newAccounts = [];
+
+    const abaMap = {
+      'PENDENTES':         'PENDENTES',
+      'IMPOSTOS ':         'IMPOSTOS',
+      'IMPOSTOS':          'IMPOSTOS',
+      'FGTS E RESCISÕES ': 'FGTS',
+      'FGTS E RESCISÕES':  'FGTS',
+      'PIX':               'PIX',
+    };
+
+    for (const [sheetName, label] of Object.entries(abaMap)) {
+      const ws = wb.Sheets[sheetName];
+      if (!ws) continue;
+      const parsed = parseSheetRows(ws, label);
+      newAccounts.push(...parsed);
+    }
+
+    if (newAccounts.length === 0) {
+      alert('Nenhuma conta encontrada no arquivo. Verifique se as abas estão com os nomes: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX');
+      return;
+    }
+
+    accounts = newAccounts;
+    saveState();
+
+    document.getElementById('fileInfo').textContent = `${fileName} — ${accounts.length} contas`;
+    showDashboard();
+
+  } catch(err) {
+    console.error(err);
+    alert('Erro ao ler o arquivo: ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// RENDER DASHBOARD
+// ══════════════════════════════════════════
+function showDashboard() {
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  renderAll();
+}
+
+function renderAll() {
+  renderCards();
+  renderAlerts();
+  renderDayTable();
+  renderContas();
+  renderDRE();
+  renderCharts();
+}
+
+function renderCards() {
+  const open     = accounts.filter(a => !a.pago);
+  const atrasado = open.filter(a => a.vencimento && a.vencimento < todayStr);
+  const hoje     = open.filter(a => a.vencimento === todayStr);
+  const mesStr   = todayStr.slice(0,7);
+  const pago     = accounts.filter(a => a.pago && (a.data_pagamento||'').startsWith(mesStr));
+
+  const totalAberto   = open.reduce((s,a) => s+a.valor, 0);
+  const totalAtrasado = atrasado.reduce((s,a) => s+a.valor, 0);
+  const totalHoje     = hoje.reduce((s,a) => s+a.valor, 0);
+  const totalPago     = pago.reduce((s,a) => s+a.valor, 0);
+
+  document.getElementById('cardAberto').textContent    = fmtMoney(totalAberto);
+  document.getElementById('cardAbertoQtd').textContent = `${open.length} conta(s)`;
+  document.getElementById('cardAtrasado').textContent  = fmtMoney(totalAtrasado);
+  document.getElementById('cardAtrasadoQtd').textContent = `${atrasado.length} conta(s)`;
+  document.getElementById('cardHoje').textContent      = fmtMoney(totalHoje);
+  document.getElementById('cardHojeQtd').textContent   = `${hoje.length} conta(s)`;
+  document.getElementById('cardPago').textContent      = fmtMoney(totalPago);
+  document.getElementById('cardPagoQtd').textContent   = `${pago.length} conta(s)`;
+}
+
+function renderAlerts() {
+  const atrasado = accounts.filter(a => !a.pago && a.vencimento && a.vencimento < todayStr);
+  const hoje     = accounts.filter(a => !a.pago && a.vencimento === todayStr);
+  const amanha   = accounts.filter(a => !a.pago && a.vencimento === addDays(todayStr,1));
+  const bar      = document.getElementById('alertBar');
+
+  if (atrasado.length === 0 && hoje.length === 0 && amanha.length === 0) {
+    bar.classList.add('hidden'); return;
+  }
+  bar.classList.remove('hidden');
+  bar.innerHTML = '';
+
+  if (atrasado.length > 0) {
+    const total = atrasado.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML += `<div class="alert-bar rounded-xl mb-2" style="background:#fee2e2;color:#991b1b">
+      <i class="fas fa-exclamation-circle"></i>
+      <strong>${atrasado.length} conta(s) ATRASADA(S)</strong> — Total: <strong>${fmtMoney(total)}</strong>
+      <span style="margin-left:4px">${atrasado.map(a=>`<span style="background:#fecaca;padding:2px 8px;border-radius:12px;font-size:11px;margin:2px">${escHtml(a.fornecedor)} (${fmtDate(a.vencimento)})</span>`).join('')}</span>
+    </div>`;
+  }
+  if (hoje.length > 0) {
+    const total = hoje.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML += `<div class="alert-bar rounded-xl mb-2" style="background:#fef3c7;color:#92400e">
+      <i class="fas fa-clock"></i>
+      <strong>${hoje.length} conta(s) vencem HOJE</strong> — Total: <strong>${fmtMoney(total)}</strong>
+    </div>`;
+  }
+  if (amanha.length > 0) {
+    const total = amanha.reduce((s,a)=>s+a.valor,0);
+    bar.innerHTML += `<div class="alert-bar rounded-xl" style="background:#ede9fe;color:#5b21b6">
+      <i class="fas fa-bell"></i>
+      <strong>${amanha.length} conta(s) vencem AMANHÃ</strong> — Total: <strong>${fmtMoney(total)}</strong>
+    </div>`;
+  }
+}
+
+// ── DAY FILTER ──
+function setDayFilter(f) {
+  dayFilter = f;
+  ['hoje','semana','mes','todas'].forEach(id => {
+    const b = document.getElementById('btn' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (b) b.style.background = f === id ? 'var(--primary)' : '';
+    if (b) b.style.color = f === id ? '#fff' : '';
+    if (b) b.style.borderColor = f === id ? 'var(--primary)' : 'var(--border)';
+  });
+  renderDayTable();
+}
+
+function renderDayTable() {
+  let data = accounts.filter(a => !a.pago);
+  const semanaFim = addDays(todayStr, 7);
+  const mesFim    = todayStr.slice(0,7) + '-31';
+  const labels    = { hoje:'vencimento hoje', semana:'vencimento esta semana', mes:'vencimento este mês', todas:'todas em aberto' };
+
+  if (dayFilter === 'hoje')   data = data.filter(a => a.vencimento === todayStr);
+  if (dayFilter === 'semana') data = data.filter(a => a.vencimento && a.vencimento >= todayStr && a.vencimento <= semanaFim);
+  if (dayFilter === 'mes')    data = data.filter(a => a.vencimento && a.vencimento.startsWith(todayStr.slice(0,7)));
+
+  // sort by vencimento then valor desc
+  data.sort((a,b) => {
+    if (!a.vencimento && !b.vencimento) return 0;
+    if (!a.vencimento) return 1;
+    if (!b.vencimento) return -1;
+    return a.vencimento.localeCompare(b.vencimento) || b.valor - a.valor;
+  });
+
+  document.getElementById('dayFilterLabel').textContent = `Mostrando: ${labels[dayFilter]}`;
+  const total = data.reduce((s,a)=>s+a.valor,0);
+
+  document.getElementById('dayTableBody').innerHTML = data.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta para este período</td></tr>`
+    : data.map(a => {
+        const st = getStatus(a);
+        const rowCls = st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':'';
+        return `<tr class="${rowCls}">
+          <td class="font-semibold">${escHtml(a.fornecedor)}</td>
+          <td style="color:var(--muted)">${escHtml(a.documento)||'—'}</td>
+          <td>${a.vencimento ? fmtDate(a.vencimento) : '—'}</td>
+          <td><span style="background:var(--bg);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
+          <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+          <td>${badgeHtml(st)}</td>
+          <td>
+            <button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i> Pago</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+  document.getElementById('dayTableInfo').textContent = `${data.length} conta(s)`;
+  document.getElementById('dayTableTotal').textContent = fmtMoney(total);
+}
+
+// ── ALL ACCOUNTS TABLE ──
+function renderContas() {
+  let data = [...accounts];
+  const forn   = document.getElementById('fFornecedor')?.value.toLowerCase() || '';
+  const status = document.getElementById('fStatus')?.value || '';
+  const aba    = document.getElementById('fAba')?.value || '';
+  const de     = document.getElementById('fDe')?.value || '';
+  const ate    = document.getElementById('fAte')?.value || '';
+
+  if (forn)   data = data.filter(a => a.fornecedor.toLowerCase().includes(forn));
+  if (aba)    data = data.filter(a => a.aba === aba);
+  if (de)     data = data.filter(a => a.vencimento && a.vencimento >= de);
+  if (ate)    data = data.filter(a => a.vencimento && a.vencimento <= ate);
+  if (status) data = data.filter(a => getStatus(a) === status);
+
+  // sort
+  data.sort((a,b) => {
+    let av = a[sortField], bv = b[sortField];
+    if (sortField === 'valor') return sortAsc ? av-bv : bv-av;
+    if (!av && !bv) return 0;
+    if (!av) return sortAsc ? 1 : -1;
+    if (!bv) return sortAsc ? -1 : 1;
+    return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  });
+
+  const total = data.reduce((s,a)=>s+a.valor,0);
+
+  document.getElementById('contasTableBody').innerHTML = data.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma conta encontrada</td></tr>`
+    : data.map(a => {
+        const st = getStatus(a);
+        const rowCls = st==='atrasado'?'row-atrasado':st==='hoje'?'row-hoje':'';
+        return `<tr class="${rowCls}">
+          <td class="font-semibold">${escHtml(a.fornecedor)}</td>
+          <td style="color:var(--muted);font-size:12px">${escHtml(a.documento)||'—'}</td>
+          <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${a.vencimento ? fmtDate(a.vencimento) : '—'}</td>
+          <td><span style="background:var(--bg);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
+          <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+          <td>${badgeHtml(st)}</td>
+          <td class="flex gap-1">
+            ${a.pago
+              ? `<button class="btn btn-sm btn-outline" onclick="desmarcarPago('${a.id}')"><i class="fas fa-undo"></i></button>`
+              : `<button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i></button>`}
+            <button class="btn btn-sm btn-outline" onclick="openObs('${a.id}')"><i class="fas fa-comment"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
+
+  document.getElementById('contasInfo').textContent = `${data.length} de ${accounts.length} conta(s)`;
+  document.getElementById('contasTotal').textContent = fmtMoney(total);
+}
+
+function clearFilters() {
+  ['fFornecedor','fStatus','fAba','fDe','fAte'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderContas();
+}
+
+function sortBy(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = true; }
+  renderContas();
+}
+
+// ── MARK PAID ──
+function marcarPago(id) {
+  const acc = accounts.find(a => a.id === id);
+  if (!acc) return;
+  acc.pago = true;
+  acc.data_pagamento = todayStr;
+  saveState();
+  renderAll();
+}
+function desmarcarPago(id) {
+  const acc = accounts.find(a => a.id === id);
+  if (!acc) return;
+  acc.pago = false;
+  acc.data_pagamento = null;
+  saveState();
+  renderAll();
+}
+
+// ── OBS MODAL ──
+function openObs(id) {
+  const acc = accounts.find(a => a.id === id);
+  if (!acc) return;
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal p-6" style="max-width:420px">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-base">${escHtml(acc.fornecedor)}</h3>
+          <button onclick="closeModal()" style="color:var(--muted);background:none;border:none;cursor:pointer;font-size:18px">×</button>
+        </div>
+        <div class="mb-2 text-sm" style="color:var(--muted)">Vencimento: ${fmtDate(acc.vencimento)} | Valor: ${fmtMoney(acc.valor)}</div>
+        <textarea id="obsInput" class="form-input w-full mt-3" rows="4" placeholder="Observação...">${escHtml(acc.obs||'')}</textarea>
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-outline flex-1" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-primary flex-1" onclick="saveObs('${id}')">Salvar</button>
+        </div>
+      </div>
+    </div>`;
+}
+function saveObs(id) {
+  const acc = accounts.find(a => a.id === id);
+  if (acc) { acc.obs = document.getElementById('obsInput').value; saveState(); }
+  closeModal();
+  renderContas();
+}
+function closeModal() { document.getElementById('modalContainer').innerHTML = ''; }
+
+// ── DRE ──
+function renderDRE() {
+  const receita    = parseFloat(document.getElementById('dreReceita')?.value) || 0;
+  const impRec     = parseFloat(document.getElementById('dreImpostosRec')?.value) || 0;
+  const outrasDes  = parseFloat(document.getElementById('dreOutrasDespesas')?.value) || 0;
+  const mesFiltro  = document.getElementById('dreMes')?.value || '';
+
+  let data = accounts.filter(a => !a.pago);
+  if (mesFiltro) data = data.filter(a => (a.vencimento||'').startsWith(mesFiltro));
+
+  // group by aba
+  const byAba = {};
+  for (const a of data) {
+    byAba[a.aba] = (byAba[a.aba]||0) + a.valor;
+  }
+  const totalAP = data.reduce((s,a)=>s+a.valor,0);
+
+  const recLiq    = receita - impRec;
+  const lucro     = recLiq - totalAP - outrasDes;
+
+  const dreRow = (label, valor, color='', indent=false, bold=false, separator=false) => `
+    <div class="flex justify-between items-center py-2 ${separator?'border-t-2':'border-b'}" style="${separator?'border-color:var(--text)':'border-color:var(--border)'}">
+      <span style="${indent?'padding-left:16px':''}; ${bold?'font-weight:700':''}; color:${color||'var(--text)'}; font-size:13px">${label}</span>
+      <span style="font-weight:${bold?'700':'600'}; color:${color||'var(--text)'}; font-size:13px">${fmtMoney(valor)}</span>
+    </div>`;
+
+  document.getElementById('dreResult').innerHTML = `
+    ${receita > 0 ? `
+      ${dreRow('(+) Receita Bruta', receita, '', false, true)}
+      ${dreRow('(-) Impostos s/ Receita', impRec, '#ef4444', true)}
+      ${dreRow('(=) Receita Líquida', recLiq, '#1d4ed8', false, true)}
+    ` : '<div style="color:var(--muted);font-size:12px;margin-bottom:12px">💡 Preencha a Receita Bruta à esquerda para ver o DRE completo</div>'}
+    <div class="text-xs font-bold uppercase mb-1 mt-3" style="color:var(--muted)">Contas a Pagar em Aberto${mesFiltro?' ('+mesFiltro+')':''}</div>
+    ${Object.entries(byAba).map(([aba,val]) => dreRow(`(-) ${aba}`, val, '#ef4444', true)).join('')}
+    ${outrasDes > 0 ? dreRow('(-) Outras Despesas', outrasDes, '#ef4444', true) : ''}
+    ${dreRow('(=) Total Despesas AP', totalAP + outrasDes, '#991b1b', false, true)}
+    ${receita > 0 ? `
+      ${dreRow('(=) Resultado Projetado', lucro, lucro >= 0 ? '#10b981' : '#ef4444', false, true, true)}
+      <div class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold" style="background:${lucro>=0?'#d1fae5':'#fee2e2'};color:${lucro>=0?'#065f46':'#991b1b'}">
+        ${lucro >= 0 ? '✅ Resultado positivo' : '⚠️ Resultado negativo — despesas superam a receita'}
+        (${((lucro/receita)*100).toFixed(1)}% da receita bruta)
+      </div>
+    ` : ''}
+  `;
+
+  // Charts
+  renderDRECharts(data);
+}
+
+function renderDRECharts(data) {
+  // Top 10 fornecedores
+  const byForn = {};
+  for (const a of data) byForn[a.fornecedor] = (byForn[a.fornecedor]||0)+a.valor;
+  const sorted = Object.entries(byForn).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  renderBarChart('chartFornecedor', sorted.map(([k])=>k), sorted.map(([,v])=>v),
+    'Valor (R$)', '#2563eb');
+
+  // By aba
+  const byAba = {};
+  for (const a of data) byAba[a.aba] = (byAba[a.aba]||0)+a.valor;
+  const abaColors = { PENDENTES:'#2563eb', IMPOSTOS:'#f59e0b', FGTS:'#7c3aed', PIX:'#10b981' };
+
+  renderDoughnut('chartAba',
+    Object.keys(byAba),
+    Object.values(byAba),
+    Object.keys(byAba).map(k => abaColors[k]||'#94a3b8'));
+}
+
+// ── TENDÊNCIAS CHARTS ──
+function renderCharts() {
+  // Next 30 days
+  const days = Array.from({length:30},(_,i)=>addDays(todayStr,i));
+  const dayTotals = days.map(d => accounts.filter(a=>!a.pago&&a.vencimento===d).reduce((s,a)=>s+a.valor,0));
+  renderBarChart('chartDias',
+    days.map(d => {
+      const [y,m,dy] = d.split('-');
+      return `${dy}/${m}`;
+    }),
+    dayTotals, 'Vencimento (R$)', '#ef4444', days.map((d,i)=>d===todayStr?'#f59e0b':dayTotals[i]>0?'#ef4444':'#e2e8f0'));
+
+  // Monthly
+  const months = {};
+  for (const a of accounts) {
+    if (!a.vencimento) continue;
+    const m = a.vencimento.slice(0,7);
+    months[m] = (months[m]||0) + a.valor;
+  }
+  const mKeys = Object.keys(months).sort();
+  renderBarChart('chartMes',
+    mKeys.map(m => { const [y,mo] = m.split('-'); const names=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return names[parseInt(mo)-1]+'/'+y.slice(2); }),
+    mKeys.map(k=>months[k]),
+    'Total (R$)', '#2563eb');
+
+  // Status doughnut
+  const countByStatus = {atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
+  const valByStatus   = {atrasado:0,hoje:0,semana:0,aberto:0,pago:0};
+  for (const a of accounts) {
+    const st = getStatus(a);
+    countByStatus[st] = (countByStatus[st]||0)+1;
+    valByStatus[st]   = (valByStatus[st]||0)+a.valor;
+  }
+  const statusLabels = {atrasado:'Atrasado',hoje:'Vence Hoje',semana:'Esta Semana',aberto:'Em Aberto',pago:'Pago'};
+  const statusColors = {atrasado:'#ef4444',hoje:'#f59e0b',semana:'#7c3aed',aberto:'#2563eb',pago:'#10b981'};
+  const sKeys = ['atrasado','hoje','semana','aberto','pago'].filter(k=>countByStatus[k]>0);
+
+  renderDoughnut('chartStatus', sKeys.map(k=>statusLabels[k]), sKeys.map(k=>countByStatus[k]),
+    sKeys.map(k=>statusColors[k]));
+
+  document.getElementById('statusLegend').innerHTML = sKeys.map(k=>`
+    <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border)">
+      <div class="flex items-center gap-2">
+        <div style="width:12px;height:12px;border-radius:50%;background:${statusColors[k]};flex-shrink:0"></div>
+        <span style="color:var(--text);font-size:13px">${statusLabels[k]}</span>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${fmtMoney(valByStatus[k])}</div>
+        <div style="font-size:11px;color:var(--muted)">${countByStatus[k]} conta(s)</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── CHART HELPERS ──
+function renderBarChart(id, labels, data, label, defaultColor, colors) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) { charts[id].destroy(); }
+  const isDark = document.documentElement.classList.contains('dark');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data,
+        backgroundColor: colors || defaultColor,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' R$ ' + parseFloat(ctx.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: isDark?'#94a3b8':'#64748b', font:{size:11} }, grid:{display:false} },
+        y: {
+          ticks: {
+            color: isDark?'#94a3b8':'#64748b', font:{size:11},
+            callback: v => 'R$' + (v>=1000?(v/1000).toFixed(0)+'k':v)
+          },
+          grid:{ color: isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)' }
+        }
+      }
+    }
+  });
+}
+
+function renderDoughnut(id, labels, data, colors) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) { charts[id].destroy(); }
+  const isDark = document.documentElement.classList.contains('dark');
+  charts[id] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2,
+      borderColor: isDark?'#1e293b':'#fff' }] },
+    options: {
+      responsive: true,
+      cutout: '62%',
+      plugins: {
+        legend: { position:'bottom', labels:{ color: isDark?'#94a3b8':'#64748b', padding:12, font:{size:12} } },
+        tooltip: { callbacks: { label: ctx => ' R$ ' + parseFloat(ctx.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2}) } }
+      }
+    }
+  });
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  ['pagamentos','contas','dre','tendencias'].forEach(t => {
+    document.getElementById('panel_'+t)?.classList.toggle('hidden', t!==tab);
+    const btn = document.getElementById('tab_'+t);
+    if (btn) btn.classList.toggle('active', t===tab);
+  });
+  if (tab==='dre') { renderDRE(); }
+  if (tab==='tendencias') { renderCharts(); }
+}
+
+// ── EXPORT CSV ──
+function exportCSV() {
+  const headers = ['Fornecedor','Documento','Vencimento','Aba','Valor','Status','Pago','Data Pagamento','Obs'];
+  const rows = accounts.map(a => [
+    a.fornecedor, a.documento||'', a.vencimento?fmtDate(a.vencimento):'',
+    a.aba, a.valor.toFixed(2).replace('.',','),
+    getStatus(a), a.pago?'Sim':'Não',
+    a.data_pagamento?fmtDate(a.data_pagamento):'',
+    a.obs||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'),{href:url,download:`contas_pagar_${todayStr}.csv`});
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── DARK MODE ──
+function toggleDark() {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fin_theme', d?'dark':'light');
+  document.getElementById('themeBtn').innerHTML = d?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+  // re-render charts with new theme
+  if (accounts.length > 0) { renderCharts(); renderDRE(); }
+}
+
+// ── INIT ──
+(function() {
+  if (localStorage.getItem('fin_theme')==='dark') {
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+  }
+  if (loadState() && accounts.length > 0) {
+    document.getElementById('fileInfo').textContent = `${accounts.length} contas (cache)`;
+    showDashboard();
+    setDayFilter('hoje');
+  }
+})();
+</script>
+</body>
+</html>
