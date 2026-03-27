@@ -481,18 +481,29 @@ function excelDateToStr(val){
 function parseBoletosSheet(ws,label){
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
   const result=[];
-  const skip=['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total','flag','data'];
+  const skip=['controle','forncedor','fornecedor','valor total','aba','pix','emprestimos','alugueis','diversos','total','flag','data','dia 0','dia 1','dia 2','dia 3'];
   for(const row of rows){
     if(!row||row.length<2) continue;
-    const c0=String(row[0]||'').trim();
-    if(!c0||skip.some(w=>normalizeStr(c0).startsWith(w))) continue;
+    const raw0=row[0];
+    const c0=String(raw0||'').trim();
+    if(!c0) continue;
+    // Pula linhas onde col[0] é puramente numérico (totais, subtotais, seriais de data)
+    if(/^[\d\s.,]+$/.test(c0)) continue;
+    // Pula se não tem nenhuma letra (não é nome de fornecedor)
+    if(!/[a-zA-ZÀ-ú]/.test(c0)) continue;
+    if(skip.some(w=>normalizeStr(c0).startsWith(w))) continue;
     let forn=c0,doc=String(row[1]||'').trim(),venc=null,val=null;
-    const v2=excelDateToStr(row[2]),v5=excelDateToStr(row[5]);
-    const n3=parseFloat(row[3]),n4=parseFloat(row[4]);
-    if(v2&&!isNaN(n3)&&n3>0){venc=v2;val=n3;}
-    else if(v5&&!isNaN(n4)&&n4>0){venc=v5;val=n4;}
+    // Layout A: col[1]=doc, col[2]=data, col[3]=valor  (PENDENTES padrão)
+    // Layout B: col[1]=data, col[2]=valor              (ARGOS / sem doc)
+    // Layout C: col[4]=valor, col[5]=vencimento        (PIX)
+    const v1=excelDateToStr(row[1]),v2=excelDateToStr(row[2]),v5=excelDateToStr(row[5]);
+    const n2=parseFloat(row[2]),n3=parseFloat(row[3]),n4=parseFloat(row[4]);
+    if(v2&&!isNaN(n3)&&n3>0){venc=v2;val=n3;}               // layout A
+    else if(v1&&!isNaN(n2)&&n2>0){venc=v1;val=n2;}           // layout B
+    else if(v5&&!isNaN(n4)&&n4>0){venc=v5;val=n4;}           // layout C
     else if(!isNaN(n4)&&n4>0){val=n4;}
     else if(!isNaN(n3)&&n3>0){val=n3;}
+    else if(!isNaN(n2)&&n2>0){val=n2;}
     if(!val||val<=0) continue;
     const key=`${forn}|${doc}|${venc}|${val}`;
     const ex=accounts.find(a=>a._key===key);
