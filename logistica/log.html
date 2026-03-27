@@ -1999,12 +1999,17 @@ function escHtml(s) {
 }
 function fmtDate(dt) {
   if (!dt) return '-';
-  // Garante que strings MySQL (com espaço) sejam interpretadas como horário local
-  return new Date(dt.replace(' ','T')).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  // MySQL retorna "2026-03-27 14:30:00" (horário de Brasília após fix do config.php).
+  // Anexamos -03:00 para que qualquer navegador/SO interprete corretamente,
+  // independente do fuso configurado na máquina do cliente.
+  const s = String(dt).replace(' ', 'T');
+  const aware = (s.includes('+') || s.includes('Z')) ? s : s + '-03:00';
+  return new Date(aware).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function fmtDateOnly(dt) {
   if (!dt) return '-';
-  const s = dt.length === 10 ? dt + 'T00:00:00' : dt.replace(' ','T');
+  const raw = String(dt);
+  const s = raw.length === 10 ? raw + 'T00:00:00-03:00' : raw.replace(' ','T') + (raw.includes('+') || raw.includes('Z') ? '' : '-03:00');
   return new Date(s).toLocaleDateString('pt-BR');
 }
 function fmtMoney(v) {

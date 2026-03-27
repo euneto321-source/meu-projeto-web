@@ -29,7 +29,11 @@ function getConnection() {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
-        return new PDO($dsn, DB_USER, DB_PASS, $options);
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        // Forçar fuso horário de Brasília na sessão MySQL
+        // Isso garante que NOW() retorne o horário local correto
+        $pdo->exec("SET time_zone = '-03:00'");
+        return $pdo;
     } catch (PDOException $e) {
         http_response_code(500);
         die(json_encode(['error' => 'Erro de conexão: ' . $e->getMessage()]));
