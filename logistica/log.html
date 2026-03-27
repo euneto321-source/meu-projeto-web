@@ -466,7 +466,7 @@ const API = '/api';
 let state = {
   user: null, token: null, view: 'dashboard',
   pendingCallIds: new Set(), pendingShipIds: new Set(), pendingExpIds: new Set(),
-  soundInterval: null, pollInterval: null, tvInterval: null, tvSoundInterval: null, hasPendingCalls: false,
+  soundInterval: null, pollInterval: null, tvInterval: null, tvSoundInterval: null, hasPendingCalls: false, hasPendingShips: false,
   locations: [],
 };
 
@@ -522,12 +522,13 @@ function stopPendingCallsSound() {
   document.getElementById('soundIndicator').style.display = 'none';
 }
 
-// Som do painel de TV: toca a cada 2 minutos enquanto houver chamado pendente
+// Som do painel de TV: toca a cada 2 minutos enquanto houver chamado OU demanda pendente
+function hasTVPending() { return state.hasPendingCalls || state.hasPendingShips; }
 function startTVSound() {
   if (state.tvSoundInterval) return;
   playNotification();
   state.tvSoundInterval = setInterval(() => {
-    if (state.hasPendingCalls) playNotification(); else stopTVSound();
+    if (hasTVPending()) playNotification(); else stopTVSound();
   }, 2 * 60 * 1000);
 }
 function stopTVSound() {
@@ -624,7 +625,7 @@ function openTV() {
   panel.style.display = 'flex';
   refreshTV();
   clearInterval(state.tvInterval);
-  state.tvInterval = setInterval(refreshTV, 30000);
+  state.tvInterval = setInterval(refreshTV, 10000);
 }
 function closeTV() {
   document.getElementById('tvPanel').style.display = 'none';
@@ -648,86 +649,133 @@ async function refreshTV() {
   document.getElementById('tvPendingCount').textContent = `${pending.length} pendente(s)`;
   document.getElementById('tvProgressCount').textContent = `${inProg.length} em andamento`;
 
-  // Som do TV: toca a cada 4s enquanto houver chamado pendente
-  if (pending.length > 0) {
-    state.pendingCallIds = new Set(pending.map(c=>c.id));
-    state.hasPendingCalls = true;
+  // Som do TV: toca a cada 2 min enquanto houver chamado OU demanda pendente
+  const pendingShips = ships.filter(s => s.status === 'pending');
+  const hadAnyBefore = hasTVPending();
+  state.hasPendingCalls = pending.length > 0;
+  state.hasPendingShips = pendingShips.length > 0;
+  state.pendingCallIds  = new Set(pending.map(c=>c.id));
+
+  if (hasTVPending()) {
+    if (!hadAnyBefore) {
+      // Novos itens: para interval anterior e reinicia para tocar imediatamente
+      stopTVSound();
+    }
     startTVSound();
   } else {
-    state.hasPendingCalls = false;
     stopTVSound();
   }
 
   // Render calls
   document.getElementById('tvCallsList').innerHTML = calls.length === 0
-    ? `<div style="text-align:center;margin-top:60px;opacity:.35">
-         <i class="fas fa-check-circle" style="font-size:48px;color:#22c55e;display:block;margin-bottom:12px"></i>
-         <p style="color:#94a3b8;font-size:16px;font-weight:600">Nenhum chamado ativo</p>
+    ? `<div style="text-align:center;margin-top:60px;opacity:.3">
+         <i class="fas fa-check-circle" style="font-size:52px;color:#22c55e;display:block;margin-bottom:14px"></i>
+         <p style="color:#94a3b8;font-size:15px;font-weight:600">Nenhum chamado ativo</p>
        </div>`
     : calls.map(c => {
-        const prog = c.status === 'in_progress';
-        const isEmg = c.priority === 'emergency';
-        const cls   = isEmg ? 'tv-card-emergency' : prog ? 'tv-card-progress' : 'tv-card-pending';
-        const statusColor = prog ? '#34d399' : isEmg ? '#f87171' : '#fcd34d';
-        const statusLabel = prog ? 'Em Andamento' : isEmg ? '🚨 Emergência' : 'Aguardando';
-        const prio = c.priority === 'urgent' ? `<span style="background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-left:6px">URGENTE</span>` : '';
-        return `<div class="tv-card ${cls}">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+        const prog   = c.status === 'in_progress';
+        const isEmg  = c.priority === 'emergency';
+        const isUrg  = c.priority === 'urgent';
+        const cls    = isEmg ? 'tv-card-emergency' : prog ? 'tv-card-progress' : 'tv-card-pending';
+        const dotColor   = prog ? '#34d399' : isEmg ? '#f87171' : '#fcd34d';
+        const statusLabel = prog ? 'Em Andamento' : 'Aguardando Motorista';
+        const statusColor = prog ? '#34d399' : '#fcd34d';
+        const driver  = c.assigned_driver_name || '';
+        const prioTag = isEmg
+          ? `<span style="background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.35);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:800">🚨 EMERGÊNCIA</span>`
+          : isUrg
+          ? `<span style="background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">⚡ URGENTE</span>`
+          : '';
+        return `<div class="tv-card ${cls}" style="margin-bottom:0">
+          <!-- Cabeçalho: origem + status -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
             <div style="flex:1;min-width:0">
-              <div style="color:#fff;font-weight:800;font-size:17px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.origin_name)}</div>
-              <div style="color:#64748b;font-size:12px;margin-top:3px"><i class="fas fa-vial" style="margin-right:4px;color:#475569"></i>Retirada de Amostras${prio}</div>
+              <div style="color:#fff;font-weight:900;font-size:18px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.origin_name)}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+                <span style="color:#475569;font-size:11px"><i class="fas fa-vial" style="margin-right:3px"></i>Retirada de Amostras</span>
+                ${prioTag}
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
-              <span class="${prog?'':'tv-blink'}" style="width:7px;height:7px;border-radius:50%;background:${statusColor};display:inline-block"></span>
-              <span style="color:${statusColor};font-size:12px;font-weight:700">${statusLabel}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span class="${prog?'':'tv-blink'}" style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
+                <span style="color:${statusColor};font-size:12px;font-weight:700;white-space:nowrap">${statusLabel}</span>
+              </div>
+              <div style="color:#334155;font-size:10px;display:flex;align-items:center;gap:3px">
+                <i class="fas fa-clock"></i>${fmtDate(c.created_at)}
+              </div>
             </div>
           </div>
-          ${c.description ? `<div style="color:#94a3b8;font-size:13px;margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05)">${escHtml(c.description)}</div>` : ''}
-          ${prog ? `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:6px">
-            <i class="fas fa-user-tie" style="color:#34d399;font-size:12px"></i>
-            <span style="color:#6ee7b7;font-size:13px;font-weight:600">${escHtml(c.assigned_driver_name||'')}</span>
-          </div>` : ''}
-          <div style="color:#334155;font-size:11px;display:flex;align-items:center;gap:4px">
-            <i class="fas fa-clock"></i>${fmtDate(c.created_at)}
-          </div>
+          ${c.description ? `<div style="color:#94a3b8;font-size:12px;padding:7px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05);margin-bottom:8px">${escHtml(c.description)}</div>` : ''}
+          <!-- Motorista — sempre visível se atribuído -->
+          ${driver ? `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:${prog?'rgba(16,185,129,.1)':'rgba(251,191,36,.06)'};border:1px solid ${prog?'rgba(16,185,129,.25)':'rgba(251,191,36,.2)'};border-radius:10px">
+            <div style="width:28px;height:28px;border-radius:50%;background:${prog?'rgba(16,185,129,.2)':'rgba(251,191,36,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="fas fa-user-tie" style="color:${prog?'#34d399':'#fcd34d'};font-size:12px"></i>
+            </div>
+            <div>
+              <div style="color:#64748b;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Motorista</div>
+              <div style="color:${prog?'#6ee7b7':'#fde68a'};font-size:14px;font-weight:700">${escHtml(driver)}</div>
+            </div>
+          </div>` : `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(251,191,36,.04);border:1px dashed rgba(251,191,36,.2);border-radius:10px">
+            <i class="fas fa-hourglass-half tv-blink" style="color:#78350f;font-size:13px"></i>
+            <span style="color:#78350f;font-size:12px;font-weight:600">Aguardando motorista assumir...</span>
+          </div>`}
         </div>`;
       }).join('');
 
   // Render shipments
   document.getElementById('tvShipsList').innerHTML = ships.length === 0
-    ? `<div style="text-align:center;margin-top:60px;opacity:.35">
-         <i class="fas fa-check-circle" style="font-size:48px;color:#22c55e;display:block;margin-bottom:12px"></i>
-         <p style="color:#94a3b8;font-size:16px;font-weight:600">Nenhuma demanda ativa</p>
+    ? `<div style="text-align:center;margin-top:60px;opacity:.3">
+         <i class="fas fa-check-circle" style="font-size:52px;color:#22c55e;display:block;margin-bottom:14px"></i>
+         <p style="color:#94a3b8;font-size:15px;font-weight:600">Nenhuma demanda ativa</p>
        </div>`
     : ships.map(s => {
-        const prog = s.status === 'in_progress';
-        const cls  = prog ? 'tv-card-progress' : 'tv-card-pending';
-        const tipo = s.type === 'send' ? 'Envio' : 'Retirada';
-        const tipoIcon = s.type === 'send' ? 'fa-arrow-right' : 'fa-arrow-left';
-        const statusColor = prog ? '#34d399' : '#fcd34d';
-        return `<div class="tv-card ${cls}">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+        const prog      = s.status === 'in_progress';
+        const cls       = prog ? 'tv-card-progress' : 'tv-card-pending';
+        const tipo      = s.type === 'send' ? 'Envio' : 'Retirada';
+        const tipoIcon  = s.type === 'send' ? 'fa-arrow-right' : 'fa-arrow-left';
+        const tipoColor = s.type === 'send' ? '#818cf8' : '#a78bfa';
+        const dotColor  = prog ? '#34d399' : '#fcd34d';
+        const driver    = s.assigned_driver_name || '';
+        return `<div class="tv-card ${cls}" style="margin-bottom:0">
+          <!-- Cabeçalho: setor origem → destino -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
             <div style="flex:1;min-width:0">
-              <div style="color:#fff;font-weight:800;font-size:17px;line-height:1.2">${escHtml(s.origin_sector)}</div>
-              <div style="color:#64748b;font-size:12px;margin-top:3px;display:flex;align-items:center;gap:5px">
-                <i class="fas ${tipoIcon}" style="color:#475569"></i>
-                <span>${escHtml(s.destination_name)}</span>
-                <span style="background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700">${tipo}</span>
+              <div style="color:#fff;font-weight:900;font-size:18px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.origin_sector)}</div>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
+                <i class="fas ${tipoIcon}" style="color:${tipoColor};font-size:11px"></i>
+                <span style="color:#94a3b8;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${escHtml(s.destination_name)}</span>
+                <span style="background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0">${tipo}</span>
               </div>
             </div>
-            <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
-              <span class="${prog?'':'tv-blink'}" style="width:7px;height:7px;border-radius:50%;background:${statusColor};display:inline-block"></span>
-              <span style="color:${statusColor};font-size:12px;font-weight:700">${prog?'Em Andamento':'Aguardando'}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span class="${prog?'':'tv-blink'}" style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
+                <span style="color:${dotColor};font-size:12px;font-weight:700;white-space:nowrap">${prog?'Em Andamento':'Aguardando'}</span>
+              </div>
+              <div style="color:#334155;font-size:10px;display:flex;align-items:center;gap:3px">
+                <i class="fas fa-clock"></i>${fmtDate(s.created_at)}
+              </div>
             </div>
           </div>
-          ${s.description ? `<div style="color:#94a3b8;font-size:13px;margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05)">${escHtml(s.description)}</div>` : ''}
-          ${prog ? `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:6px">
-            <i class="fas fa-user-tie" style="color:#34d399;font-size:12px"></i>
-            <span style="color:#6ee7b7;font-size:13px;font-weight:600">${escHtml(s.assigned_driver_name||'')}</span>
-          </div>` : ''}
-          <div style="color:#334155;font-size:11px;display:flex;align-items:center;gap:4px">
-            <i class="fas fa-clock"></i>${fmtDate(s.created_at)}
-          </div>
+          ${s.description ? `<div style="color:#94a3b8;font-size:12px;padding:7px 10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.05);margin-bottom:8px">${escHtml(s.description)}</div>` : ''}
+          <!-- Motorista — sempre visível se atribuído -->
+          ${driver ? `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:${prog?'rgba(16,185,129,.1)':'rgba(99,102,241,.08)'};border:1px solid ${prog?'rgba(16,185,129,.25)':'rgba(99,102,241,.2)'};border-radius:10px">
+            <div style="width:28px;height:28px;border-radius:50%;background:${prog?'rgba(16,185,129,.2)':'rgba(99,102,241,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="fas fa-user-tie" style="color:${prog?'#34d399':'#818cf8'};font-size:12px"></i>
+            </div>
+            <div>
+              <div style="color:#64748b;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Motorista</div>
+              <div style="color:${prog?'#6ee7b7':'#c7d2fe'};font-size:14px;font-weight:700">${escHtml(driver)}</div>
+            </div>
+          </div>` : `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(251,191,36,.04);border:1px dashed rgba(251,191,36,.2);border-radius:10px">
+            <i class="fas fa-hourglass-half tv-blink" style="color:#78350f;font-size:13px"></i>
+            <span style="color:#78350f;font-size:12px;font-weight:600">Aguardando motorista assumir...</span>
+          </div>`}
         </div>`;
       }).join('');
 }
@@ -741,6 +789,7 @@ const NAV_ITEMS = [
   { id:'envios',    label:'Envios / Retiradas', icon:'fa-box',         roles:['admin','driver','sector'] },
   { id:'despesas',  label:'Despesas',           icon:'fa-dollar-sign', roles:['admin','sector','financial'] },
   { id:'relatorios',label:'Relatórios',         icon:'fa-file-alt',    roles:['admin','financial'] },
+  { id:'locais',    label:'Locais',             icon:'fa-map-marker-alt', roles:['admin'] },
   { id:'usuarios',  label:'Usuários',           icon:'fa-users',       roles:['admin'] },
 ];
 
@@ -762,6 +811,7 @@ function navigateTo(view) {
     envios:    ['Envios / Retiradas','Demandas de logística'],
     despesas:  ['Despesas','Solicitações financeiras'],
     relatorios:['Relatórios','Análises'],
+    locais:    ['Locais','Unidades de emergência, setores e locais de retirada'],
     usuarios:  ['Usuários','Gerenciamento de acesso'],
   };
   const [title, sub] = titles[view] || ['',''];
