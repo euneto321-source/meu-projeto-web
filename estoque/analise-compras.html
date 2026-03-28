@@ -7,6 +7,7 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{--bg:#f0f4f8;--card:#fff;--topbar:#1e3a5f;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--blue:#2563eb;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#7c3aed;}
 *{font-family:'Segoe UI',system-ui,sans-serif;}
@@ -124,10 +125,41 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       </div>
     </div>
 
-    <div class="drop-zone" id="dropPedido" style="padding:14px;" onclick="document.getElementById('filePedido').click()">
-      <input type="file" id="filePedido" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
-      <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
-      <span style="font-size:13px;color:var(--muted);margin-left:8px;">Ou arraste o Excel do pedido completo para análise em lote</span>
+    <!-- Upload de arquivo do pedido -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+      <!-- Excel em lote -->
+      <div class="drop-zone" id="dropPedido" style="padding:14px;" onclick="document.getElementById('filePedido').click()">
+        <input type="file" id="filePedido" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
+        <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
+        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Excel do pedido completo — análise em lote</span>
+      </div>
+      <!-- JPEG / PDF para visualização -->
+      <div class="drop-zone" id="dropDocumento" style="padding:14px;"
+           onclick="document.getElementById('fileDocumento').click()"
+           ondragover="event.preventDefault();this.classList.add('over')"
+           ondragleave="this.classList.remove('over')"
+           ondrop="event.preventDefault();this.classList.remove('over');abrirDocumento(event.dataTransfer.files[0])">
+        <input type="file" id="fileDocumento" accept=".jpg,.jpeg,.png,.pdf" style="display:none"
+               onchange="abrirDocumento(this.files[0])">
+        <i class="fas fa-file-image" style="color:#f59e0b;font-size:18px;"></i>
+        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem ou PDF — visualizar ao lado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel de documento (imagem/PDF) -->
+  <div id="painelDoc" style="display:none;margin-bottom:18px;">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-file-alt" style="color:var(--yellow);"></i>
+          <span style="font-size:13px;font-weight:700;" id="nomeDocumento">Pedido</span>
+        </div>
+        <button class="btn btn-sm" style="background:var(--bg);color:var(--muted);" onclick="fecharDoc()">
+          <i class="fas fa-times"></i> Fechar
+        </button>
+      </div>
+      <div id="conteudoDoc" style="padding:16px;max-height:520px;overflow-y:auto;text-align:center;background:#f8fafc;"></div>
     </div>
   </div>
 
@@ -559,6 +591,66 @@ function exportarRelatorio() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Análise');
   XLSX.writeFile(wb, 'analise-compras-' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+// ── Documento (imagem / PDF) ───────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function abrirDocumento(file) {
+  if (!file) return;
+  const tipo = file.type;
+  document.getElementById('nomeDocumento').textContent = file.name;
+  const conteudo = document.getElementById('conteudoDoc');
+  conteudo.innerHTML = '<p style="color:var(--muted);font-size:13px;">Carregando...</p>';
+  document.getElementById('painelDoc').style.display = 'block';
+  document.getElementById('painelDoc').scrollIntoView({behavior:'smooth', block:'start'});
+
+  const dz = document.getElementById('dropDocumento');
+  dz.classList.add('loaded');
+  dz.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
+    <span style="font-size:13px;font-weight:600;color:var(--green);margin-left:8px;">${file.name}</span>`;
+
+  if (tipo === 'application/pdf') {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise.then(pdf => {
+        conteudo.innerHTML = '';
+        const renderPagina = num => {
+          pdf.getPage(num).then(page => {
+            const viewport = page.getViewport({scale: 1.5});
+            const canvas = document.createElement('canvas');
+            canvas.style.maxWidth = '100%';
+            canvas.style.marginBottom = '12px';
+            canvas.style.borderRadius = '6px';
+            canvas.style.boxShadow = '0 1px 4px rgba(0,0,0,.12)';
+            canvas.height = viewport.height;
+            canvas.width  = viewport.width;
+            conteudo.appendChild(canvas);
+            page.render({canvasContext: canvas.getContext('2d'), viewport}).promise.then(() => {
+              if (num < pdf.numPages) renderPagina(num + 1);
+            });
+          });
+        };
+        renderPagina(1);
+      }).catch(() => {
+        conteudo.innerHTML = '<p style="color:var(--red);">Não foi possível renderizar o PDF.</p>';
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // JPEG / PNG
+    const url = URL.createObjectURL(file);
+    conteudo.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12);">`;
+  }
+}
+
+function fecharDoc() {
+  document.getElementById('painelDoc').style.display = 'none';
+  document.getElementById('conteudoDoc').innerHTML = '';
+  const dz = document.getElementById('dropDocumento');
+  dz.classList.remove('loaded');
+  dz.innerHTML = `<i class="fas fa-file-image" style="color:#f59e0b;font-size:18px;"></i>
+    <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem ou PDF — visualizar ao lado</span>`;
 }
 
 // ── Init ───────────────────────────────────────────────────
