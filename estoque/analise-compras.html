@@ -8,7 +8,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f0f4f8;--card:#fff;--topbar:#1e3a5f;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--blue:#2563eb;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;}
+:root{--bg:#f0f4f8;--card:#fff;--topbar:#1e3a5f;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--blue:#2563eb;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#7c3aed;}
 *{font-family:'Segoe UI',system-ui,sans-serif;}
 body{background:var(--bg);color:var(--text);min-height:100vh;}
 .card{background:var(--card);border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.08);}
@@ -16,12 +16,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 .btn:hover{opacity:.85;}
 .btn-primary{background:var(--topbar);color:#fff;}
 .btn-blue{background:var(--blue);color:#fff;}
-.btn-green{background:var(--green);color:#fff;}
 .btn-sm{padding:4px 10px;font-size:12px;}
 .form-input{background:#fff;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;outline:none;width:100%;}
 .form-input:focus{border-color:var(--blue);}
 .tbl{width:100%;font-size:13px;border-collapse:collapse;}
-.tbl th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:2px solid var(--border);}
+.tbl th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:2px solid var(--border);white-space:nowrap;}
 .tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .tbl tr:hover td{background:rgba(37,99,235,.03);}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
@@ -29,69 +28,79 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 .flag-medio{background:#fef3c7;color:#92400e;}
 .flag-ok{background:#d1fae5;color:#065f46;}
 .flag-novo{background:#ede9fe;color:#5b21b6;}
-.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;}
 .drop-zone:hover,.drop-zone.over{border-color:var(--blue);background:rgba(37,99,235,.04);}
 .drop-zone.loaded{border-color:var(--green);background:rgba(16,185,129,.04);}
-.stat-card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
-.progress-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:4px;}
-.progress-fill{height:100%;border-radius:3px;}
-.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:var(--border);color:var(--muted);}
+.stat-card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:center;gap:14px;}
+.step-num{width:28px;height:28px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:#475569;border-radius:3px;}
 .tooltip{position:relative;}
 .tooltip:hover .tt{display:block;}
-.tt{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:5px 10px;border-radius:6px;white-space:nowrap;z-index:100;pointer-events:none;}
+.tt{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;white-space:nowrap;z-index:200;pointer-events:none;max-width:280px;white-space:normal;text-align:center;}
+.cobertura-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:3px;width:80px;}
+.cobertura-fill{height:100%;border-radius:4px;}
 </style>
 </head>
 <body>
 
-<!-- Topbar -->
 <div style="background:var(--topbar);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;">
   <div style="display:flex;align-items:center;gap:12px;">
     <i class="fas fa-boxes" style="color:#fff;font-size:18px;"></i>
     <span style="color:#fff;font-weight:700;font-size:16px;">Análise de Compras</span>
     <span style="color:#94a3b8;font-size:13px;">— MedClin</span>
   </div>
-  <div style="display:flex;gap:8px;">
-    <button class="btn" style="background:rgba(255,255,255,.1);color:#fff;font-size:12px;" onclick="exportarRelatorio()">
-      <i class="fas fa-download"></i> Exportar
-    </button>
-  </div>
+  <button class="btn" style="background:rgba(255,255,255,.1);color:#fff;font-size:12px;" onclick="exportarRelatorio()">
+    <i class="fas fa-download"></i> Exportar Excel
+  </button>
 </div>
 
-<div style="max-width:1300px;margin:0 auto;padding:24px 20px;">
+<div style="max-width:1400px;margin:0 auto;padding:24px 20px;">
 
-  <!-- ETAPA 1: Carregar histórico -->
-  <div class="card" style="padding:24px;margin-bottom:24px;" id="secaoHistorico">
+  <!-- ETAPA 1: Histórico de compras -->
+  <div class="card" style="padding:22px;margin-bottom:18px;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <div style="width:28px;height:28px;border-radius:50%;background:var(--topbar);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">1</div>
-      <h2 style="font-size:15px;font-weight:700;">Carregar histórico de compras</h2>
-      <span style="font-size:12px;color:var(--muted);">Relatórios mensais (.xlsx)</span>
+      <div class="step-num" style="background:var(--topbar);">1</div>
+      <div>
+        <h2 style="font-size:14px;font-weight:700;">Relatórios de Compras</h2>
+        <p style="font-size:12px;color:var(--muted);">Histórico mensal de compras por fornecedor</p>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;" id="dropZones">
-    </div>
-    <div id="statusHistorico" style="font-size:13px;color:var(--muted);display:none;">
-      <i class="fas fa-check-circle" style="color:var(--green);"></i>
-      <span id="txtStatusHistorico"></span>
-    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="dzCompras"></div>
+    <div id="statusCompras" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
   </div>
 
-  <!-- ETAPA 2: Novo pedido -->
-  <div class="card" style="padding:24px;margin-bottom:24px;" id="secaoPedido">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-      <div style="width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">2</div>
-      <h2 style="font-size:15px;font-weight:700;">Lançar pedido para análise</h2>
-      <span style="font-size:12px;color:var(--muted);">Dados do orçamento do analista</span>
+  <!-- ETAPA 2: Distribuição por centro de custo -->
+  <div class="card" style="padding:22px;margin-bottom:18px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div class="step-num" style="background:var(--purple);">2</div>
+      <div>
+        <h2 style="font-size:14px;font-weight:700;">Relatórios de Distribuição</h2>
+        <p style="font-size:12px;color:var(--muted);">Consumo real por centro de custo — permite validar se o setor realmente usa o item</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="dzDistribuicao"></div>
+    <div id="statusDistribuicao" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
+  </div>
+
+  <!-- ETAPA 3: Pedido -->
+  <div class="card" style="padding:22px;margin-bottom:18px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+      <div class="step-num" style="background:var(--blue);">3</div>
+      <div>
+        <h2 style="font-size:14px;font-weight:700;">Lançar pedido para análise</h2>
+        <p style="font-size:12px;color:var(--muted);">Item por item ou Excel completo</p>
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:14px;">
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">ITEM / DESCRIÇÃO</label>
         <input class="form-input" id="inItem" placeholder="Ex: LUVA PROCEDIMENTO M" list="listaItens">
         <datalist id="listaItens"></datalist>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">QUANTIDADE SOLICITADA</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">QTD. SOLICITADA</label>
         <input class="form-input" id="inQtd" type="number" min="0" placeholder="0">
       </div>
       <div>
@@ -100,8 +109,13 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       </div>
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">FORNECEDOR</label>
-        <input class="form-input" id="inFornecedor" placeholder="Nome do fornecedor" list="listaFornecedores">
+        <input class="form-input" id="inFornecedor" placeholder="Fornecedor" list="listaFornecedores">
         <datalist id="listaFornecedores"></datalist>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">SETOR SOLICITANTE</label>
+        <input class="form-input" id="inSetor" placeholder="Ex: UTI, LAB" list="listaSetores">
+        <datalist id="listaSetores"></datalist>
       </div>
       <div>
         <button class="btn btn-blue" onclick="analisarItem()">
@@ -110,34 +124,28 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       </div>
     </div>
 
-    <!-- OU upload de pedido em lote -->
-    <div style="margin-top:8px;">
-      <div class="drop-zone" id="dropPedido" style="padding:16px;" onclick="document.getElementById('filePedido').click()">
-        <input type="file" id="filePedido" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
-        <i class="fas fa-file-excel" style="color:#10b981;font-size:20px;"></i>
-        <p style="font-size:13px;color:var(--muted);margin-top:6px;">Ou arraste o arquivo Excel do pedido completo para análise em lote</p>
-      </div>
+    <div class="drop-zone" id="dropPedido" style="padding:14px;" onclick="document.getElementById('filePedido').click()">
+      <input type="file" id="filePedido" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
+      <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
+      <span style="font-size:13px;color:var(--muted);margin-left:8px;">Ou arraste o Excel do pedido completo para análise em lote</span>
     </div>
   </div>
 
-  <!-- ETAPA 3: Resultado da análise -->
+  <!-- Resultado -->
   <div id="secaoAnalise" style="display:none;">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;" id="statsResumo"></div>
 
-    <!-- Resumo executivo -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="statsResumo"></div>
-
-    <!-- Tabela de análise -->
     <div class="card" style="padding:0;overflow:hidden;">
-      <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:10px;">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
           <i class="fas fa-table" style="color:var(--blue);"></i>
           <h3 style="font-size:14px;font-weight:700;">Resultado da Análise</h3>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-sm" style="background:var(--bg);color:var(--muted);" onclick="filtrarAnalise('todos')" id="f-todos">Todos</button>
-          <button class="btn btn-sm flag-alto" onclick="filtrarAnalise('alto')" id="f-alto">🔴 Alto risco</button>
-          <button class="btn btn-sm flag-medio" onclick="filtrarAnalise('medio')" id="f-medio">🟡 Atenção</button>
-          <button class="btn btn-sm flag-ok" onclick="filtrarAnalise('ok')" id="f-ok">🟢 Normal</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" style="background:var(--bg);color:var(--muted);" onclick="filtrar('todos')" id="f-todos">Todos</button>
+          <button class="btn btn-sm flag-alto" onclick="filtrar('alto')" id="f-alto">🔴 Alto risco</button>
+          <button class="btn btn-sm flag-medio" onclick="filtrar('medio')" id="f-medio">🟡 Atenção</button>
+          <button class="btn btn-sm flag-ok" onclick="filtrar('ok')" id="f-ok">🟢 Normal</button>
         </div>
       </div>
       <div style="overflow-x:auto;">
@@ -145,12 +153,14 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
           <thead>
             <tr>
               <th>Item</th>
-              <th>Qtd. Solicitada</th>
-              <th>Média histórica</th>
-              <th>Desvio</th>
+              <th>Setor</th>
+              <th>Qtd. Pedida</th>
+              <th>Média compra/mês</th>
+              <th>Consumo/mês</th>
+              <th>Cobertura</th>
               <th>Valor unit.</th>
-              <th>Preço médio histórico</th>
-              <th>Variação preço</th>
+              <th>Preço médio hist.</th>
+              <th>Var. preço</th>
               <th>Fornecedor</th>
               <th>Risco</th>
               <th>Flags</th>
@@ -160,425 +170,400 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
         </table>
       </div>
     </div>
-
   </div>
 
 </div>
 
 <script>
-// ─── Estado ───────────────────────────────────────────────
-let historico = {}; // { descricao_normalizada: [{mes, qtd, valor, fornecedor}] }
-let fornecedoresHistorico = {}; // { descricao: Set(fornecedores) }
-let arquivosCarregados = [];
+// ── Estado ────────────────────────────────────────────────
+const historicoCompras = {};    // desc → [{mes,qtd,valorUnit,fornecedor}]
+const historicoDistribuicao = {}; // desc → [{mes,centro,qtd,valor}]
+const fornecedoresHist = {};    // desc → Set
+const centrosHist = {};         // desc → Set
+
+let arquivosCompras = [];
+let arquivosDist = [];
 let pedidoAtual = [];
 let filtroAtivo = 'todos';
 
-// ─── Utilitários ──────────────────────────────────────────
-const normalizar = s => s?.toString().trim().toUpperCase().replace(/\s+/g,' ') || '';
-const fmt = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-const fmtN = v => Number(v).toLocaleString('pt-BR');
+const MESES = ['Janeiro','Fevereiro','Março'];
 
-// ─── Drop Zones para histórico ────────────────────────────
-function initDropZones() {
-  const meses = ['Janeiro', 'Fevereiro', 'Março'];
-  const container = document.getElementById('dropZones');
-  container.innerHTML = '';
-  meses.forEach((mes, i) => {
-    const div = document.createElement('div');
-    div.className = 'drop-zone';
-    div.id = `dz-${i}`;
-    div.innerHTML = `
-      <input type="file" id="file-${i}" accept=".xlsx,.xls" style="display:none" onchange="carregarHistorico(this, ${i}, '${mes}')">
-      <i class="fas fa-file-excel" style="color:#10b981;font-size:24px;"></i>
-      <p style="font-size:13px;font-weight:600;margin-top:8px;">${mes} 2026</p>
-      <p style="font-size:12px;color:var(--muted);margin-top:2px;">Clique ou arraste o arquivo</p>
-    `;
-    div.onclick = () => document.getElementById(`file-${i}`).click();
-    div.ondragover = e => { e.preventDefault(); div.classList.add('over'); };
-    div.ondragleave = () => div.classList.remove('over');
-    div.ondrop = e => {
-      e.preventDefault(); div.classList.remove('over');
-      const file = e.dataTransfer.files[0];
-      if (file) processarArquivoHistorico(file, i, mes);
-    };
-    container.appendChild(div);
+// ── Utils ─────────────────────────────────────────────────
+const norm = s => s?.toString().trim().toUpperCase().replace(/\s+/g,' ') || '';
+const fmt  = v => 'R$ ' + Number(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtN = v => Number(v).toLocaleString('pt-BR',{maximumFractionDigits:1});
+
+// ── Drop zones ────────────────────────────────────────────
+function criarDropZones(containerId, prefixo, onFile) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  MESES.forEach((mes, i) => {
+    const dz = document.createElement('div');
+    dz.className = 'drop-zone';
+    dz.id = `${prefixo}-${i}`;
+    dz.innerHTML = `
+      <input type="file" id="${prefixo}f-${i}" accept=".xlsx,.xls" style="display:none">
+      <i class="fas fa-file-excel" style="color:var(--green);font-size:20px;"></i>
+      <p style="font-size:13px;font-weight:600;margin-top:6px;">${mes} 2026</p>
+      <p style="font-size:12px;color:var(--muted);">Clique ou arraste</p>`;
+    dz.onclick = () => document.getElementById(`${prefixo}f-${i}`).click();
+    document.getElementById(`${prefixo}f-${i}`).onchange = e => { if(e.target.files[0]) onFile(e.target.files[0], i, mes); };
+    dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+    dz.ondragleave = () => dz.classList.remove('over');
+    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0], i, mes); };
+    c.appendChild(dz);
   });
 }
 
-// ─── Parsear relatório de compras ─────────────────────────
-function parsearRelatorioCompras(wb, mes) {
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-  const itens = [];
-  let fornecedorAtual = '';
+function marcarDzOk(prefixo, i, mes, itens, nome) {
+  const dz = document.getElementById(`${prefixo}-${i}`);
+  dz.classList.add('loaded');
+  dz.innerHTML = `
+    <i class="fas fa-check-circle" style="color:var(--green);font-size:20px;"></i>
+    <p style="font-size:13px;font-weight:600;color:var(--green);margin-top:6px;">${mes} 2026</p>
+    <p style="font-size:12px;color:var(--muted);">${itens} itens • ${nome}</p>`;
+}
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    // Detectar fornecedor
+// ── Parser: relatório de compras ──────────────────────────
+function parsearCompras(wb, mes) {
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
+  const itens = [];
+  let fornAtual = '';
+  for (const row of rows) {
     if (typeof row[0] === 'string' && row[0].startsWith('FORNECEDOR:')) {
-      const partes = row[0].split('-');
-      fornecedorAtual = partes.length > 1 ? partes.slice(1).join('-').trim() : row[0].replace('FORNECEDOR:', '').trim();
+      const p = row[0].split('-');
+      fornAtual = norm(p.length > 1 ? p.slice(1).join('-') : row[0].replace('FORNECEDOR:',''));
     }
-    // Linha de item: col 0 = número (código), col 1 = descrição, col 4 = qtd, col 5 = valor unit
     if (typeof row[0] === 'number' && row[0] > 0 && typeof row[1] === 'string' && row[1].trim()) {
       const qtd = parseFloat(row[4]) || 0;
       const valorUnit = parseFloat(row[5]) || 0;
-      if (qtd > 0) {
-        itens.push({
-          codigo: row[0],
-          descricao: normalizar(row[1]),
-          unidade: row[2] || '',
-          ordemCompra: row[3] || '',
-          qtd,
-          valorUnit,
-          total: qtd * valorUnit,
-          fornecedor: normalizar(fornecedorAtual),
-          mes
-        });
+      if (qtd > 0) itens.push({ descricao: norm(row[1]), qtd, valorUnit, fornecedor: fornAtual, mes });
+    }
+  }
+  return itens;
+}
+
+// ── Parser: relatório de distribuição ─────────────────────
+function parsearDistribuicao(wb, mes) {
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
+  const itens = [];
+  let centroAtual = '';
+  for (const row of rows) {
+    // Centro de custo: col A tem valor, col B é null, col A não é número
+    if (row[0] && !row[1] && typeof row[0] === 'string') {
+      const s = row[0].trim();
+      // Ignorar linhas de cabeçalho do relatório
+      if (s.match(/^\d{6}-/) ) centroAtual = norm(s);
+    }
+    // Item: col A null, col B = descrição, col C = qtd
+    if (!row[0] && row[1] && typeof row[1] === 'string' && row[1].trim() && !row[1].toLowerCase().includes('soma')) {
+      const qtd = parseFloat(row[2]) || 0;
+      const valor = parseFloat(row[3]) || 0;
+      if (qtd > 0 && centroAtual) {
+        itens.push({ descricao: norm(row[1]), centro: centroAtual, qtd, valor, mes });
       }
     }
   }
   return itens;
 }
 
-// ─── Carregar histórico ───────────────────────────────────
-function carregarHistorico(input, idx, mes) {
-  const file = input.files[0];
-  if (file) processarArquivoHistorico(file, idx, mes);
+// ── Carregar compras ───────────────────────────────────────
+function carregarCompra(file, idx, mes) {
+  lerExcel(file, wb => {
+    const itens = parsearCompras(wb, mes);
+    arquivosCompras[idx] = { mes, itens };
+    itens.forEach(it => {
+      (historicoCompras[it.descricao] = historicoCompras[it.descricao] || []).push(it);
+      (fornecedoresHist[it.descricao] = fornecedoresHist[it.descricao] || new Set()).add(it.fornecedor);
+    });
+    marcarDzOk('dzc', idx, mes, itens.length, file.name);
+    atualizarAutoComplete();
+    atualizarStatus('statusCompras', arquivosCompras, historicoCompras, 'compras');
+  });
 }
 
-function processarArquivoHistorico(file, idx, mes) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-      const itens = parsearRelatorioCompras(wb, mes);
-      arquivosCarregados[idx] = { mes, itens, nome: file.name };
-
-      // Indexar no histórico
-      itens.forEach(item => {
-        if (!historico[item.descricao]) historico[item.descricao] = [];
-        historico[item.descricao].push(item);
-        if (!fornecedoresHistorico[item.descricao]) fornecedoresHistorico[item.descricao] = new Set();
-        fornecedoresHistorico[item.descricao].add(item.fornecedor);
-      });
-
-      // Atualizar UI
-      const dz = document.getElementById(`dz-${idx}`);
-      dz.classList.add('loaded');
-      dz.innerHTML = `
-        <i class="fas fa-check-circle" style="color:var(--green);font-size:24px;"></i>
-        <p style="font-size:13px;font-weight:600;margin-top:8px;color:var(--green);">${mes} 2026</p>
-        <p style="font-size:12px;color:var(--muted);">${itens.length} itens carregados</p>
-        <p style="font-size:11px;color:var(--muted);">${file.name}</p>
-      `;
-
-      atualizarAutoComplete();
-      atualizarStatusHistorico();
-    } catch(err) {
-      alert('Erro ao ler o arquivo: ' + err.message);
-    }
-  };
-  reader.readAsArrayBuffer(file);
+// ── Carregar distribuição ──────────────────────────────────
+function carregarDistribuicao(file, idx, mes) {
+  lerExcel(file, wb => {
+    const itens = parsearDistribuicao(wb, mes);
+    arquivosDist[idx] = { mes, itens };
+    itens.forEach(it => {
+      (historicoDistribuicao[it.descricao] = historicoDistribuicao[it.descricao] || []).push(it);
+      (centrosHist[it.descricao] = centrosHist[it.descricao] || new Set()).add(it.centro);
+    });
+    marcarDzOk('dzd', idx, mes, itens.length, file.name);
+    atualizarAutoComplete();
+    atualizarStatus('statusDistribuicao', arquivosDist, historicoDistribuicao, 'distribuição');
+  });
 }
 
-function atualizarStatusHistorico() {
-  const carregados = arquivosCarregados.filter(Boolean);
-  if (carregados.length === 0) return;
-  const total = Object.keys(historico).length;
-  document.getElementById('statusHistorico').style.display = 'block';
-  document.getElementById('txtStatusHistorico').textContent =
-    ` ${carregados.length} mês(es) carregados — ${total} itens distintos no histórico`;
+function lerExcel(file, cb) {
+  const r = new FileReader();
+  r.onload = e => { try { cb(XLSX.read(new Uint8Array(e.target.result), {type:'array'})); } catch(err) { alert('Erro: ' + err.message); } };
+  r.readAsArrayBuffer(file);
+}
+
+function atualizarStatus(elId, arr, dados, tipo) {
+  const n = arr.filter(Boolean).length;
+  const t = Object.keys(dados).length;
+  const el = document.getElementById(elId);
+  el.style.display = 'block';
+  el.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);"></i> ${n} mês(es) de ${tipo} carregados — ${t} itens distintos`;
 }
 
 function atualizarAutoComplete() {
-  const itens = Object.keys(historico).sort();
-  const dl = document.getElementById('listaItens');
-  dl.innerHTML = itens.map(i => `<option value="${i}">`).join('');
+  const itens = [...new Set([...Object.keys(historicoCompras), ...Object.keys(historicoDistribuicao)])].sort();
+  document.getElementById('listaItens').innerHTML = itens.map(i=>`<option value="${i}">`).join('');
 
-  const fornecedores = [...new Set(Object.values(fornecedoresHistorico).flatMap(s => [...s]))].sort();
-  const dlF = document.getElementById('listaFornecedores');
-  dlF.innerHTML = fornecedores.map(f => `<option value="${f}">`).join('');
+  const forns = [...new Set(Object.values(fornecedoresHist).flatMap(s=>[...s]))].sort();
+  document.getElementById('listaFornecedores').innerHTML = forns.map(f=>`<option value="${f}">`).join('');
+
+  const centros = [...new Set(Object.values(centrosHist).flatMap(s=>[...s]))].sort();
+  document.getElementById('listaSetores').innerHTML = centros.map(c=>`<option value="${c}">`).join('');
 }
 
-// ─── Análise de um item ───────────────────────────────────
-function calcularAnalise(descricao, qtdSolicitada, valorUnit, fornecedor) {
-  const desc = normalizar(descricao);
-  const hist = historico[desc] || [];
-  const ehNovo = hist.length === 0;
+// ── Motor de análise ───────────────────────────────────────
+function calcularAnalise(descricao, qtdSolicitada, valorUnit, fornecedor, setor) {
+  const desc = norm(descricao);
+  const histC = historicoCompras[desc] || [];
+  const histD = historicoDistribuicao[desc] || [];
+  const ehNovo = histC.length === 0 && histD.length === 0;
 
-  // Médias históricas
-  const qtds = hist.map(h => h.qtd);
-  const valores = hist.map(h => h.valorUnit).filter(v => v > 0);
-  const mediaQtd = qtds.length ? qtds.reduce((a,b)=>a+b,0)/qtds.length : 0;
-  const maxQtd = qtds.length ? Math.max(...qtds) : 0;
-  const mediaValor = valores.length ? valores.reduce((a,b)=>a+b,0)/valores.length : 0;
-  const maxValor = valores.length ? Math.max(...valores) : 0;
+  // Médias de compra
+  const qtdsC = histC.map(h=>h.qtd);
+  const valores = histC.map(h=>h.valorUnit).filter(v=>v>0);
+  const mediaCompra = qtdsC.length ? qtdsC.reduce((a,b)=>a+b,0)/qtdsC.length : 0;
+  const maxCompra   = qtdsC.length ? Math.max(...qtdsC) : 0;
+  const mediaValor  = valores.length ? valores.reduce((a,b)=>a+b,0)/valores.length : 0;
 
-  // Desvio de quantidade
-  const desvioQtd = mediaQtd > 0 ? ((qtdSolicitada - mediaQtd) / mediaQtd * 100) : null;
+  // Consumo médio mensal (distribuição)
+  const mesesDist = [...new Set(histD.map(h=>h.mes))];
+  const consumoTotal = histD.reduce((s,h)=>s+h.qtd,0);
+  const mediaConsumo = mesesDist.length ? consumoTotal / mesesDist.length : 0;
+
+  // Cobertura: quantos meses de estoque o pedido representa
+  const coberturaMeses = mediaConsumo > 0 ? qtdSolicitada / mediaConsumo : null;
+
+  // Desvio de quantidade vs histórico de compra
+  const desvioQtd = mediaCompra > 0 ? (qtdSolicitada - mediaCompra) / mediaCompra * 100 : null;
 
   // Variação de preço
-  const variacaoPreco = mediaValor > 0 ? ((valorUnit - mediaValor) / mediaValor * 100) : null;
+  const varPreco = mediaValor > 0 && valorUnit > 0 ? (valorUnit - mediaValor) / mediaValor * 100 : null;
 
-  // Fornecedor habitual
-  const fornecedoresConhecidos = fornecedoresHistorico[desc] || new Set();
-  const fornecedorNovo = fornecedor && !fornecedoresConhecidos.has(normalizar(fornecedor));
+  // Validação de setor
+  const setorNorm = norm(setor);
+  const centrosConhecidos = centrosHist[desc] || new Set();
+  const setorConsome = setorNorm ? [...centrosConhecidos].some(c => c.includes(setorNorm) || setorNorm.includes(c.replace(/^\d+-/,''))) : null;
+  const setorNuncaUsou = setorNorm && centrosConhecidos.size > 0 && !setorConsome;
 
-  // Flags
+  // Fornecedor diferente
+  const fornsConhecidos = fornecedoresHist[desc] || new Set();
+  const fornNovo = fornecedor && fornsConhecidos.size > 0 && !fornsConhecidos.has(norm(fornecedor));
+
+  // ── Flags ─────────────────────────────────────────────
   const flags = [];
   let riscoMax = 'ok';
-
-  const risco = nivel => {
+  const addFlag = (nivel, label, detalhe) => {
+    flags.push({nivel, label, detalhe});
     if (nivel === 'alto') riscoMax = 'alto';
     else if (nivel === 'medio' && riscoMax !== 'alto') riscoMax = 'medio';
   };
 
-  if (ehNovo) {
-    flags.push({ tipo: 'novo', label: 'Item novo', detalhe: 'Nunca comprado no histórico' });
-    risco('medio');
-  }
+  if (ehNovo)
+    addFlag('medio','Item novo','Sem histórico de compra ou consumo');
 
-  if (desvioQtd !== null && desvioQtd > 100) {
-    flags.push({ tipo: 'alto', label: `+${Math.round(desvioQtd)}% na qtd`, detalhe: `Média histórica: ${fmtN(mediaQtd.toFixed(1))} | Solicitado: ${fmtN(qtdSolicitada)}` });
-    risco('alto');
-  } else if (desvioQtd !== null && desvioQtd > 50) {
-    flags.push({ tipo: 'medio', label: `+${Math.round(desvioQtd)}% na qtd`, detalhe: `Média histórica: ${fmtN(mediaQtd.toFixed(1))} | Solicitado: ${fmtN(qtdSolicitada)}` });
-    risco('medio');
-  }
+  if (desvioQtd !== null && desvioQtd > 100)
+    addFlag('alto', `Qtd +${Math.round(desvioQtd)}% acima da média`, `Média compra: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
+  else if (desvioQtd !== null && desvioQtd > 50)
+    addFlag('medio', `Qtd +${Math.round(desvioQtd)}% acima da média`, `Média compra: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
 
-  if (variacaoPreco !== null && variacaoPreco > 30) {
-    flags.push({ tipo: 'alto', label: `Preço +${Math.round(variacaoPreco)}%`, detalhe: `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}` });
-    risco('alto');
-  } else if (variacaoPreco !== null && variacaoPreco > 15) {
-    flags.push({ tipo: 'medio', label: `Preço +${Math.round(variacaoPreco)}%`, detalhe: `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}` });
-    risco('medio');
-  }
+  if (qtdSolicitada > maxCompra * 1.5 && maxCompra > 0)
+    addFlag('alto', 'Acima do máximo histórico', `Máximo já comprado: ${fmtN(maxCompra)}`);
 
-  if (fornecedorNovo && !ehNovo) {
-    flags.push({ tipo: 'medio', label: 'Fornecedor diferente', detalhe: `Habituais: ${[...fornecedoresConhecidos].join(', ')}` });
-    risco('medio');
-  }
+  if (coberturaMeses !== null && coberturaMeses > 3)
+    addFlag('alto', `Cobertura ${coberturaMeses.toFixed(1)} meses`, `Consumo médio: ${fmtN(mediaConsumo)}/mês — pedido cobre ${coberturaMeses.toFixed(1)} meses`);
+  else if (coberturaMeses !== null && coberturaMeses > 2)
+    addFlag('medio', `Cobertura ${coberturaMeses.toFixed(1)} meses`, `Consumo médio: ${fmtN(mediaConsumo)}/mês`);
 
-  if (qtdSolicitada > maxQtd * 1.5 && !ehNovo) {
-    flags.push({ tipo: 'alto', label: 'Acima do máximo histórico', detalhe: `Máximo já comprado: ${fmtN(maxQtd)}` });
-    risco('alto');
-  }
+  if (varPreco !== null && varPreco > 30)
+    addFlag('alto', `Preço +${Math.round(varPreco)}%`, `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
+  else if (varPreco !== null && varPreco > 15)
+    addFlag('medio', `Preço +${Math.round(varPreco)}%`, `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
+
+  if (setorNuncaUsou)
+    addFlag('alto', 'Setor não consome este item', `Centros com consumo: ${[...centrosConhecidos].slice(0,3).map(c=>c.replace(/^\d+-/,'')).join(', ')}`);
+
+  if (fornNovo)
+    addFlag('medio', 'Fornecedor diferente do habitual', `Habituais: ${[...fornsConhecidos].join(', ')}`);
 
   return {
-    descricao: desc,
-    qtdSolicitada,
-    valorUnit,
-    fornecedor: normalizar(fornecedor),
-    mediaQtd,
-    maxQtd,
-    mediaValor,
-    maxValor,
-    desvioQtd,
-    variacaoPreco,
-    flags,
-    risco: riscoMax,
-    ehNovo,
-    fornecedoresConhecidos: [...fornecedoresConhecidos]
+    desc, qtdSolicitada, valorUnit, fornecedor: norm(fornecedor), setor: setorNorm,
+    mediaCompra, maxCompra, mediaValor, mediaConsumo, coberturaMeses,
+    desvioQtd, varPreco, flags, risco: riscoMax, ehNovo,
+    centrosConhecidos: [...centrosConhecidos], fornsConhecidos: [...fornsConhecidos]
   };
 }
 
-// ─── Analisar item individual ─────────────────────────────
+// ── Analisar item individual ───────────────────────────────
 function analisarItem() {
-  const item = normalizar(document.getElementById('inItem').value);
-  const qtd = parseFloat(document.getElementById('inQtd').value);
+  const item  = document.getElementById('inItem').value;
+  const qtd   = parseFloat(document.getElementById('inQtd').value);
   const valor = parseFloat(document.getElementById('inValor').value) || 0;
-  const forn = document.getElementById('inFornecedor').value;
-
-  if (!item || !qtd) { alert('Preencha pelo menos o Item e a Quantidade.'); return; }
-
-  const analise = calcularAnalise(item, qtd, valor, forn);
-  pedidoAtual = [analise];
+  const forn  = document.getElementById('inFornecedor').value;
+  const setor = document.getElementById('inSetor').value;
+  if (!item || !qtd) { alert('Preencha pelo menos Item e Quantidade.'); return; }
+  const novo = calcularAnalise(item, qtd, valor, forn, setor);
+  pedidoAtual = pedidoAtual.filter(p => p.desc !== novo.desc);
+  pedidoAtual.unshift(novo);
   renderizarAnalise();
-
-  document.getElementById('inItem').value = '';
-  document.getElementById('inQtd').value = '';
-  document.getElementById('inValor').value = '';
-  document.getElementById('inFornecedor').value = '';
+  ['inItem','inQtd','inValor','inFornecedor','inSetor'].forEach(id => document.getElementById(id).value = '');
 }
 
-// ─── Carregar pedido em lote (Excel) ─────────────────────
+// ── Pedido em lote (Excel) ─────────────────────────────────
 function carregarPedidoExcel(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-
-    // Tentar detectar cabeçalho automaticamente
-    let headerRow = -1;
+  const file = input.files[0]; if (!file) return;
+  lerExcel(file, wb => {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
+    // Detectar cabeçalho
+    let hi = -1;
     for (let i = 0; i < Math.min(10, rows.length); i++) {
-      const r = rows[i].map(v => normalizar(v?.toString() || ''));
-      if (r.some(v => v.includes('DESCRI') || v.includes('ITEM') || v.includes('PRODUTO'))) {
-        headerRow = i;
-        break;
-      }
+      const r = rows[i].map(v => norm(v?.toString()||''));
+      if (r.some(v => v.includes('DESCRI') || v.includes('ITEM') || v.includes('PRODUTO'))) { hi = i; break; }
     }
-
-    if (headerRow === -1) {
-      // Tentar usar formato igual ao relatório de compras
-      const itens = parsearRelatorioCompras(wb, 'pedido');
-      pedidoAtual = itens.map(it => calcularAnalise(it.descricao, it.qtd, it.valorUnit, it.fornecedor));
+    if (hi === -1) {
+      // Tentar formato padrão do relatório de compras
+      const itens = parsearCompras(wb, 'pedido');
+      pedidoAtual = itens.map(it => calcularAnalise(it.descricao, it.qtd, it.valorUnit, it.fornecedor, ''));
     } else {
-      const headers = rows[headerRow].map(v => normalizar(v?.toString() || ''));
-      const idxDesc = headers.findIndex(h => h.includes('DESCRI') || h.includes('ITEM') || h.includes('PRODUTO'));
-      const idxQtd = headers.findIndex(h => h.includes('QTD') || h.includes('QUANT'));
-      const idxValor = headers.findIndex(h => h.includes('VALOR') || h.includes('PRECO') || h.includes('PREÇO') || h.includes('UNIT'));
-      const idxForn = headers.findIndex(h => h.includes('FORNEC'));
-
+      const headers = rows[hi].map(v => norm(v?.toString()||''));
+      const iDesc = headers.findIndex(h => h.includes('DESCRI')||h.includes('ITEM')||h.includes('PRODUTO'));
+      const iQtd  = headers.findIndex(h => h.includes('QTD')||h.includes('QUANT'));
+      const iVal  = headers.findIndex(h => h.includes('VALOR')||h.includes('PRECO')||h.includes('PREÇO')||h.includes('UNIT'));
+      const iForn = headers.findIndex(h => h.includes('FORNEC'));
+      const iSet  = headers.findIndex(h => h.includes('SETOR')||h.includes('CENTRO'));
       pedidoAtual = [];
-      for (let i = headerRow + 1; i < rows.length; i++) {
+      for (let i = hi+1; i < rows.length; i++) {
         const r = rows[i];
-        const desc = r[idxDesc];
-        const qtd = parseFloat(r[idxQtd]);
-        if (!desc || !qtd) continue;
-        const valor = parseFloat(r[idxValor]) || 0;
-        const forn = idxForn >= 0 ? r[idxForn] : '';
-        pedidoAtual.push(calcularAnalise(desc, qtd, valor, forn));
+        if (!r[iDesc] || !parseFloat(r[iQtd])) continue;
+        pedidoAtual.push(calcularAnalise(r[iDesc], parseFloat(r[iQtd]), parseFloat(r[iVal])||0, iForn>=0?r[iForn]:'', iSet>=0?r[iSet]:''));
       }
     }
-
     document.getElementById('dropPedido').innerHTML = `
-      <i class="fas fa-check-circle" style="color:var(--green);font-size:20px;"></i>
-      <p style="font-size:13px;font-weight:600;color:var(--green);margin-top:6px;">${pedidoAtual.length} itens carregados do Excel</p>
-    `;
+      <i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
+      <span style="font-size:13px;font-weight:600;color:var(--green);margin-left:8px;">${pedidoAtual.length} itens carregados de ${file.name}</span>`;
     renderizarAnalise();
-  };
-  reader.readAsArrayBuffer(file);
+  });
 }
 
-// ─── Renderizar análise ───────────────────────────────────
+// ── Render ────────────────────────────────────────────────
 function renderizarAnalise() {
   document.getElementById('secaoAnalise').style.display = 'block';
-  document.getElementById('secaoAnalise').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  // Stats
-  const total = pedidoAtual.length;
-  const altos = pedidoAtual.filter(i => i.risco === 'alto').length;
-  const medios = pedidoAtual.filter(i => i.risco === 'medio').length;
-  const novos = pedidoAtual.filter(i => i.ehNovo).length;
-  const valorTotal = pedidoAtual.reduce((s, i) => s + (i.qtdSolicitada * i.valorUnit), 0);
-
-  document.getElementById('statsResumo').innerHTML = `
-    ${statCard('Total de itens', total, 'fas fa-boxes', '#2563eb', 'rgba(37,99,235,.1)')}
-    ${statCard('🔴 Alto risco', altos, 'fas fa-exclamation-triangle', '#ef4444', 'rgba(239,68,68,.1)')}
-    ${statCard('🟡 Atenção', medios, 'fas fa-exclamation-circle', '#f59e0b', 'rgba(245,158,11,.1)')}
-    ${statCard('Itens novos', novos, 'fas fa-plus-circle', '#7c3aed', 'rgba(124,58,237,.1)')}
-  `;
-
+  document.getElementById('secaoAnalise').scrollIntoView({behavior:'smooth', block:'start'});
+  const tot   = pedidoAtual.length;
+  const altos = pedidoAtual.filter(i=>i.risco==='alto').length;
+  const meds  = pedidoAtual.filter(i=>i.risco==='medio').length;
+  const novos = pedidoAtual.filter(i=>i.ehNovo).length;
+  const valTot = pedidoAtual.reduce((s,i)=>s+i.qtdSolicitada*i.valorUnit,0);
+  document.getElementById('statsResumo').innerHTML = [
+    sc('Total de itens', tot,   'fas fa-boxes',               '#2563eb','rgba(37,99,235,.1)'),
+    sc('🔴 Alto risco',  altos, 'fas fa-exclamation-triangle','#ef4444','rgba(239,68,68,.1)'),
+    sc('🟡 Atenção',     meds,  'fas fa-exclamation-circle',  '#f59e0b','rgba(245,158,11,.1)'),
+    sc('Itens novos',    novos, 'fas fa-plus-circle',         '#7c3aed','rgba(124,58,237,.1)'),
+    sc('Valor total',    valTot>0?fmt(valTot):'—','fas fa-dollar-sign','#10b981','rgba(16,185,129,.1)'),
+  ].join('');
   renderTabela();
 }
 
-function statCard(label, valor, icon, cor, bg) {
-  return `
-    <div class="stat-card">
-      <div style="width:42px;height:42px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="${icon}" style="color:${cor};font-size:18px;"></i>
-      </div>
-      <div>
-        <div style="font-size:22px;font-weight:800;color:${cor};">${valor}</div>
-        <div style="font-size:12px;color:var(--muted);">${label}</div>
-      </div>
-    </div>`;
+function sc(label, val, icon, cor, bg) {
+  return `<div class="stat-card">
+    <div style="width:42px;height:42px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="${icon}" style="color:${cor};font-size:18px;"></i>
+    </div>
+    <div><div style="font-size:${typeof val==='string'?'15':'22'}px;font-weight:800;color:${cor};">${val}</div>
+    <div style="font-size:12px;color:var(--muted);">${label}</div></div>
+  </div>`;
 }
 
 function renderTabela() {
+  const dados = filtroAtivo==='todos' ? pedidoAtual : pedidoAtual.filter(i=>i.risco===filtroAtivo);
   const tbody = document.getElementById('tabelaAnalise');
-  const dados = filtroAtivo === 'todos' ? pedidoAtual : pedidoAtual.filter(i => i.risco === filtroAtivo);
+  if (!dados.length) { tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--muted);">Nenhum item nessa categoria</td></tr>`; return; }
 
-  if (dados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);">Nenhum item nessa categoria</td></tr>`;
-    return;
-  }
+  tbody.innerHTML = dados.map(it => {
+    const badgeR = it.risco==='alto'
+      ? `<span class="badge flag-alto">● Alto</span>`
+      : it.risco==='medio'
+      ? `<span class="badge flag-medio">● Atenção</span>`
+      : `<span class="badge flag-ok">● Normal</span>`;
 
-  tbody.innerHTML = dados.map(item => {
-    const badgeRisco = item.risco === 'alto'
-      ? `<span class="badge flag-alto"><i class="fas fa-circle" style="font-size:7px;"></i> Alto</span>`
-      : item.risco === 'medio'
-      ? `<span class="badge flag-medio"><i class="fas fa-circle" style="font-size:7px;"></i> Atenção</span>`
-      : `<span class="badge flag-ok"><i class="fas fa-circle" style="font-size:7px;"></i> Normal</span>`;
+    const desvStr = it.desvioQtd!==null
+      ? `<span style="color:${it.desvioQtd>50?'var(--red)':it.desvioQtd>0?'var(--yellow)':'var(--green)'}">${it.desvioQtd>0?'+':''}${Math.round(it.desvioQtd)}%</span>`
+      : (it.ehNovo ? '<span style="color:var(--muted)">sem hist.</span>' : '—');
 
-    const desvioQtdStr = item.desvioQtd !== null
-      ? `<span style="color:${item.desvioQtd > 50 ? 'var(--red)' : item.desvioQtd > 0 ? 'var(--yellow)' : 'var(--green)'}">
-          ${item.desvioQtd > 0 ? '+' : ''}${Math.round(item.desvioQtd)}%
-        </span>`
-      : item.ehNovo ? '<span style="color:var(--muted)">sem histórico</span>' : '—';
-
-    const varPrecoStr = item.variacaoPreco !== null && item.valorUnit > 0
-      ? `<span style="color:${item.variacaoPreco > 30 ? 'var(--red)' : item.variacaoPreco > 15 ? 'var(--yellow)' : 'var(--green)'}">
-          ${item.variacaoPreco > 0 ? '+' : ''}${Math.round(item.variacaoPreco)}%
-        </span>`
+    const varPStr = it.varPreco!==null && it.valorUnit>0
+      ? `<span style="color:${it.varPreco>30?'var(--red)':it.varPreco>15?'var(--yellow)':'var(--green)'}">${it.varPreco>0?'+':''}${Math.round(it.varPreco)}%</span>`
       : '—';
 
-    const flagsHtml = item.flags.length === 0
+    // Barra de cobertura
+    let cobStr = '—';
+    if (it.coberturaMeses !== null) {
+      const pct = Math.min(it.coberturaMeses / 4 * 100, 100);
+      const cor = it.coberturaMeses > 3 ? 'var(--red)' : it.coberturaMeses > 2 ? 'var(--yellow)' : 'var(--green)';
+      cobStr = `<div style="font-size:12px;font-weight:700;color:${cor};">${it.coberturaMeses.toFixed(1)} meses</div>
+        <div class="cobertura-bar"><div class="cobertura-fill" style="width:${pct}%;background:${cor};"></div></div>`;
+    }
+
+    const flagsHtml = it.flags.length===0
       ? '<span style="color:var(--muted);font-size:12px;">—</span>'
-      : item.flags.map(f => `
-          <span class="badge ${f.tipo === 'alto' ? 'flag-alto' : f.tipo === 'medio' ? 'flag-medio' : 'flag-novo'} tooltip" style="margin:2px;">
-            ${f.label}
-            <span class="tt">${f.detalhe}</span>
-          </span>`).join('');
+      : it.flags.map(f=>`<span class="badge ${f.nivel==='alto'?'flag-alto':f.nivel==='medio'?'flag-medio':'flag-novo'} tooltip" style="margin:2px;">${f.label}<span class="tt">${f.detalhe}</span></span>`).join('');
 
-    const mediaQtdStr = item.ehNovo ? '<span style="color:var(--muted)">—</span>' : fmtN(item.mediaQtd.toFixed(1));
-    const mediaValorStr = item.mediaValor > 0 ? fmt(item.mediaValor) : '—';
-
-    return `
-      <tr>
-        <td style="font-weight:600;max-width:200px;">${item.descricao}</td>
-        <td style="font-weight:700;">${fmtN(item.qtdSolicitada)}</td>
-        <td>${mediaQtdStr}</td>
-        <td>${desvioQtdStr}</td>
-        <td>${item.valorUnit > 0 ? fmt(item.valorUnit) : '—'}</td>
-        <td>${mediaValorStr}</td>
-        <td>${varPrecoStr}</td>
-        <td style="max-width:150px;font-size:12px;">${item.fornecedor || '—'}</td>
-        <td>${badgeRisco}</td>
-        <td style="max-width:240px;">${flagsHtml}</td>
-      </tr>`;
+    return `<tr>
+      <td style="font-weight:600;max-width:200px;">${it.desc}</td>
+      <td style="font-size:12px;">${it.setor ? it.setor.replace(/^\d+-/,'') : '—'}</td>
+      <td style="font-weight:700;">${fmtN(it.qtdSolicitada)}</td>
+      <td>${it.ehNovo?'<span style="color:var(--muted)">—</span>':fmtN(it.mediaCompra)}</td>
+      <td>${it.mediaConsumo>0?fmtN(it.mediaConsumo):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${cobStr}</td>
+      <td>${it.valorUnit>0?fmt(it.valorUnit):'—'}</td>
+      <td>${it.mediaValor>0?fmt(it.mediaValor):'—'}</td>
+      <td>${varPStr}</td>
+      <td style="font-size:12px;max-width:140px;">${it.fornecedor||'—'}</td>
+      <td>${badgeR}</td>
+      <td style="max-width:260px;">${flagsHtml}</td>
+    </tr>`;
   }).join('');
 }
 
-function filtrarAnalise(tipo) {
+function filtrar(tipo) {
   filtroAtivo = tipo;
-  ['todos','alto','medio','ok'].forEach(t => {
-    const btn = document.getElementById('f-' + t);
-    if (btn) btn.style.fontWeight = t === tipo ? '800' : '600';
-  });
   renderTabela();
 }
 
-// ─── Exportar ─────────────────────────────────────────────
+// ── Exportar ───────────────────────────────────────────────
 function exportarRelatorio() {
-  if (pedidoAtual.length === 0) { alert('Nenhum pedido analisado ainda.'); return; }
-  const rows = [['Item','Qtd Solicitada','Média Histórica','Desvio Qtd %','Valor Unit.','Preço Médio Histórico','Variação Preço %','Fornecedor','Risco','Flags']];
-  pedidoAtual.forEach(i => {
-    rows.push([
-      i.descricao,
-      i.qtdSolicitada,
-      i.ehNovo ? '' : i.mediaQtd.toFixed(1),
-      i.desvioQtd !== null ? Math.round(i.desvioQtd) + '%' : '',
-      i.valorUnit > 0 ? i.valorUnit : '',
-      i.mediaValor > 0 ? i.mediaValor.toFixed(2) : '',
-      i.variacaoPreco !== null ? Math.round(i.variacaoPreco) + '%' : '',
-      i.fornecedor,
-      i.risco.toUpperCase(),
-      i.flags.map(f => f.label).join(' | ')
-    ]);
-  });
+  if (!pedidoAtual.length) { alert('Nenhum pedido analisado.'); return; }
+  const rows = [['Item','Setor','Qtd Pedida','Média Compra/mês','Consumo/mês','Cobertura (meses)','Valor Unit.','Preço Médio Hist.','Var. Preço %','Fornecedor','Risco','Flags']];
+  pedidoAtual.forEach(i => rows.push([
+    i.desc, i.setor, i.qtdSolicitada,
+    i.ehNovo?'':i.mediaCompra.toFixed(1),
+    i.mediaConsumo>0?i.mediaConsumo.toFixed(1):'',
+    i.coberturaMeses!==null?i.coberturaMeses.toFixed(1):'',
+    i.valorUnit>0?i.valorUnit:'',
+    i.mediaValor>0?i.mediaValor.toFixed(2):'',
+    i.varPreco!==null?Math.round(i.varPreco)+'%':'',
+    i.fornecedor,
+    i.risco.toUpperCase(),
+    i.flags.map(f=>f.label).join(' | ')
+  ]));
   const ws = XLSX.utils.aoa_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Análise');
   XLSX.writeFile(wb, 'analise-compras-' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
-// ─── Init ─────────────────────────────────────────────────
-initDropZones();
+// ── Init ───────────────────────────────────────────────────
+criarDropZones('dzCompras',     'dzc', carregarCompra);
+criarDropZones('dzDistribuicao','dzd', carregarDistribuicao);
 </script>
 </body>
 </html>
