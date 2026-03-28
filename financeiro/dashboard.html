@@ -222,8 +222,8 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
         </select>
         <select id="fAba" class="form-input" onchange="renderContas()">
           <option value="">Todas as abas</option>
-          <option value="PENDENTES">Pendentes</option><option value="IMPOSTOS">Impostos</option>
-          <option value="FGTS">FGTS/Rescisões</option><option value="PIX">PIX</option>
+          <option value="PENDENTES">Pendentes</option>
+          <option value="FGTS">FGTS/Rescisões</option>
         </select>
         <input type="date" id="fDe"  class="form-input" onchange="renderContas()">
         <input type="date" id="fAte" class="form-input" onchange="renderContas()">
@@ -594,14 +594,14 @@ function parseBoletosSheet(ws,label){
 function importBoletos(ab,name){
   try{
     const wb=XLSX.read(ab,{type:'array',cellDates:false});
-    const abaMap={'PENDENTES':'PENDENTES','IMPOSTOS ':'IMPOSTOS','IMPOSTOS':'IMPOSTOS',
-      'FGTS E RESCISÕES ':'FGTS','FGTS E RESCISÕES':'FGTS','PIX':'PIX'};
+    const abaMap={'PENDENTES':'PENDENTES',
+      'FGTS E RESCISÕES ':'FGTS','FGTS E RESCISÕES':'FGTS'};
     const all=[];
     for(const[sn,label] of Object.entries(abaMap)){
       const ws=wb.Sheets[sn];if(!ws)continue;
       all.push(...parseBoletosSheet(ws,label));
     }
-    if(!all.length){alert('Nenhuma conta encontrada. Verifique as abas: PENDENTES, IMPOSTOS, FGTS E RESCISÕES, PIX');return;}
+    if(!all.length){alert('Nenhuma conta encontrada. Verifique as abas: PENDENTES, FGTS E RESCISÕES');return;}
     accounts=all;
     document.getElementById('boletosDot').style.background='#10b981';
     document.getElementById('boletosInfo').textContent=`${name} — ${accounts.length} contas`;
