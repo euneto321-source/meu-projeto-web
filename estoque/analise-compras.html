@@ -229,7 +229,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 </div><!-- /container -->
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// pdfjsLib configurado dentro de processarDocumento(), após carregamento garantido
 
 // ── Estado ────────────────────────────────────────────────
 const historicoCompras = {};      // desc → [{mes,qtd,valorUnit,fornecedor}]
@@ -477,6 +477,8 @@ async function processarDocumento(file) {
   prev.innerHTML='<p style="color:var(--muted);font-size:13px;">Carregando...</p>';
 
   if(file.type==='application/pdf'){
+    if(typeof pdfjsLib !== 'undefined')
+      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     const ab=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
     prev.innerHTML='';
