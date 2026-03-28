@@ -579,12 +579,14 @@ function parseBoletosSheet(ws,label){
     else if(!isNaN(n3)&&n3>0){val=n3;}
     else if(!isNaN(n2)&&n2>0){val=n2;}
     if(!val||val<=0) continue;
+    // Detecta possível erro de digitação/coluna errada: valor > R$500.000 é suspeito
+    const _valorSuspeito=val>500000;
     const key=`${forn}|${doc}|${venc}|${val}`;
     const ex=accounts.find(a=>a._key===key);
     result.push({
       id:   ex?ex.id:(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)),
       _key: key, fornecedor:forn, documento:doc, vencimento:venc, valor:val,
-      aba:  label, pago:ex?ex.pago:false,
+      aba:  label, pago:ex?ex.pago:false, _valorSuspeito,
       data_pagamento:ex?ex.data_pagamento:null, obs:ex?ex.obs:'',
     });
   }
@@ -604,7 +606,12 @@ function importBoletos(ab,name){
     if(!all.length){alert('Nenhuma conta encontrada. Verifique as abas: PENDENTES, FGTS E RESCISÕES');return;}
     accounts=all;
     document.getElementById('boletosDot').style.background='#10b981';
-    document.getElementById('boletosInfo').textContent=`${name} — ${accounts.length} contas`;
+    const suspeitos=all.filter(a=>a._valorSuspeito);
+    document.getElementById('boletosInfo').textContent=`${name} — ${accounts.length} contas${suspeitos.length?` ⚠️ ${suspeitos.length} valor(es) suspeito(s)`:''}`;
+    if(suspeitos.length){
+      const lista=suspeitos.map(a=>`• ${a.fornecedor}: ${fmtMoney(a.valor)}`).join('\n');
+      alert(`⚠️ Atenção: ${suspeitos.length} conta(s) com valor acima de R$ 500.000,00. Verifique se não há erro de digitação na planilha:\n\n${lista}`);
+    }
     if(dreEntries.length) buildMapping();
     saveState(); showDashboard();
   }catch(err){console.error(err);alert('Erro ao ler boletos: '+err.message);}
@@ -735,6 +742,7 @@ function showDashboard(){
 function renderAll(){
   renderCards(); renderAlerts(); renderDayTable();
   if(document.getElementById('panel_contas')&&!document.getElementById('panel_contas').classList.contains('hidden')) renderContas();
+  if(dreEntries.length&&document.getElementById('panel_dre')&&!document.getElementById('panel_dre').classList.contains('hidden')) renderDREImpact();
 }
 
 function renderCards(){
@@ -822,7 +830,7 @@ function renderDayTable(){
         <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${fmtDate(a.vencimento)}</td>
         <td><span style="background:var(--bg);padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
         <td>${planoHtml}</td>
-        <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+        <td class="text-right font-bold">${fmtMoney(a.valor)}${a._valorSuspeito?` <span title="Valor suspeito: verifique a planilha" style="color:#ef4444;cursor:help">⚠️</span>`:''}</td>
         <td>${badgeHtml(st)}</td>
         <td><button class="btn btn-sm btn-green" onclick="marcarPago('${a.id}')"><i class="fas fa-check"></i></button></td>
       </tr>`;
@@ -867,7 +875,7 @@ function renderContas(){
         <td style="${st==='atrasado'?'color:#ef4444;font-weight:700':''}">${fmtDate(a.vencimento)}</td>
         <td><span style="background:var(--bg);padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted)">${escHtml(a.aba)}</span></td>
         <td>${planoCell}</td>
-        <td class="text-right font-bold">${fmtMoney(a.valor)}</td>
+        <td class="text-right font-bold">${fmtMoney(a.valor)}${a._valorSuspeito?` <span title="Valor suspeito: verifique a planilha" style="color:#ef4444;cursor:help">⚠️</span>`:''}</td>
         <td>${badgeHtml(st)}</td>
         <td class="flex gap-1">
           ${a.pago
@@ -987,11 +995,10 @@ function renderDREImpact(){
       <td class="text-right font-bold" style="color:${pend>0?(hasOverdue?'#ef4444':'#f59e0b'):'var(--muted)'}">
         ${pend>0?fmtMoney(pend):'—'}${anomHtml?`<br>${anomHtml}`:''}
       </td>
-      <td class="text-right font-bold">${fmtMoney(proj)}</td>
+      <td class="text-right font-bold">${pend>0?fmtMoney(proj):'<span style="color:var(--muted)">—</span>'}</td>
       <td>
         ${pend>0?`<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,pct)}%;background:${barColor}"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${contas.length} conta(s)${hasOverdue?' ⚠️ atrasada':''}</div>`:'<span style="color:var(--muted);font-size:11px">sem pendentes</span>'}
-      </td>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${contas.length} conta(s)${hasOverdue?' ⚠️ atrasada':''}</div>`:''}</td>
       <td>
         ${hasPend?`<button class="btn btn-sm btn-outline" onclick="expandDREPlano('${escHtml(plano).replace(/'/g,'\\\'')}')" style="font-size:11px"><i class="fas fa-eye"></i></button>`:''}
       </td>
@@ -1025,10 +1032,12 @@ function renderDREImpact(){
     document.getElementById('dreResultado').classList.add('hidden');
   }
 
-  // Charts
-  const top=allPlanos.filter(p=>dreByPlano[p]||boletosByPlano[p])
-    .sort((a,b)=>((dreByPlano[b]?.registrado||0)+(boletosByPlano[b]?.total||0))-((dreByPlano[a]?.registrado||0)+(boletosByPlano[a]?.total||0)))
-    .slice(0,12);
+  // Charts — planos COM pendentes sempre na frente, depois DRE puro
+  const withPend=allPlanos.filter(p=>(boletosByPlano[p]?.total||0)>0)
+    .sort((a,b)=>(boletosByPlano[b]?.total||0)-(boletosByPlano[a]?.total||0));
+  const dreOnly=allPlanos.filter(p=>!((boletosByPlano[p]?.total||0)>0)&&dreByPlano[p])
+    .sort((a,b)=>(dreByPlano[b]?.registrado||0)-(dreByPlano[a]?.registrado||0));
+  const top=[...withPend,...dreOnly].slice(0,12);
 
   renderGroupedBar('chartDRE',
     top,
