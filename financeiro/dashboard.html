@@ -598,34 +598,42 @@ function importDRE(ab,name){
 // CORRELAÇÃO — FUZZY MATCH
 // ══════════════════════════════════════════════════════
 function buildMapping(){
-  // Group DRE entries: historico → plano (with frequency)
-  const histPlano={};
+  // Resolve cada histórico para seu plano dominante (mais frequente)
+  // Corrige bug onde o primeiro plano era mantido mesmo não sendo o mais comum
+  const histPlanoCounts={};
   for(const e of dreEntries){
     const key=normalizeStr(e.historico);
-    if(!histPlano[key]) histPlano[key]={plano:e.plano,count:0};
-    histPlano[key].count++;
+    if(!histPlanoCounts[key]) histPlanoCounts[key]={};
+    histPlanoCounts[key][e.plano]=(histPlanoCounts[key][e.plano]||0)+1;
   }
-  // For each unique fornecedor, find best matching plano
+  const histBestPlano={};
+  for(const[key,planoMap] of Object.entries(histPlanoCounts)){
+    histBestPlano[key]=Object.entries(planoMap).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  // Para cada fornecedor, encontra o melhor plano usando MAX por plano
+  // Corrige bias de frequência: antes era sc * count, que fazia planos com
+  // muitas entradas no DRE dominarem mesmo com match fraco de palavras.
   const fornecedores=[...new Set(accounts.map(a=>a.fornecedor))];
   for(const forn of fornecedores){
     const fNorm=normalizeStr(forn);
-    if(dreMapping[fNorm]?.manual) continue; // keep manual overrides
-    const scores={};
+    if(dreMapping[fNorm]?.manual) continue;
     const fWords=fNorm.split(/\s+/).filter(w=>w.length>2);
-    for(const[hist,info] of Object.entries(histPlano)){
+    const scores={};
+    for(const[hist,plano] of Object.entries(histBestPlano)){
       let sc=0;
-      // Word match score
       for(const w of fWords){if(hist.includes(w)) sc+=2;}
-      // Reverse: hist words in fornecedor
       const hWords=hist.split(/\s+/).filter(w=>w.length>2);
       for(const w of hWords){if(fNorm.includes(w)) sc+=1;}
-      if(sc>0) scores[info.plano]=(scores[info.plano]||0)+sc*info.count;
+      // MAX por plano: o melhor histórico individual define o score, não a soma
+      if(sc>0) scores[plano]=Math.max(scores[plano]||0,sc);
     }
     const best=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
     if(best.length){
       const topScore=best[0][1];
-      const maxPossible=fWords.length*2*10;
-      const conf=Math.min(1,topScore/Math.max(maxPossible,topScore));
+      const secondScore=best[1]?best[1][1]:0;
+      // Confiança: quão melhor é o top vs o segundo colocado
+      const conf=topScore>0?Math.min(1,(topScore-secondScore+0.5)/(topScore+0.5)):0;
       dreMapping[fNorm]={plano:best[0][0],score:topScore,conf,manual:false};
     }
   }
