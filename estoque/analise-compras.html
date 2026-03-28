@@ -8,6 +8,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{--bg:#f0f4f8;--card:#fff;--topbar:#1e3a5f;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--blue:#2563eb;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#7c3aed;}
 *{font-family:'Segoe UI',system-ui,sans-serif;}
@@ -15,9 +17,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 .card{background:var(--card);border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.08);}
 .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s;}
 .btn:hover{opacity:.85;}
-.btn-primary{background:var(--topbar);color:#fff;}
 .btn-blue{background:var(--blue);color:#fff;}
-.btn-sm{padding:4px 10px;font-size:12px;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
 .form-input{background:#fff;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;outline:none;width:100%;}
 .form-input:focus{border-color:var(--blue);}
 .tbl{width:100%;font-size:13px;border-collapse:collapse;}
@@ -29,631 +33,923 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 .flag-medio{background:#fef3c7;color:#92400e;}
 .flag-ok{background:#d1fae5;color:#065f46;}
 .flag-novo{background:#ede9fe;color:#5b21b6;}
-.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;}
 .drop-zone:hover,.drop-zone.over{border-color:var(--blue);background:rgba(37,99,235,.04);}
 .drop-zone.loaded{border-color:var(--green);background:rgba(16,185,129,.04);}
-.stat-card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:center;gap:14px;}
-.step-num{width:28px;height:28px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.stat-card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:center;gap:12px;}
+.step-num{width:26px;height:26px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.tab-btn{padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.cobertura-bar{height:7px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:3px;width:80px;}
+.cobertura-fill{height:100%;border-radius:4px;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:#475569;border-radius:3px;}
 .tooltip{position:relative;}
 .tooltip:hover .tt{display:block;}
-.tt{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;white-space:nowrap;z-index:200;pointer-events:none;max-width:280px;white-space:normal;text-align:center;}
-.cobertura-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:3px;width:80px;}
-.cobertura-fill{height:100%;border-radius:4px;}
+.tt{display:none;position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;z-index:200;pointer-events:none;max-width:260px;white-space:normal;text-align:center;}
+.item-hist-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:16px;cursor:pointer;transition:box-shadow .2s;}
+.item-hist-card:hover{box-shadow:0 4px 16px rgba(37,99,235,.12);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ocr-match{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;background:#fff;}
+.ocr-match:hover{border-color:var(--blue);}
 </style>
 </head>
 <body>
 
-<div style="background:var(--topbar);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <i class="fas fa-boxes" style="color:#fff;font-size:18px;"></i>
-    <span style="color:#fff;font-weight:700;font-size:16px;">Análise de Compras</span>
-    <span style="color:#94a3b8;font-size:13px;">— MedClin</span>
+<!-- Topbar -->
+<div style="background:var(--topbar);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <i class="fas fa-boxes" style="color:#fff;font-size:17px;"></i>
+    <span style="color:#fff;font-weight:700;font-size:15px;">Análise de Compras</span>
+    <span style="color:#94a3b8;font-size:12px;">— MedClin</span>
   </div>
-  <button class="btn" style="background:rgba(255,255,255,.1);color:#fff;font-size:12px;" onclick="exportarRelatorio()">
-    <i class="fas fa-download"></i> Exportar Excel
+  <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;" onclick="exportarRelatorio()">
+    <i class="fas fa-download"></i> Exportar
   </button>
 </div>
 
-<div style="max-width:1400px;margin:0 auto;padding:24px 20px;">
+<!-- Tabs -->
+<div style="background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px;">
+  <button class="tab-btn active" onclick="trocarTab('analise',this)"><i class="fas fa-search" style="margin-right:6px;"></i>Análise de Pedido</button>
+  <button class="tab-btn" onclick="trocarTab('historico',this)"><i class="fas fa-chart-bar" style="margin-right:6px;"></i>Histórico de Consumo</button>
+  <button class="tab-btn" onclick="trocarTab('relatorios',this)"><i class="fas fa-file-alt" style="margin-right:6px;"></i>Relatórios</button>
+</div>
 
-  <!-- ETAPA 1: Histórico de compras -->
-  <div class="card" style="padding:22px;margin-bottom:18px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+<div style="max-width:1400px;margin:0 auto;padding:20px;">
+
+<!-- ══════════════════════════════════════════════
+     TAB 1 — ANÁLISE DE PEDIDO
+══════════════════════════════════════════════ -->
+<div id="tab-analise" class="tab-content active">
+
+  <!-- Etapa 1: Compras -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
       <div class="step-num" style="background:var(--topbar);">1</div>
-      <div>
-        <h2 style="font-size:14px;font-weight:700;">Relatórios de Compras</h2>
-        <p style="font-size:12px;color:var(--muted);">Histórico mensal de compras por fornecedor</p>
-      </div>
+      <div><h2 style="font-size:14px;font-weight:700;">Relatórios de Compras</h2>
+        <p style="font-size:11px;color:var(--muted);">Histórico mensal de compras por fornecedor</p></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="dzCompras"></div>
-    <div id="statusCompras" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzCompras"></div>
+    <div id="statusCompras" style="margin-top:8px;font-size:12px;color:var(--muted);display:none;"></div>
   </div>
 
-  <!-- ETAPA 2: Distribuição por centro de custo -->
-  <div class="card" style="padding:22px;margin-bottom:18px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+  <!-- Etapa 2: Distribuição -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
       <div class="step-num" style="background:var(--purple);">2</div>
-      <div>
-        <h2 style="font-size:14px;font-weight:700;">Relatórios de Distribuição</h2>
-        <p style="font-size:12px;color:var(--muted);">Consumo real por centro de custo — permite validar se o setor realmente usa o item</p>
-      </div>
+      <div><h2 style="font-size:14px;font-weight:700;">Relatórios de Distribuição</h2>
+        <p style="font-size:11px;color:var(--muted);">Consumo real por centro de custo</p></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="dzDistribuicao"></div>
-    <div id="statusDistribuicao" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzDistribuicao"></div>
+    <div id="statusDistribuicao" style="margin-top:8px;font-size:12px;color:var(--muted);display:none;"></div>
   </div>
 
-  <!-- ETAPA 3: Pedido -->
-  <div class="card" style="padding:22px;margin-bottom:18px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+  <!-- Etapa 3: Pedido -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
       <div class="step-num" style="background:var(--blue);">3</div>
-      <div>
-        <h2 style="font-size:14px;font-weight:700;">Lançar pedido para análise</h2>
-        <p style="font-size:12px;color:var(--muted);">Item por item ou Excel completo</p>
-      </div>
+      <div><h2 style="font-size:14px;font-weight:700;">Lançar Pedido</h2>
+        <p style="font-size:11px;color:var(--muted);">Manual, Excel, imagem ou PDF</p></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:14px;">
+    <!-- Formulário manual -->
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;">
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">ITEM / DESCRIÇÃO</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">ITEM</label>
         <input class="form-input" id="inItem" placeholder="Ex: LUVA PROCEDIMENTO M" list="listaItens">
         <datalist id="listaItens"></datalist>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">QTD. SOLICITADA</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">QUANTIDADE</label>
         <input class="form-input" id="inQtd" type="number" min="0" placeholder="0">
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">VALOR UNITÁRIO (R$)</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">VALOR UNIT. (R$)</label>
         <input class="form-input" id="inValor" type="number" min="0" step="0.01" placeholder="0,00">
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">FORNECEDOR</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">FORNECEDOR</label>
         <input class="form-input" id="inFornecedor" placeholder="Fornecedor" list="listaFornecedores">
         <datalist id="listaFornecedores"></datalist>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">SETOR SOLICITANTE</label>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">SETOR</label>
         <input class="form-input" id="inSetor" placeholder="Ex: UTI, LAB" list="listaSetores">
         <datalist id="listaSetores"></datalist>
       </div>
       <div>
-        <button class="btn btn-blue" onclick="analisarItem()">
-          <i class="fas fa-search"></i> Analisar
-        </button>
+        <button class="btn btn-blue" onclick="analisarItem()"><i class="fas fa-search"></i> Analisar</button>
       </div>
     </div>
 
-    <!-- Upload de arquivo do pedido -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
-      <!-- Excel em lote -->
-      <div class="drop-zone" id="dropPedido" style="padding:14px;" onclick="document.getElementById('filePedido').click()">
-        <input type="file" id="filePedido" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
-        <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
-        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Excel do pedido completo — análise em lote</span>
-      </div>
-      <!-- JPEG / PDF para visualização -->
-      <div class="drop-zone" id="dropDocumento" style="padding:14px;"
-           onclick="document.getElementById('fileDocumento').click()"
+    <!-- Uploads -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="drop-zone" id="dropExcel" onclick="document.getElementById('fileExcel').click()"
            ondragover="event.preventDefault();this.classList.add('over')"
            ondragleave="this.classList.remove('over')"
-           ondrop="event.preventDefault();this.classList.remove('over');abrirDocumento(event.dataTransfer.files[0])">
-        <input type="file" id="fileDocumento" accept=".jpg,.jpeg,.png,.pdf" style="display:none"
-               onchange="abrirDocumento(this.files[0])">
-        <i class="fas fa-file-image" style="color:#f59e0b;font-size:18px;"></i>
-        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem ou PDF — visualizar ao lado</span>
+           ondrop="event.preventDefault();this.classList.remove('over');carregarPedidoExcel({files:[event.dataTransfer.files[0]]})">
+        <input type="file" id="fileExcel" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
+        <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
+        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Excel do pedido completo</span>
+      </div>
+      <div class="drop-zone" id="dropDoc" onclick="document.getElementById('fileDoc').click()"
+           ondragover="event.preventDefault();this.classList.add('over')"
+           ondragleave="this.classList.remove('over')"
+           ondrop="event.preventDefault();this.classList.remove('over');processarDocumento(event.dataTransfer.files[0])">
+        <input type="file" id="fileDoc" accept=".jpg,.jpeg,.png,.pdf" style="display:none" onchange="processarDocumento(this.files[0])">
+        <i class="fas fa-file-image" style="color:var(--yellow);font-size:18px;"></i>
+        <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem (JPEG/PNG) ou PDF</span>
       </div>
     </div>
   </div>
 
-  <!-- Painel de documento (imagem/PDF) -->
-  <div id="painelDoc" style="display:none;margin-bottom:18px;">
+  <!-- Painel OCR / visualização -->
+  <div id="painelOcr" style="display:none;margin-bottom:16px;">
     <div class="card" style="padding:0;overflow:hidden;">
       <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:8px;">
           <i class="fas fa-file-alt" style="color:var(--yellow);"></i>
-          <span style="font-size:13px;font-weight:700;" id="nomeDocumento">Pedido</span>
+          <span id="nomeDoc" style="font-size:13px;font-weight:700;"></span>
+          <span id="badgeOcr" style="font-size:11px;color:var(--muted);"></span>
         </div>
-        <button class="btn btn-sm" style="background:var(--bg);color:var(--muted);" onclick="fecharDoc()">
-          <i class="fas fa-times"></i> Fechar
-        </button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm btn-purple" id="btnExtrair" onclick="extrairItensDoc()" style="display:none;">
+            <i class="fas fa-magic"></i> Identificar itens automaticamente
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="fecharDoc()"><i class="fas fa-times"></i></button>
+        </div>
       </div>
-      <div id="conteudoDoc" style="padding:16px;max-height:520px;overflow-y:auto;text-align:center;background:#f8fafc;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;min-height:300px;">
+        <div id="previewDoc" style="padding:16px;background:#f8fafc;overflow-y:auto;max-height:500px;text-align:center;border-right:1px solid var(--border);"></div>
+        <div id="resultadoOcr" style="padding:16px;overflow-y:auto;max-height:500px;">
+          <p style="color:var(--muted);font-size:13px;">Clique em "Identificar itens automaticamente" para extrair o pedido do documento.</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Resultado -->
+  <!-- Resultado análise -->
   <div id="secaoAnalise" style="display:none;">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;" id="statsResumo"></div>
-
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;" id="statsResumo"></div>
     <div class="card" style="padding:0;overflow:hidden;">
-      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <i class="fas fa-table" style="color:var(--blue);"></i>
           <h3 style="font-size:14px;font-weight:700;">Resultado da Análise</h3>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn btn-sm" style="background:var(--bg);color:var(--muted);" onclick="filtrar('todos')" id="f-todos">Todos</button>
-          <button class="btn btn-sm flag-alto" onclick="filtrar('alto')" id="f-alto">🔴 Alto risco</button>
+          <button class="btn btn-sm btn-outline" onclick="filtrar('todos')" id="f-todos">Todos</button>
+          <button class="btn btn-sm flag-alto" onclick="filtrar('alto')" id="f-alto">🔴 Alto</button>
           <button class="btn btn-sm flag-medio" onclick="filtrar('medio')" id="f-medio">🟡 Atenção</button>
           <button class="btn btn-sm flag-ok" onclick="filtrar('ok')" id="f-ok">🟢 Normal</button>
         </div>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Setor</th>
-              <th>Qtd. Pedida</th>
-              <th>Média compra/mês</th>
-              <th>Consumo/mês</th>
-              <th>Cobertura</th>
-              <th>Valor unit.</th>
-              <th>Preço médio hist.</th>
-              <th>Var. preço</th>
-              <th>Fornecedor</th>
-              <th>Risco</th>
-              <th>Flags</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Item</th><th>Setor</th><th>Qtd Pedida</th>
+            <th>Média Compra/mês</th><th>Consumo/mês</th>
+            <th>Ult. Dispensação</th><th>Cobertura</th>
+            <th>Valor Unit.</th><th>Preço Médio Hist.</th><th>Var. Preço</th>
+            <th>Fornecedor</th><th>Risco</th><th>Flags</th>
+          </tr></thead>
           <tbody id="tabelaAnalise"></tbody>
         </table>
       </div>
     </div>
   </div>
 
+</div><!-- /tab-analise -->
+
+<!-- ══════════════════════════════════════════════
+     TAB 2 — HISTÓRICO DE CONSUMO
+══════════════════════════════════════════════ -->
+<div id="tab-historico" class="tab-content">
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <input class="form-input" id="buscaHistorico" placeholder="Buscar item..." style="max-width:360px;"
+             oninput="filtrarHistorico(this.value)">
+      <span style="font-size:12px;color:var(--muted);" id="totalItensHist"></span>
+    </div>
+  </div>
+  <div id="gridHistorico" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;"></div>
+  <div id="detalheItem" style="display:none;margin-top:16px;"></div>
 </div>
 
-<script>
-// ── Estado ────────────────────────────────────────────────
-const historicoCompras = {};    // desc → [{mes,qtd,valorUnit,fornecedor}]
-const historicoDistribuicao = {}; // desc → [{mes,centro,qtd,valor}]
-const fornecedoresHist = {};    // desc → Set
-const centrosHist = {};         // desc → Set
+<!-- ══════════════════════════════════════════════
+     TAB 3 — RELATÓRIOS
+══════════════════════════════════════════════ -->
+<div id="tab-relatorios" class="tab-content">
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-blue" id="r-mensal" onclick="trocarRelatorio('mensal')">Mensal</button>
+        <button class="btn btn-sm btn-outline" id="r-semanal" onclick="trocarRelatorio('semanal')">Semanal (estimado)</button>
+        <button class="btn btn-sm btn-outline" id="r-dispensacao" onclick="trocarRelatorio('dispensacao')">Últimas Dispensações</button>
+      </div>
+      <button class="btn btn-sm btn-green" onclick="exportarRelatorio()"><i class="fas fa-download"></i> Exportar</button>
+    </div>
+  </div>
+  <div id="conteudoRelatorio"></div>
+</div>
 
+</div><!-- /container -->
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Estado ────────────────────────────────────────────────
+const historicoCompras = {};      // desc → [{mes,qtd,valorUnit,fornecedor}]
+const historicoDistribuicao = {}; // desc → [{mes,centro,qtd,valor}]
+const fornecedoresHist = {};
+const centrosHist = {};
 let arquivosCompras = [];
 let arquivosDist = [];
 let pedidoAtual = [];
 let filtroAtivo = 'todos';
-
+let relatorioAtivo = 'mensal';
+let docAtual = null; // { file, tipo, texto }
 const MESES = ['Janeiro','Fevereiro','Março'];
+const MESES_ABREV = ['Jan','Fev','Mar'];
+let chartAtivo = null;
 
 // ── Utils ─────────────────────────────────────────────────
-const norm = s => s?.toString().trim().toUpperCase().replace(/\s+/g,' ') || '';
-const fmt  = v => 'R$ ' + Number(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-const fmtN = v => Number(v).toLocaleString('pt-BR',{maximumFractionDigits:1});
+const norm  = s => s?.toString().trim().toUpperCase().replace(/\s+/g,' ') || '';
+const fmt   = v => 'R$ ' + Number(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtN  = v => Number(v).toLocaleString('pt-BR',{maximumFractionDigits:1});
+const lerXl = (file, cb) => { const r=new FileReader(); r.onload=e=>{try{cb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}))}catch(err){alert('Erro: '+err.message)}}; r.readAsArrayBuffer(file); };
+
+// ── Tabs ──────────────────────────────────────────────────
+function trocarTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'historico') renderHistorico();
+  if (id === 'relatorios') renderRelatorio();
+}
 
 // ── Drop zones ────────────────────────────────────────────
-function criarDropZones(containerId, prefixo, onFile) {
-  const c = document.getElementById(containerId);
+function criarDropZones(cId, pfx, onFile) {
+  const c = document.getElementById(cId);
   c.innerHTML = '';
   MESES.forEach((mes, i) => {
     const dz = document.createElement('div');
-    dz.className = 'drop-zone';
-    dz.id = `${prefixo}-${i}`;
-    dz.innerHTML = `
-      <input type="file" id="${prefixo}f-${i}" accept=".xlsx,.xls" style="display:none">
-      <i class="fas fa-file-excel" style="color:var(--green);font-size:20px;"></i>
-      <p style="font-size:13px;font-weight:600;margin-top:6px;">${mes} 2026</p>
-      <p style="font-size:12px;color:var(--muted);">Clique ou arraste</p>`;
-    dz.onclick = () => document.getElementById(`${prefixo}f-${i}`).click();
-    document.getElementById(`${prefixo}f-${i}`).onchange = e => { if(e.target.files[0]) onFile(e.target.files[0], i, mes); };
+    dz.className = 'drop-zone'; dz.id = pfx+i;
+    dz.innerHTML = `<input type="file" id="${pfx}f${i}" accept=".xlsx,.xls" style="display:none">
+      <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
+      <p style="font-size:12px;font-weight:600;margin-top:6px;">${mes} 2026</p>
+      <p style="font-size:11px;color:var(--muted);">Clique ou arraste</p>`;
+    dz.onclick = () => document.getElementById(pfx+'f'+i).click();
+    document.getElementById(pfx+'f'+i).onchange = e => { if(e.target.files[0]) onFile(e.target.files[0],i,mes); };
     dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
     dz.ondragleave = () => dz.classList.remove('over');
-    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0], i, mes); };
+    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0],i,mes); };
     c.appendChild(dz);
   });
 }
-
-function marcarDzOk(prefixo, i, mes, itens, nome) {
-  const dz = document.getElementById(`${prefixo}-${i}`);
+function marcarDzOk(id, mes, n, nome) {
+  const dz = document.getElementById(id);
   dz.classList.add('loaded');
-  dz.innerHTML = `
-    <i class="fas fa-check-circle" style="color:var(--green);font-size:20px;"></i>
-    <p style="font-size:13px;font-weight:600;color:var(--green);margin-top:6px;">${mes} 2026</p>
-    <p style="font-size:12px;color:var(--muted);">${itens} itens • ${nome}</p>`;
+  dz.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
+    <p style="font-size:12px;font-weight:600;color:var(--green);margin-top:4px;">${mes} 2026</p>
+    <p style="font-size:11px;color:var(--muted);">${n} itens • ${nome}</p>`;
 }
 
-// ── Parser: relatório de compras ──────────────────────────
+// ── Parser compras ────────────────────────────────────────
 function parsearCompras(wb, mes) {
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
-  const itens = [];
-  let fornAtual = '';
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
+  const itens = []; let fornAtual = '';
   for (const row of rows) {
-    if (typeof row[0] === 'string' && row[0].startsWith('FORNECEDOR:')) {
-      const p = row[0].split('-');
-      fornAtual = norm(p.length > 1 ? p.slice(1).join('-') : row[0].replace('FORNECEDOR:',''));
+    if (typeof row[0]==='string' && row[0].startsWith('FORNECEDOR:')) {
+      const p=row[0].split('-'); fornAtual=norm(p.length>1?p.slice(1).join('-'):row[0].replace('FORNECEDOR:',''));
     }
-    if (typeof row[0] === 'number' && row[0] > 0 && typeof row[1] === 'string' && row[1].trim()) {
-      const qtd = parseFloat(row[4]) || 0;
-      const valorUnit = parseFloat(row[5]) || 0;
-      if (qtd > 0) itens.push({ descricao: norm(row[1]), qtd, valorUnit, fornecedor: fornAtual, mes });
+    if (typeof row[0]==='number' && row[0]>0 && typeof row[1]==='string' && row[1].trim()) {
+      const qtd=parseFloat(row[4])||0, val=parseFloat(row[5])||0;
+      if(qtd>0) itens.push({descricao:norm(row[1]),qtd,valorUnit:val,fornecedor:fornAtual,mes});
     }
   }
   return itens;
 }
 
-// ── Parser: relatório de distribuição ─────────────────────
+// ── Parser distribuição ───────────────────────────────────
 function parsearDistribuicao(wb, mes) {
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
-  const itens = [];
-  let centroAtual = '';
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
+  const itens = []; let centro = '';
   for (const row of rows) {
-    // Centro de custo: col A tem valor, col B é null, col A não é número
-    if (row[0] && !row[1] && typeof row[0] === 'string') {
-      const s = row[0].trim();
-      // Ignorar linhas de cabeçalho do relatório
-      if (s.match(/^\d{6}-/) ) centroAtual = norm(s);
-    }
-    // Item: col A null, col B = descrição, col C = qtd
-    if (!row[0] && row[1] && typeof row[1] === 'string' && row[1].trim() && !row[1].toLowerCase().includes('soma')) {
-      const qtd = parseFloat(row[2]) || 0;
-      const valor = parseFloat(row[3]) || 0;
-      if (qtd > 0 && centroAtual) {
-        itens.push({ descricao: norm(row[1]), centro: centroAtual, qtd, valor, mes });
-      }
+    if (row[0] && !row[1] && typeof row[0]==='string' && row[0].trim().match(/^\d{6}-/)) centro=norm(row[0]);
+    if (!row[0] && row[1] && typeof row[1]==='string' && row[1].trim() && !row[1].toLowerCase().includes('soma')) {
+      const qtd=parseFloat(row[2])||0, val=parseFloat(row[3])||0;
+      if(qtd>0 && centro) itens.push({descricao:norm(row[1]),centro,qtd,valor:val,mes});
     }
   }
   return itens;
 }
 
-// ── Carregar compras ───────────────────────────────────────
-function carregarCompra(file, idx, mes) {
-  lerExcel(file, wb => {
+// ── Loaders ───────────────────────────────────────────────
+function carregarCompra(file, i, mes) {
+  lerXl(file, wb => {
     const itens = parsearCompras(wb, mes);
-    arquivosCompras[idx] = { mes, itens };
+    arquivosCompras[i] = {mes,itens};
     itens.forEach(it => {
-      (historicoCompras[it.descricao] = historicoCompras[it.descricao] || []).push(it);
-      (fornecedoresHist[it.descricao] = fornecedoresHist[it.descricao] || new Set()).add(it.fornecedor);
+      (historicoCompras[it.descricao]=historicoCompras[it.descricao]||[]).push(it);
+      (fornecedoresHist[it.descricao]=fornecedoresHist[it.descricao]||new Set()).add(it.fornecedor);
     });
-    marcarDzOk('dzc', idx, mes, itens.length, file.name);
+    marcarDzOk('dzc'+i, mes, itens.length, file.name);
     atualizarAutoComplete();
     atualizarStatus('statusCompras', arquivosCompras, historicoCompras, 'compras');
   });
 }
-
-// ── Carregar distribuição ──────────────────────────────────
-function carregarDistribuicao(file, idx, mes) {
-  lerExcel(file, wb => {
+function carregarDistribuicao(file, i, mes) {
+  lerXl(file, wb => {
     const itens = parsearDistribuicao(wb, mes);
-    arquivosDist[idx] = { mes, itens };
+    arquivosDist[i] = {mes,itens};
     itens.forEach(it => {
-      (historicoDistribuicao[it.descricao] = historicoDistribuicao[it.descricao] || []).push(it);
-      (centrosHist[it.descricao] = centrosHist[it.descricao] || new Set()).add(it.centro);
+      (historicoDistribuicao[it.descricao]=historicoDistribuicao[it.descricao]||[]).push(it);
+      (centrosHist[it.descricao]=centrosHist[it.descricao]||new Set()).add(it.centro);
     });
-    marcarDzOk('dzd', idx, mes, itens.length, file.name);
+    marcarDzOk('dzd'+i, mes, itens.length, file.name);
     atualizarAutoComplete();
     atualizarStatus('statusDistribuicao', arquivosDist, historicoDistribuicao, 'distribuição');
   });
 }
-
-function lerExcel(file, cb) {
-  const r = new FileReader();
-  r.onload = e => { try { cb(XLSX.read(new Uint8Array(e.target.result), {type:'array'})); } catch(err) { alert('Erro: ' + err.message); } };
-  r.readAsArrayBuffer(file);
+function atualizarStatus(id, arr, dados, tipo) {
+  const el=document.getElementById(id); el.style.display='block';
+  el.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);"></i> ${arr.filter(Boolean).length} mês(es) de ${tipo} — ${Object.keys(dados).length} itens distintos`;
 }
-
-function atualizarStatus(elId, arr, dados, tipo) {
-  const n = arr.filter(Boolean).length;
-  const t = Object.keys(dados).length;
-  const el = document.getElementById(elId);
-  el.style.display = 'block';
-  el.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);"></i> ${n} mês(es) de ${tipo} carregados — ${t} itens distintos`;
-}
-
 function atualizarAutoComplete() {
-  const itens = [...new Set([...Object.keys(historicoCompras), ...Object.keys(historicoDistribuicao)])].sort();
-  document.getElementById('listaItens').innerHTML = itens.map(i=>`<option value="${i}">`).join('');
-
-  const forns = [...new Set(Object.values(fornecedoresHist).flatMap(s=>[...s]))].sort();
-  document.getElementById('listaFornecedores').innerHTML = forns.map(f=>`<option value="${f}">`).join('');
-
-  const centros = [...new Set(Object.values(centrosHist).flatMap(s=>[...s]))].sort();
-  document.getElementById('listaSetores').innerHTML = centros.map(c=>`<option value="${c}">`).join('');
+  const itens=[...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])].sort();
+  document.getElementById('listaItens').innerHTML=itens.map(i=>`<option value="${i}">`).join('');
+  const forns=[...new Set(Object.values(fornecedoresHist).flatMap(s=>[...s]))].sort();
+  document.getElementById('listaFornecedores').innerHTML=forns.map(f=>`<option value="${f}">`).join('');
+  const centros=[...new Set(Object.values(centrosHist).flatMap(s=>[...s]))].sort();
+  document.getElementById('listaSetores').innerHTML=centros.map(c=>`<option value="${c}">`).join('');
 }
 
-// ── Motor de análise ───────────────────────────────────────
+// ── Última dispensação ────────────────────────────────────
+function ultimaDispensacao(desc) {
+  const hist = historicoDistribuicao[desc] || [];
+  if (!hist.length) return null;
+  const ordem = {'Março':3,'Fevereiro':2,'Janeiro':1};
+  const sorted = [...hist].sort((a,b)=>(ordem[b.mes]||0)-(ordem[a.mes]||0));
+  return sorted[0].mes;
+}
+function mesesDesde(mes) {
+  const hoje = new Date(); // Mar 2026
+  const mapa = {'Janeiro':0,'Fevereiro':1,'Março':2};
+  const idx = mapa[mes];
+  if (idx===undefined) return null;
+  // Março = 0 meses atrás, Fev = 1, Jan = 2
+  return 2 - idx;
+}
+
+// ── Motor de análise ──────────────────────────────────────
 function calcularAnalise(descricao, qtdSolicitada, valorUnit, fornecedor, setor) {
-  const desc = norm(descricao);
-  const histC = historicoCompras[desc] || [];
-  const histD = historicoDistribuicao[desc] || [];
-  const ehNovo = histC.length === 0 && histD.length === 0;
+  const desc=norm(descricao);
+  const histC=historicoCompras[desc]||[];
+  const histD=historicoDistribuicao[desc]||[];
+  const ehNovo=histC.length===0&&histD.length===0;
 
-  // Médias de compra
-  const qtdsC = histC.map(h=>h.qtd);
-  const valores = histC.map(h=>h.valorUnit).filter(v=>v>0);
-  const mediaCompra = qtdsC.length ? qtdsC.reduce((a,b)=>a+b,0)/qtdsC.length : 0;
-  const maxCompra   = qtdsC.length ? Math.max(...qtdsC) : 0;
-  const mediaValor  = valores.length ? valores.reduce((a,b)=>a+b,0)/valores.length : 0;
+  const qtdsC=histC.map(h=>h.qtd);
+  const valores=histC.map(h=>h.valorUnit).filter(v=>v>0);
+  const mediaCompra=qtdsC.length?qtdsC.reduce((a,b)=>a+b,0)/qtdsC.length:0;
+  const maxCompra=qtdsC.length?Math.max(...qtdsC):0;
+  const mediaValor=valores.length?valores.reduce((a,b)=>a+b,0)/valores.length:0;
 
-  // Consumo médio mensal (distribuição)
-  const mesesDist = [...new Set(histD.map(h=>h.mes))];
-  const consumoTotal = histD.reduce((s,h)=>s+h.qtd,0);
-  const mediaConsumo = mesesDist.length ? consumoTotal / mesesDist.length : 0;
+  const mesesDist=[...new Set(histD.map(h=>h.mes))];
+  const consumoTotal=histD.reduce((s,h)=>s+h.qtd,0);
+  const mediaConsumo=mesesDist.length?consumoTotal/mesesDist.length:0;
+  const coberturaMeses=mediaConsumo>0?qtdSolicitada/mediaConsumo:null;
 
-  // Cobertura: quantos meses de estoque o pedido representa
-  const coberturaMeses = mediaConsumo > 0 ? qtdSolicitada / mediaConsumo : null;
+  const desvioQtd=mediaCompra>0?(qtdSolicitada-mediaCompra)/mediaCompra*100:null;
+  const varPreco=mediaValor>0&&valorUnit>0?(valorUnit-mediaValor)/mediaValor*100:null;
 
-  // Desvio de quantidade vs histórico de compra
-  const desvioQtd = mediaCompra > 0 ? (qtdSolicitada - mediaCompra) / mediaCompra * 100 : null;
+  const setorNorm=norm(setor);
+  const centrosConhecidos=centrosHist[desc]||new Set();
+  const setorConsome=setorNorm?[...centrosConhecidos].some(c=>c.includes(setorNorm)||setorNorm.includes(c.replace(/^\d+-/,''))):null;
+  const setorNuncaUsou=setorNorm&&centrosConhecidos.size>0&&!setorConsome;
 
-  // Variação de preço
-  const varPreco = mediaValor > 0 && valorUnit > 0 ? (valorUnit - mediaValor) / mediaValor * 100 : null;
+  const fornsConhecidos=fornecedoresHist[desc]||new Set();
+  const fornNovo=fornecedor&&fornsConhecidos.size>0&&!fornsConhecidos.has(norm(fornecedor));
 
-  // Validação de setor
-  const setorNorm = norm(setor);
-  const centrosConhecidos = centrosHist[desc] || new Set();
-  const setorConsome = setorNorm ? [...centrosConhecidos].some(c => c.includes(setorNorm) || setorNorm.includes(c.replace(/^\d+-/,''))) : null;
-  const setorNuncaUsou = setorNorm && centrosConhecidos.size > 0 && !setorConsome;
+  const ultDisp=ultimaDispensacao(desc);
 
-  // Fornecedor diferente
-  const fornsConhecidos = fornecedoresHist[desc] || new Set();
-  const fornNovo = fornecedor && fornsConhecidos.size > 0 && !fornsConhecidos.has(norm(fornecedor));
+  const flags=[]; let riscoMax='ok';
+  const add=(nivel,label,detalhe)=>{flags.push({nivel,label,detalhe});if(nivel==='alto')riscoMax='alto';else if(nivel==='medio'&&riscoMax!=='alto')riscoMax='medio';};
 
-  // ── Flags ─────────────────────────────────────────────
-  const flags = [];
-  let riscoMax = 'ok';
-  const addFlag = (nivel, label, detalhe) => {
-    flags.push({nivel, label, detalhe});
-    if (nivel === 'alto') riscoMax = 'alto';
-    else if (nivel === 'medio' && riscoMax !== 'alto') riscoMax = 'medio';
-  };
+  if(ehNovo) add('medio','Item novo','Sem histórico de compra ou consumo');
+  if(desvioQtd!==null&&desvioQtd>100) add('alto',`Qtd +${Math.round(desvioQtd)}% acima da média`,`Média: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
+  else if(desvioQtd!==null&&desvioQtd>50) add('medio',`Qtd +${Math.round(desvioQtd)}%`,`Média: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
+  if(qtdSolicitada>maxCompra*1.5&&maxCompra>0) add('alto','Acima do máximo histórico',`Máximo já comprado: ${fmtN(maxCompra)}`);
+  if(coberturaMeses!==null&&coberturaMeses>3) add('alto',`Cobertura ${coberturaMeses.toFixed(1)} meses`,`Consumo médio: ${fmtN(mediaConsumo)}/mês`);
+  else if(coberturaMeses!==null&&coberturaMeses>2) add('medio',`Cobertura ${coberturaMeses.toFixed(1)} meses`,`Consumo médio: ${fmtN(mediaConsumo)}/mês`);
+  if(varPreco!==null&&varPreco>30) add('alto',`Preço +${Math.round(varPreco)}%`,`Médio: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
+  else if(varPreco!==null&&varPreco>15) add('medio',`Preço +${Math.round(varPreco)}%`,`Médio: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
+  if(setorNuncaUsou) add('alto','Setor não consome este item',[...centrosConhecidos].slice(0,3).map(c=>c.replace(/^\d+-/,'')).join(', '));
+  if(fornNovo) add('medio','Fornecedor diferente',[...fornsConhecidos].join(', '));
 
-  if (ehNovo)
-    addFlag('medio','Item novo','Sem histórico de compra ou consumo');
-
-  if (desvioQtd !== null && desvioQtd > 100)
-    addFlag('alto', `Qtd +${Math.round(desvioQtd)}% acima da média`, `Média compra: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
-  else if (desvioQtd !== null && desvioQtd > 50)
-    addFlag('medio', `Qtd +${Math.round(desvioQtd)}% acima da média`, `Média compra: ${fmtN(mediaCompra)} | Pedido: ${fmtN(qtdSolicitada)}`);
-
-  if (qtdSolicitada > maxCompra * 1.5 && maxCompra > 0)
-    addFlag('alto', 'Acima do máximo histórico', `Máximo já comprado: ${fmtN(maxCompra)}`);
-
-  if (coberturaMeses !== null && coberturaMeses > 3)
-    addFlag('alto', `Cobertura ${coberturaMeses.toFixed(1)} meses`, `Consumo médio: ${fmtN(mediaConsumo)}/mês — pedido cobre ${coberturaMeses.toFixed(1)} meses`);
-  else if (coberturaMeses !== null && coberturaMeses > 2)
-    addFlag('medio', `Cobertura ${coberturaMeses.toFixed(1)} meses`, `Consumo médio: ${fmtN(mediaConsumo)}/mês`);
-
-  if (varPreco !== null && varPreco > 30)
-    addFlag('alto', `Preço +${Math.round(varPreco)}%`, `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
-  else if (varPreco !== null && varPreco > 15)
-    addFlag('medio', `Preço +${Math.round(varPreco)}%`, `Média histórica: ${fmt(mediaValor)} | Cotado: ${fmt(valorUnit)}`);
-
-  if (setorNuncaUsou)
-    addFlag('alto', 'Setor não consome este item', `Centros com consumo: ${[...centrosConhecidos].slice(0,3).map(c=>c.replace(/^\d+-/,'')).join(', ')}`);
-
-  if (fornNovo)
-    addFlag('medio', 'Fornecedor diferente do habitual', `Habituais: ${[...fornsConhecidos].join(', ')}`);
-
-  return {
-    desc, qtdSolicitada, valorUnit, fornecedor: norm(fornecedor), setor: setorNorm,
-    mediaCompra, maxCompra, mediaValor, mediaConsumo, coberturaMeses,
-    desvioQtd, varPreco, flags, risco: riscoMax, ehNovo,
-    centrosConhecidos: [...centrosConhecidos], fornsConhecidos: [...fornsConhecidos]
-  };
+  return {desc,qtdSolicitada,valorUnit,fornecedor:norm(fornecedor),setor:setorNorm,
+    mediaCompra,maxCompra,mediaValor,mediaConsumo,coberturaMeses,
+    desvioQtd,varPreco,flags,risco:riscoMax,ehNovo,ultDisp};
 }
 
-// ── Analisar item individual ───────────────────────────────
 function analisarItem() {
-  const item  = document.getElementById('inItem').value;
-  const qtd   = parseFloat(document.getElementById('inQtd').value);
-  const valor = parseFloat(document.getElementById('inValor').value) || 0;
-  const forn  = document.getElementById('inFornecedor').value;
-  const setor = document.getElementById('inSetor').value;
-  if (!item || !qtd) { alert('Preencha pelo menos Item e Quantidade.'); return; }
-  const novo = calcularAnalise(item, qtd, valor, forn, setor);
-  pedidoAtual = pedidoAtual.filter(p => p.desc !== novo.desc);
+  const item=document.getElementById('inItem').value;
+  const qtd=parseFloat(document.getElementById('inQtd').value);
+  const valor=parseFloat(document.getElementById('inValor').value)||0;
+  const forn=document.getElementById('inFornecedor').value;
+  const setor=document.getElementById('inSetor').value;
+  if(!item||!qtd){alert('Preencha Item e Quantidade.');return;}
+  const novo=calcularAnalise(item,qtd,valor,forn,setor);
+  pedidoAtual=pedidoAtual.filter(p=>p.desc!==novo.desc);
   pedidoAtual.unshift(novo);
   renderizarAnalise();
-  ['inItem','inQtd','inValor','inFornecedor','inSetor'].forEach(id => document.getElementById(id).value = '');
+  ['inItem','inQtd','inValor','inFornecedor','inSetor'].forEach(id=>document.getElementById(id).value='');
 }
 
-// ── Pedido em lote (Excel) ─────────────────────────────────
+// ── Pedido Excel ──────────────────────────────────────────
 function carregarPedidoExcel(input) {
-  const file = input.files[0]; if (!file) return;
-  lerExcel(file, wb => {
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
-    // Detectar cabeçalho
-    let hi = -1;
-    for (let i = 0; i < Math.min(10, rows.length); i++) {
-      const r = rows[i].map(v => norm(v?.toString()||''));
-      if (r.some(v => v.includes('DESCRI') || v.includes('ITEM') || v.includes('PRODUTO'))) { hi = i; break; }
+  const file=input.files?input.files[0]:input; if(!file)return;
+  lerXl(file, wb=>{
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
+    let hi=-1;
+    for(let i=0;i<Math.min(10,rows.length);i++){
+      const r=rows[i].map(v=>norm(v?.toString()||''));
+      if(r.some(v=>v.includes('DESCRI')||v.includes('ITEM')||v.includes('PRODUTO'))){hi=i;break;}
     }
-    if (hi === -1) {
-      // Tentar formato padrão do relatório de compras
-      const itens = parsearCompras(wb, 'pedido');
-      pedidoAtual = itens.map(it => calcularAnalise(it.descricao, it.qtd, it.valorUnit, it.fornecedor, ''));
+    if(hi===-1){
+      const itens=parsearCompras(wb,'pedido');
+      pedidoAtual=itens.map(it=>calcularAnalise(it.descricao,it.qtd,it.valorUnit,it.fornecedor,''));
     } else {
-      const headers = rows[hi].map(v => norm(v?.toString()||''));
-      const iDesc = headers.findIndex(h => h.includes('DESCRI')||h.includes('ITEM')||h.includes('PRODUTO'));
-      const iQtd  = headers.findIndex(h => h.includes('QTD')||h.includes('QUANT'));
-      const iVal  = headers.findIndex(h => h.includes('VALOR')||h.includes('PRECO')||h.includes('PREÇO')||h.includes('UNIT'));
-      const iForn = headers.findIndex(h => h.includes('FORNEC'));
-      const iSet  = headers.findIndex(h => h.includes('SETOR')||h.includes('CENTRO'));
-      pedidoAtual = [];
-      for (let i = hi+1; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r[iDesc] || !parseFloat(r[iQtd])) continue;
-        pedidoAtual.push(calcularAnalise(r[iDesc], parseFloat(r[iQtd]), parseFloat(r[iVal])||0, iForn>=0?r[iForn]:'', iSet>=0?r[iSet]:''));
+      const h=rows[hi].map(v=>norm(v?.toString()||''));
+      const iD=h.findIndex(v=>v.includes('DESCRI')||v.includes('ITEM'));
+      const iQ=h.findIndex(v=>v.includes('QTD')||v.includes('QUANT'));
+      const iV=h.findIndex(v=>v.includes('VALOR')||v.includes('PRECO')||v.includes('UNIT'));
+      const iF=h.findIndex(v=>v.includes('FORNEC'));
+      const iS=h.findIndex(v=>v.includes('SETOR')||v.includes('CENTRO'));
+      pedidoAtual=[];
+      for(let i=hi+1;i<rows.length;i++){
+        const r=rows[i]; if(!r[iD]||!parseFloat(r[iQ]))continue;
+        pedidoAtual.push(calcularAnalise(r[iD],parseFloat(r[iQ]),parseFloat(r[iV])||0,iF>=0?r[iF]:'',iS>=0?r[iS]:''));
       }
     }
-    document.getElementById('dropPedido').innerHTML = `
-      <i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
-      <span style="font-size:13px;font-weight:600;color:var(--green);margin-left:8px;">${pedidoAtual.length} itens carregados de ${file.name}</span>`;
+    const dz=document.getElementById('dropExcel');
+    dz.classList.add('loaded');
+    dz.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
+      <span style="font-size:13px;font-weight:600;color:var(--green);margin-left:8px;">${pedidoAtual.length} itens — ${file.name}</span>`;
     renderizarAnalise();
   });
 }
 
-// ── Render ────────────────────────────────────────────────
-function renderizarAnalise() {
-  document.getElementById('secaoAnalise').style.display = 'block';
-  document.getElementById('secaoAnalise').scrollIntoView({behavior:'smooth', block:'start'});
-  const tot   = pedidoAtual.length;
-  const altos = pedidoAtual.filter(i=>i.risco==='alto').length;
-  const meds  = pedidoAtual.filter(i=>i.risco==='medio').length;
-  const novos = pedidoAtual.filter(i=>i.ehNovo).length;
-  const valTot = pedidoAtual.reduce((s,i)=>s+i.qtdSolicitada*i.valorUnit,0);
-  document.getElementById('statsResumo').innerHTML = [
-    sc('Total de itens', tot,   'fas fa-boxes',               '#2563eb','rgba(37,99,235,.1)'),
-    sc('🔴 Alto risco',  altos, 'fas fa-exclamation-triangle','#ef4444','rgba(239,68,68,.1)'),
-    sc('🟡 Atenção',     meds,  'fas fa-exclamation-circle',  '#f59e0b','rgba(245,158,11,.1)'),
-    sc('Itens novos',    novos, 'fas fa-plus-circle',         '#7c3aed','rgba(124,58,237,.1)'),
-    sc('Valor total',    valTot>0?fmt(valTot):'—','fas fa-dollar-sign','#10b981','rgba(16,185,129,.1)'),
-  ].join('');
-  renderTabela();
-}
+// ── Documento (JPEG/PDF) ──────────────────────────────────
+async function processarDocumento(file) {
+  if(!file)return;
+  docAtual={file, tipo:file.type, texto:null};
+  document.getElementById('nomeDoc').textContent=file.name;
+  document.getElementById('badgeOcr').textContent='';
+  document.getElementById('painelOcr').style.display='block';
+  document.getElementById('btnExtrair').style.display='flex';
+  document.getElementById('resultadoOcr').innerHTML='<p style="color:var(--muted);font-size:13px;">Clique em "Identificar itens automaticamente" para extrair o pedido.</p>';
 
-function sc(label, val, icon, cor, bg) {
-  return `<div class="stat-card">
-    <div style="width:42px;height:42px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <i class="${icon}" style="color:${cor};font-size:18px;"></i>
-    </div>
-    <div><div style="font-size:${typeof val==='string'?'15':'22'}px;font-weight:800;color:${cor};">${val}</div>
-    <div style="font-size:12px;color:var(--muted);">${label}</div></div>
-  </div>`;
-}
-
-function renderTabela() {
-  const dados = filtroAtivo==='todos' ? pedidoAtual : pedidoAtual.filter(i=>i.risco===filtroAtivo);
-  const tbody = document.getElementById('tabelaAnalise');
-  if (!dados.length) { tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--muted);">Nenhum item nessa categoria</td></tr>`; return; }
-
-  tbody.innerHTML = dados.map(it => {
-    const badgeR = it.risco==='alto'
-      ? `<span class="badge flag-alto">● Alto</span>`
-      : it.risco==='medio'
-      ? `<span class="badge flag-medio">● Atenção</span>`
-      : `<span class="badge flag-ok">● Normal</span>`;
-
-    const desvStr = it.desvioQtd!==null
-      ? `<span style="color:${it.desvioQtd>50?'var(--red)':it.desvioQtd>0?'var(--yellow)':'var(--green)'}">${it.desvioQtd>0?'+':''}${Math.round(it.desvioQtd)}%</span>`
-      : (it.ehNovo ? '<span style="color:var(--muted)">sem hist.</span>' : '—');
-
-    const varPStr = it.varPreco!==null && it.valorUnit>0
-      ? `<span style="color:${it.varPreco>30?'var(--red)':it.varPreco>15?'var(--yellow)':'var(--green)'}">${it.varPreco>0?'+':''}${Math.round(it.varPreco)}%</span>`
-      : '—';
-
-    // Barra de cobertura
-    let cobStr = '—';
-    if (it.coberturaMeses !== null) {
-      const pct = Math.min(it.coberturaMeses / 4 * 100, 100);
-      const cor = it.coberturaMeses > 3 ? 'var(--red)' : it.coberturaMeses > 2 ? 'var(--yellow)' : 'var(--green)';
-      cobStr = `<div style="font-size:12px;font-weight:700;color:${cor};">${it.coberturaMeses.toFixed(1)} meses</div>
-        <div class="cobertura-bar"><div class="cobertura-fill" style="width:${pct}%;background:${cor};"></div></div>`;
-    }
-
-    const flagsHtml = it.flags.length===0
-      ? '<span style="color:var(--muted);font-size:12px;">—</span>'
-      : it.flags.map(f=>`<span class="badge ${f.nivel==='alto'?'flag-alto':f.nivel==='medio'?'flag-medio':'flag-novo'} tooltip" style="margin:2px;">${f.label}<span class="tt">${f.detalhe}</span></span>`).join('');
-
-    return `<tr>
-      <td style="font-weight:600;max-width:200px;">${it.desc}</td>
-      <td style="font-size:12px;">${it.setor ? it.setor.replace(/^\d+-/,'') : '—'}</td>
-      <td style="font-weight:700;">${fmtN(it.qtdSolicitada)}</td>
-      <td>${it.ehNovo?'<span style="color:var(--muted)">—</span>':fmtN(it.mediaCompra)}</td>
-      <td>${it.mediaConsumo>0?fmtN(it.mediaConsumo):'<span style="color:var(--muted)">—</span>'}</td>
-      <td>${cobStr}</td>
-      <td>${it.valorUnit>0?fmt(it.valorUnit):'—'}</td>
-      <td>${it.mediaValor>0?fmt(it.mediaValor):'—'}</td>
-      <td>${varPStr}</td>
-      <td style="font-size:12px;max-width:140px;">${it.fornecedor||'—'}</td>
-      <td>${badgeR}</td>
-      <td style="max-width:260px;">${flagsHtml}</td>
-    </tr>`;
-  }).join('');
-}
-
-function filtrar(tipo) {
-  filtroAtivo = tipo;
-  renderTabela();
-}
-
-// ── Exportar ───────────────────────────────────────────────
-function exportarRelatorio() {
-  if (!pedidoAtual.length) { alert('Nenhum pedido analisado.'); return; }
-  const rows = [['Item','Setor','Qtd Pedida','Média Compra/mês','Consumo/mês','Cobertura (meses)','Valor Unit.','Preço Médio Hist.','Var. Preço %','Fornecedor','Risco','Flags']];
-  pedidoAtual.forEach(i => rows.push([
-    i.desc, i.setor, i.qtdSolicitada,
-    i.ehNovo?'':i.mediaCompra.toFixed(1),
-    i.mediaConsumo>0?i.mediaConsumo.toFixed(1):'',
-    i.coberturaMeses!==null?i.coberturaMeses.toFixed(1):'',
-    i.valorUnit>0?i.valorUnit:'',
-    i.mediaValor>0?i.mediaValor.toFixed(2):'',
-    i.varPreco!==null?Math.round(i.varPreco)+'%':'',
-    i.fornecedor,
-    i.risco.toUpperCase(),
-    i.flags.map(f=>f.label).join(' | ')
-  ]));
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Análise');
-  XLSX.writeFile(wb, 'analise-compras-' + new Date().toISOString().slice(0,10) + '.xlsx');
-}
-
-// ── Documento (imagem / PDF) ───────────────────────────────
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-function abrirDocumento(file) {
-  if (!file) return;
-  const tipo = file.type;
-  document.getElementById('nomeDocumento').textContent = file.name;
-  const conteudo = document.getElementById('conteudoDoc');
-  conteudo.innerHTML = '<p style="color:var(--muted);font-size:13px;">Carregando...</p>';
-  document.getElementById('painelDoc').style.display = 'block';
-  document.getElementById('painelDoc').scrollIntoView({behavior:'smooth', block:'start'});
-
-  const dz = document.getElementById('dropDocumento');
+  const dz=document.getElementById('dropDoc');
   dz.classList.add('loaded');
-  dz.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
+  dz.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
     <span style="font-size:13px;font-weight:600;color:var(--green);margin-left:8px;">${file.name}</span>`;
 
-  if (tipo === 'application/pdf') {
-    const reader = new FileReader();
-    reader.onload = e => {
-      pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise.then(pdf => {
-        conteudo.innerHTML = '';
-        const renderPagina = num => {
-          pdf.getPage(num).then(page => {
-            const viewport = page.getViewport({scale: 1.5});
-            const canvas = document.createElement('canvas');
-            canvas.style.maxWidth = '100%';
-            canvas.style.marginBottom = '12px';
-            canvas.style.borderRadius = '6px';
-            canvas.style.boxShadow = '0 1px 4px rgba(0,0,0,.12)';
-            canvas.height = viewport.height;
-            canvas.width  = viewport.width;
-            conteudo.appendChild(canvas);
-            page.render({canvasContext: canvas.getContext('2d'), viewport}).promise.then(() => {
-              if (num < pdf.numPages) renderPagina(num + 1);
-            });
-          });
-        };
-        renderPagina(1);
-      }).catch(() => {
-        conteudo.innerHTML = '<p style="color:var(--red);">Não foi possível renderizar o PDF.</p>';
-      });
-    };
-    reader.readAsArrayBuffer(file);
+  const prev=document.getElementById('previewDoc');
+  prev.innerHTML='<p style="color:var(--muted);font-size:13px;">Carregando...</p>';
+
+  if(file.type==='application/pdf'){
+    const ab=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
+    prev.innerHTML='';
+    let textoCompleto='';
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const vp=page.getViewport({scale:1.4});
+      const canvas=document.createElement('canvas');
+      canvas.style.cssText='max-width:100%;margin-bottom:10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.1);';
+      canvas.height=vp.height; canvas.width=vp.width;
+      prev.appendChild(canvas);
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+      // Extrair texto
+      const tc=await page.getTextContent();
+      textoCompleto+=tc.items.map(i=>i.str).join(' ')+'\n';
+    }
+    docAtual.texto=textoCompleto;
+    document.getElementById('badgeOcr').textContent=`${pdf.numPages} página(s)`;
   } else {
-    // JPEG / PNG
-    const url = URL.createObjectURL(file);
-    conteudo.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12);">`;
+    // Imagem
+    const url=URL.createObjectURL(file);
+    prev.innerHTML=`<img src="${url}" style="max-width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);">`;
+    document.getElementById('badgeOcr').textContent='Imagem — OCR disponível';
   }
 }
 
-function fecharDoc() {
-  document.getElementById('painelDoc').style.display = 'none';
-  document.getElementById('conteudoDoc').innerHTML = '';
-  const dz = document.getElementById('dropDocumento');
-  dz.classList.remove('loaded');
-  dz.innerHTML = `<i class="fas fa-file-image" style="color:#f59e0b;font-size:18px;"></i>
-    <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem ou PDF — visualizar ao lado</span>`;
+async function extrairItensDoc() {
+  if(!docAtual)return;
+  const btn=document.getElementById('btnExtrair');
+  btn.innerHTML='<span class="spinner"></span> Processando...';
+  btn.disabled=true;
+  const res=document.getElementById('resultadoOcr');
+  res.innerHTML='<p style="color:var(--muted);font-size:13px;"><span class="spinner" style="border-top-color:var(--blue);border-color:rgba(37,99,235,.2);"></span> Extraindo texto...</p>';
+
+  let texto = docAtual.texto;
+
+  if(!texto){
+    // OCR via Tesseract
+    try{
+      res.innerHTML='<p style="color:var(--muted);font-size:13px;">Executando OCR (pode levar alguns segundos)...</p>';
+      const result=await Tesseract.recognize(docAtual.file,'por+eng');
+      texto=result.data.text;
+      docAtual.texto=texto;
+    }catch(e){
+      res.innerHTML=`<p style="color:var(--red);font-size:13px;">Erro no OCR: ${e.message}</p>`;
+      btn.innerHTML='<i class="fas fa-magic"></i> Identificar itens automaticamente'; btn.disabled=false;
+      return;
+    }
+  }
+
+  const matches=matchItemsTexto(texto);
+  btn.innerHTML='<i class="fas fa-magic"></i> Identificar itens automaticamente'; btn.disabled=false;
+
+  if(matches.length===0){
+    res.innerHTML=`<div style="padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e;">
+      <i class="fas fa-exclamation-triangle"></i> Nenhum item do histórico foi identificado no documento.
+      Tente lançar manualmente ou verifique se os relatórios históricos foram carregados.
+    </div>
+    <details style="margin-top:12px;"><summary style="font-size:12px;color:var(--muted);cursor:pointer;">Ver texto extraído</summary>
+    <pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;margin-top:8px;">${texto.substring(0,2000)}</pre></details>`;
+    return;
+  }
+
+  res.innerHTML=`
+    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">${matches.length} itens identificados</span>
+      <button class="btn btn-sm btn-blue" onclick="adicionarSelecionados()"><i class="fas fa-plus"></i> Adicionar selecionados à análise</button>
+    </div>
+    <div id="listaOcrMatches">
+    ${matches.map((m,i)=>`
+      <div class="ocr-match" id="ocr-match-${i}">
+        <input type="checkbox" id="chk${i}" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.desc}</div>
+          <div style="font-size:11px;color:var(--muted);">Qtd identificada: <b>${m.qtd||'?'}</b> | Similaridade: ${Math.round(m.score*100)}%</div>
+        </div>
+        <input type="number" value="${m.qtd||''}" placeholder="Qtd" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;" id="qtdOcr${i}">
+      </div>`).join('')}
+    </div>
+    <details style="margin-top:12px;"><summary style="font-size:12px;color:var(--muted);cursor:pointer;">Ver texto extraído</summary>
+    <pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;margin-top:8px;">${texto.substring(0,2000)}</pre></details>`;
+
+  res._matches = matches;
 }
 
-// ── Init ───────────────────────────────────────────────────
+function matchItemsTexto(texto) {
+  const conhecidos = Object.keys(historicoCompras).concat(Object.keys(historicoDistribuicao));
+  const linhas = texto.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>3);
+  const resultados = [];
+  const vistos = new Set();
+
+  for(const linha of linhas){
+    const lNorm=norm(linha);
+    const tokens=lNorm.split(' ').filter(t=>t.length>2);
+    if(tokens.length<2)continue;
+
+    let melhor={desc:null,score:0,qtd:null};
+    for(const desc of conhecidos){
+      const dtokens=desc.split(' ').filter(t=>t.length>2);
+      const overlap=tokens.filter(t=>dtokens.includes(t)).length;
+      const score=overlap/Math.max(dtokens.length,1);
+      if(score>melhor.score) melhor={desc,score,qtd:null};
+    }
+    if(melhor.score<0.45||vistos.has(melhor.desc))continue;
+    vistos.add(melhor.desc);
+
+    // Tentar extrair quantidade da linha
+    const qtdMatch=linha.match(/\b(\d{1,6})\b/g);
+    const qtd=qtdMatch?parseInt(qtdMatch[qtdMatch.length-1]):null;
+    resultados.push({...melhor, qtd: qtd&&qtd>0&&qtd<100000?qtd:null});
+  }
+  return resultados.sort((a,b)=>b.score-a.score).slice(0,30);
+}
+
+function adicionarSelecionados() {
+  const res=document.getElementById('resultadoOcr');
+  const matches=res._matches||[];
+  let adicionados=0;
+  matches.forEach((m,i)=>{
+    const chk=document.getElementById('chk'+i);
+    if(!chk?.checked)return;
+    const qtd=parseFloat(document.getElementById('qtdOcr'+i)?.value)||0;
+    if(!qtd){alert(`Informe a quantidade para: ${m.desc}`);return;}
+    const novo=calcularAnalise(m.desc,qtd,0,'','');
+    pedidoAtual=pedidoAtual.filter(p=>p.desc!==novo.desc);
+    pedidoAtual.unshift(novo);
+    adicionados++;
+  });
+  if(adicionados>0){
+    renderizarAnalise();
+    document.getElementById('secaoAnalise').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+function fecharDoc(){
+  document.getElementById('painelOcr').style.display='none';
+  document.getElementById('previewDoc').innerHTML='';
+  document.getElementById('resultadoOcr').innerHTML='';
+  docAtual=null;
+  const dz=document.getElementById('dropDoc');
+  dz.classList.remove('loaded');
+  dz.innerHTML=`<i class="fas fa-file-image" style="color:var(--yellow);font-size:18px;"></i>
+    <span style="font-size:13px;color:var(--muted);margin-left:8px;">Pedido em imagem (JPEG/PNG) ou PDF</span>`;
+}
+
+// ── Render análise ────────────────────────────────────────
+function renderizarAnalise(){
+  document.getElementById('secaoAnalise').style.display='block';
+  const tot=pedidoAtual.length;
+  const altos=pedidoAtual.filter(i=>i.risco==='alto').length;
+  const meds=pedidoAtual.filter(i=>i.risco==='medio').length;
+  const novos=pedidoAtual.filter(i=>i.ehNovo).length;
+  const valTot=pedidoAtual.reduce((s,i)=>s+i.qtdSolicitada*i.valorUnit,0);
+  document.getElementById('statsResumo').innerHTML=[
+    sc('Total',tot,'fas fa-boxes','#2563eb','rgba(37,99,235,.1)'),
+    sc('🔴 Alto risco',altos,'fas fa-exclamation-triangle','#ef4444','rgba(239,68,68,.1)'),
+    sc('🟡 Atenção',meds,'fas fa-exclamation-circle','#f59e0b','rgba(245,158,11,.1)'),
+    sc('Itens novos',novos,'fas fa-plus-circle','#7c3aed','rgba(124,58,237,.1)'),
+    sc('Valor total',valTot>0?fmt(valTot):'—','fas fa-dollar-sign','#10b981','rgba(16,185,129,.1)'),
+  ].join('');
+  renderTabela();
+}
+function sc(label,val,icon,cor,bg){
+  return `<div class="stat-card"><div style="width:40px;height:40px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="${icon}" style="color:${cor};font-size:16px;"></i></div>
+  <div><div style="font-size:${typeof val==='string'?'14':'20'}px;font-weight:800;color:${cor};">${val}</div><div style="font-size:11px;color:var(--muted);">${label}</div></div></div>`;
+}
+function renderTabela(){
+  const dados=filtroAtivo==='todos'?pedidoAtual:pedidoAtual.filter(i=>i.risco===filtroAtivo);
+  const tb=document.getElementById('tabelaAnalise');
+  if(!dados.length){tb.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:28px;color:var(--muted);">Nenhum item</td></tr>`;return;}
+  tb.innerHTML=dados.map(it=>{
+    const br=it.risco==='alto'?`<span class="badge flag-alto">● Alto</span>`:it.risco==='medio'?`<span class="badge flag-medio">● Atenção</span>`:`<span class="badge flag-ok">● Normal</span>`;
+    const dv=it.desvioQtd!==null?`<span style="color:${it.desvioQtd>50?'var(--red)':it.desvioQtd>0?'var(--yellow)':'var(--green)'}">${it.desvioQtd>0?'+':''}${Math.round(it.desvioQtd)}%</span>`:(it.ehNovo?'<span style="color:var(--muted)">—</span>':'—');
+    const vp=it.varPreco!==null&&it.valorUnit>0?`<span style="color:${it.varPreco>30?'var(--red)':it.varPreco>15?'var(--yellow)':'var(--green)'}">${it.varPreco>0?'+':''}${Math.round(it.varPreco)}%</span>`:'—';
+    let cob='—';
+    if(it.coberturaMeses!==null){const cor=it.coberturaMeses>3?'var(--red)':it.coberturaMeses>2?'var(--yellow)':'var(--green)';const pct=Math.min(it.coberturaMeses/4*100,100);cob=`<div style="font-size:12px;font-weight:700;color:${cor};">${it.coberturaMeses.toFixed(1)} meses</div><div class="cobertura-bar"><div class="cobertura-fill" style="width:${pct}%;background:${cor};"></div></div>`;}
+    const ud=it.ultDisp?`<span style="font-size:12px;">${it.ultDisp}</span>`:it.ehNovo?'<span style="color:var(--muted)">Nunca</span>':'<span style="color:var(--muted)">—</span>';
+    const fl=it.flags.length===0?'<span style="color:var(--muted)">—</span>':it.flags.map(f=>`<span class="badge ${f.nivel==='alto'?'flag-alto':f.nivel==='medio'?'flag-medio':'flag-novo'} tooltip" style="margin:2px;">${f.label}<span class="tt">${f.detalhe}</span></span>`).join('');
+    return `<tr><td style="font-weight:600;max-width:180px;">${it.desc}</td>
+      <td style="font-size:12px;">${it.setor?it.setor.replace(/^\d+-/,''):'—'}</td>
+      <td style="font-weight:700;">${fmtN(it.qtdSolicitada)}</td>
+      <td>${it.ehNovo?'<span style="color:var(--muted)">—</span>':fmtN(it.mediaCompra)}</td>
+      <td>${it.mediaConsumo>0?fmtN(it.mediaConsumo):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${ud}</td><td>${cob}</td>
+      <td>${it.valorUnit>0?fmt(it.valorUnit):'—'}</td>
+      <td>${it.mediaValor>0?fmt(it.mediaValor):'—'}</td>
+      <td>${vp}</td>
+      <td style="font-size:12px;max-width:130px;">${it.fornecedor||'—'}</td>
+      <td>${br}</td><td style="max-width:240px;">${fl}</td></tr>`;
+  }).join('');
+}
+function filtrar(tipo){filtroAtivo=tipo;renderTabela();}
+
+// ── Histórico de consumo ──────────────────────────────────
+function renderHistorico(filtro=''){
+  const todos=[...new Set([...Object.keys(historicoDistribuicao),...Object.keys(historicoCompras)])];
+  const lista=filtro?todos.filter(d=>d.includes(norm(filtro))):todos;
+  document.getElementById('totalItensHist').textContent=`${lista.length} itens`;
+
+  if(!lista.length){
+    document.getElementById('gridHistorico').innerHTML=`<p style="color:var(--muted);font-size:13px;grid-column:1/-1;">Carregue os relatórios de distribuição para ver o histórico.</p>`;
+    return;
+  }
+
+  const ordem={'Março':3,'Fevereiro':2,'Janeiro':1};
+  const sorted=lista.sort((a,b)=>{
+    const ta=(historicoDistribuicao[a]||[]).reduce((s,h)=>s+h.qtd,0);
+    const tb2=(historicoDistribuicao[b]||[]).reduce((s,h)=>s+h.qtd,0);
+    return tb2-ta;
+  }).slice(0,60);
+
+  document.getElementById('gridHistorico').innerHTML=sorted.map(desc=>{
+    const histD=historicoDistribuicao[desc]||[];
+    const consumoTotal=histD.reduce((s,h)=>s+h.qtd,0);
+    const mesesComDist=[...new Set(histD.map(h=>h.mes))];
+    const media=mesesComDist.length?consumoTotal/mesesComDist.length:0;
+    const ud=ultimaDispensacao(desc);
+    const mesesAtras=ud!==null?mesesDesde(ud):null;
+    const corUD=mesesAtras===0?'var(--green)':mesesAtras===1?'var(--yellow)':'var(--red)';
+    const udStr=ud?`<span style="color:${corUD};font-weight:700;">${ud}</span>${mesesAtras===0?' (este mês)':mesesAtras===1?' (1 mês atrás)':mesesAtras!==null?` (${mesesAtras} meses atrás)`:''}`:'<span style="color:var(--muted)">Sem registro</span>';
+
+    // Consumo por mês
+    const porMes=MESES.map(m=>{const r=histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0);return r;});
+
+    return `<div class="item-hist-card" onclick="abrirDetalheItem('${desc.replace(/'/g,"\\'")}')">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px;line-height:1.3;">${desc}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div><span style="font-size:10px;color:var(--muted);">CONSUMO MÉDIO/MÊS</span>
+          <div style="font-size:18px;font-weight:800;color:var(--blue);">${fmtN(media)}</div></div>
+        <div><span style="font-size:10px;color:var(--muted);">ÚLT. DISPENSAÇÃO</span>
+          <div style="font-size:12px;margin-top:2px;">${udStr}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+        ${MESES.map((m,i)=>`<div style="background:var(--bg);border-radius:6px;padding:6px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);">${MESES_ABREV[i]}</div>
+          <div style="font-size:14px;font-weight:700;color:${porMes[i]>0?'var(--text)':'var(--muted)'};">${porMes[i]>0?fmtN(porMes[i]):'—'}</div>
+        </div>`).join('')}
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);">Clique para ver detalhes <i class="fas fa-chevron-right"></i></div>
+    </div>`;
+  }).join('');
+}
+function filtrarHistorico(v){renderHistorico(v);}
+
+function abrirDetalheItem(desc){
+  const el=document.getElementById('detalheItem');
+  const histD=historicoDistribuicao[desc]||[];
+  const histC=historicoCompras[desc]||[];
+
+  // Consumo por mês e centro
+  const porMes=MESES.map(m=>histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0));
+  const porMesValor=MESES.map(m=>histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.valor,0));
+
+  // Centros consumidores
+  const centros={};
+  histD.forEach(h=>{centros[h.centro]=(centros[h.centro]||0)+h.qtd;});
+  const topCentros=Object.entries(centros).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // Compras por mês
+  const comprasPorMes=MESES.map(m=>histC.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0));
+  const precoMedio=histC.length?histC.filter(h=>h.valorUnit>0).reduce((s,h,_,a)=>s+h.valorUnit/a.length,0):0;
+
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth'});
+
+  el.innerHTML=`<div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:14px;font-weight:700;">${desc}</h3>
+      <button class="btn btn-sm btn-outline" onclick="document.getElementById('detalheItem').style.display='none'"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+        <!-- Gráfico consumo -->
+        <div>
+          <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;">Consumo Mensal</h4>
+          <canvas id="chartDetalhe" height="180"></canvas>
+        </div>
+        <!-- Centros de custo -->
+        <div>
+          <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;">Consumo por Centro de Custo</h4>
+          ${topCentros.length?topCentros.map(([c,q])=>{
+            const max=topCentros[0][1];
+            const pct=max>0?q/max*100:0;
+            return `<div style="margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">
+                <span>${c.replace(/^\d+-/,'')}</span><span style="font-weight:700;">${fmtN(q)}</span>
+              </div>
+              <div class="cobertura-bar" style="width:100%;"><div class="cobertura-fill" style="width:${pct}%;background:var(--blue);"></div></div>
+            </div>`;
+          }).join(''):'<p style="color:var(--muted);font-size:13px;">Sem dados de distribuição.</p>'}
+        </div>
+      </div>
+      <!-- Tabela mensal detalhada -->
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:10px;">Resumo Mensal</h4>
+      <table class="tbl">
+        <thead><tr><th>Mês</th><th>Qtd Consumida</th><th>Valor Consumido</th><th>Qtd Comprada</th><th>Preço Médio Compra</th></tr></thead>
+        <tbody>
+          ${MESES.map((m,i)=>`<tr>
+            <td style="font-weight:600;">${m}</td>
+            <td>${porMes[i]>0?fmtN(porMes[i]):'<span style="color:var(--muted)">—</span>'}</td>
+            <td>${porMesValor[i]>0?fmt(porMesValor[i]):'<span style="color:var(--muted)">—</span>'}</td>
+            <td>${comprasPorMes[i]>0?fmtN(comprasPorMes[i]):'<span style="color:var(--muted)">—</span>'}</td>
+            <td>${precoMedio>0?fmt(precoMedio):'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // Chart
+  setTimeout(()=>{
+    if(chartAtivo)chartAtivo.destroy();
+    const ctx=document.getElementById('chartDetalhe').getContext('2d');
+    chartAtivo=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:MESES_ABREV,
+        datasets:[
+          {label:'Consumido',data:porMes,backgroundColor:'rgba(37,99,235,.7)',borderRadius:6},
+          {label:'Comprado',data:comprasPorMes,backgroundColor:'rgba(16,185,129,.7)',borderRadius:6}
+        ]
+      },
+      options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,ticks:{font:{size:11}}}}}
+    });
+  },100);
+}
+
+// ── Relatórios ────────────────────────────────────────────
+function trocarRelatorio(tipo){
+  relatorioAtivo=tipo;
+  ['mensal','semanal','dispensacao'].forEach(t=>{
+    const b=document.getElementById('r-'+t);
+    if(b){b.className='btn btn-sm '+(t===tipo?'btn-blue':'btn-outline');}
+  });
+  renderRelatorio();
+}
+
+function renderRelatorio(){
+  const el=document.getElementById('conteudoRelatorio');
+  const todos=[...new Set([...Object.keys(historicoDistribuicao),...Object.keys(historicoCompras)])].sort();
+
+  if(!todos.length){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--muted);">Carregue os relatórios para gerar os relatórios de consumo.</div>`;return;}
+
+  if(relatorioAtivo==='dispensacao'){
+    const ordem={'Março':3,'Fevereiro':2,'Janeiro':1};
+    const linhas=todos.map(desc=>{
+      const ud=ultimaDispensacao(desc);
+      const ma=ud!==null?mesesDesde(ud):null;
+      const total=(historicoDistribuicao[desc]||[]).reduce((s,h)=>s+h.qtd,0);
+      return {desc,ud,ma,total};
+    }).sort((a,b)=>(b.ma??-1)-(a.ma??-1));
+
+    el.innerHTML=`<div class="card" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;"><table class="tbl">
+        <thead><tr><th>Item</th><th>Última Dispensação</th><th>Meses sem dispensação</th><th>Total consumido (período)</th><th>Status</th></tr></thead>
+        <tbody>${linhas.map(l=>{
+          const cor=l.ma===0?'var(--green)':l.ma===1?'var(--yellow)':'var(--red)';
+          const status=l.ud===null?`<span class="badge flag-novo">Sem registro</span>`:l.ma===0?`<span class="badge flag-ok">Ativo</span>`:l.ma===1?`<span class="badge flag-medio">1 mês sem disp.</span>`:`<span class="badge flag-alto">${l.ma} meses sem disp.</span>`;
+          return `<tr><td style="font-weight:600;">${l.desc}</td>
+            <td>${l.ud||'<span style="color:var(--muted)">Nunca</span>'}</td>
+            <td style="color:${cor};font-weight:700;">${l.ma!==null?l.ma:'—'}</td>
+            <td>${fmtN(l.total)}</td>
+            <td>${status}</td></tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`;
+    return;
+  }
+
+  const divisor=relatorioAtivo==='semanal'?4:1;
+  const label=relatorioAtivo==='semanal'?'Estimativa Semanal (÷4)':'Consumo Mensal';
+
+  el.innerHTML=`<div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);">
+      ${relatorioAtivo==='semanal'?'⚠️ Valores estimados dividindo o consumo mensal por 4 semanas.':''}
+      ${todos.length} itens
+    </div>
+    <div style="overflow-x:auto;"><table class="tbl">
+      <thead><tr>
+        <th>Item</th>
+        ${MESES.map(m=>`<th>${m}</th>`).join('')}
+        <th>Total</th><th>Média/período</th><th>Tendência</th>
+      </tr></thead>
+      <tbody>${todos.map(desc=>{
+        const histD=historicoDistribuicao[desc]||[];
+        const porMes=MESES.map(m=>histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0)/divisor);
+        const total=porMes.reduce((a,b)=>a+b,0);
+        const media=total/MESES.length;
+        // Tendência: Jan→Mar
+        const tend=porMes[2]>porMes[0]?`<span style="color:var(--green);">↑ Alta</span>`:porMes[2]<porMes[0]?`<span style="color:var(--red);">↓ Baixa</span>`:`<span style="color:var(--muted);">→ Estável</span>`;
+        return `<tr>
+          <td style="font-weight:600;max-width:200px;">${desc}</td>
+          ${porMes.map(v=>`<td>${v>0?fmtN(v):'<span style="color:var(--border);">—</span>'}</td>`).join('')}
+          <td style="font-weight:700;">${fmtN(total)}</td>
+          <td>${fmtN(media)}</td>
+          <td>${tend}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// ── Exportar ──────────────────────────────────────────────
+function exportarRelatorio(){
+  if(relatorioAtivo==='mensal'||relatorioAtivo==='semanal'){
+    const todos=[...new Set([...Object.keys(historicoDistribuicao),...Object.keys(historicoCompras)])].sort();
+    const div=relatorioAtivo==='semanal'?4:1;
+    const rows=[['Item',...MESES,'Total','Média']];
+    todos.forEach(desc=>{
+      const histD=historicoDistribuicao[desc]||[];
+      const porMes=MESES.map(m=>histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0)/div);
+      const total=porMes.reduce((a,b)=>a+b,0);
+      rows.push([desc,...porMes,total,total/MESES.length]);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Consumo');
+    XLSX.writeFile(wb,'relatorio-consumo-'+relatorioAtivo+'-'+new Date().toISOString().slice(0,10)+'.xlsx');
+  } else if(pedidoAtual.length){
+    const rows=[['Item','Setor','Qtd Pedida','Média Compra/mês','Consumo/mês','Ult. Dispensação','Cobertura (meses)','Valor Unit.','Preço Médio Hist.','Var. Preço %','Fornecedor','Risco','Flags']];
+    pedidoAtual.forEach(i=>rows.push([i.desc,i.setor,i.qtdSolicitada,i.ehNovo?'':i.mediaCompra.toFixed(1),i.mediaConsumo>0?i.mediaConsumo.toFixed(1):'',i.ultDisp||'',i.coberturaMeses!==null?i.coberturaMeses.toFixed(1):'',i.valorUnit>0?i.valorUnit:'',i.mediaValor>0?i.mediaValor.toFixed(2):'',i.varPreco!==null?Math.round(i.varPreco)+'%':'',i.fornecedor,i.risco.toUpperCase(),i.flags.map(f=>f.label).join(' | ')]));
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Análise');
+    XLSX.writeFile(wb,'analise-pedido-'+new Date().toISOString().slice(0,10)+'.xlsx');
+  } else { alert('Nenhum dado para exportar.'); }
+}
+
+// ── Init ──────────────────────────────────────────────────
 criarDropZones('dzCompras',     'dzc', carregarCompra);
 criarDropZones('dzDistribuicao','dzd', carregarDistribuicao);
 </script>
