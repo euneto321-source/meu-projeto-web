@@ -111,38 +111,8 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
   <div class="card" style="padding:20px;margin-bottom:16px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
       <div class="step-num" style="background:var(--blue);">3</div>
-      <div><h2 style="font-size:14px;font-weight:700;">Lançar Pedido</h2>
-        <p style="font-size:11px;color:var(--muted);">Manual, Excel, imagem ou PDF</p></div>
-    </div>
-
-    <!-- Formulário manual -->
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;">
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">ITEM</label>
-        <input class="form-input" id="inItem" placeholder="Ex: LUVA PROCEDIMENTO M" list="listaItens">
-        <datalist id="listaItens"></datalist>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">QUANTIDADE</label>
-        <input class="form-input" id="inQtd" type="number" min="0" placeholder="0">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">VALOR UNIT. (R$)</label>
-        <input class="form-input" id="inValor" type="number" min="0" step="0.01" placeholder="0,00">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">FORNECEDOR</label>
-        <input class="form-input" id="inFornecedor" placeholder="Fornecedor" list="listaFornecedores">
-        <datalist id="listaFornecedores"></datalist>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;">SETOR</label>
-        <input class="form-input" id="inSetor" placeholder="Ex: UTI, LAB" list="listaSetores">
-        <datalist id="listaSetores"></datalist>
-      </div>
-      <div>
-        <button class="btn btn-blue" onclick="analisarItem()"><i class="fas fa-search"></i> Analisar</button>
-      </div>
+      <div><h2 style="font-size:14px;font-weight:700;">Enviar Pedido / Orçamento</h2>
+        <p style="font-size:11px;color:var(--muted);">Excel, imagem (JPEG/PNG) ou PDF — itens identificados e analisados automaticamente</p></div>
     </div>
 
     <!-- Uploads -->
@@ -380,14 +350,7 @@ function atualizarStatus(id, arr, dados, tipo) {
   const el=document.getElementById(id); el.style.display='block';
   el.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);"></i> ${arr.filter(Boolean).length} mês(es) de ${tipo} — ${Object.keys(dados).length} itens distintos`;
 }
-function atualizarAutoComplete() {
-  const itens=[...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])].sort();
-  document.getElementById('listaItens').innerHTML=itens.map(i=>`<option value="${i}">`).join('');
-  const forns=[...new Set(Object.values(fornecedoresHist).flatMap(s=>[...s]))].sort();
-  document.getElementById('listaFornecedores').innerHTML=forns.map(f=>`<option value="${f}">`).join('');
-  const centros=[...new Set(Object.values(centrosHist).flatMap(s=>[...s]))].sort();
-  document.getElementById('listaSetores').innerHTML=centros.map(c=>`<option value="${c}">`).join('');
-}
+function atualizarAutoComplete() { /* campos manuais removidos */ }
 
 // ── Última dispensação ────────────────────────────────────
 function ultimaDispensacao(desc) {
@@ -456,19 +419,6 @@ function calcularAnalise(descricao, qtdSolicitada, valorUnit, fornecedor, setor)
     desvioQtd,varPreco,flags,risco:riscoMax,ehNovo,ultDisp};
 }
 
-function analisarItem() {
-  const item=document.getElementById('inItem').value;
-  const qtd=parseFloat(document.getElementById('inQtd').value);
-  const valor=parseFloat(document.getElementById('inValor').value)||0;
-  const forn=document.getElementById('inFornecedor').value;
-  const setor=document.getElementById('inSetor').value;
-  if(!item||!qtd){alert('Preencha Item e Quantidade.');return;}
-  const novo=calcularAnalise(item,qtd,valor,forn,setor);
-  pedidoAtual=pedidoAtual.filter(p=>p.desc!==novo.desc);
-  pedidoAtual.unshift(novo);
-  renderizarAnalise();
-  ['inItem','inQtd','inValor','inFornecedor','inSetor'].forEach(id=>document.getElementById(id).value='');
-}
 
 // ── Pedido Excel ──────────────────────────────────────────
 function carregarPedidoExcel(input) {
@@ -507,12 +457,16 @@ function carregarPedidoExcel(input) {
 // ── Documento (JPEG/PDF) ──────────────────────────────────
 async function processarDocumento(file) {
   if(!file)return;
-  docAtual={file, tipo:file.type, texto:null};
+  docAtual={file, tipo:file.type, texto:null, linhas:[]};
   document.getElementById('nomeDoc').textContent=file.name;
   document.getElementById('badgeOcr').textContent='';
   document.getElementById('painelOcr').style.display='block';
-  document.getElementById('btnExtrair').style.display='flex';
-  document.getElementById('resultadoOcr').innerHTML='<p style="color:var(--muted);font-size:13px;">Clique em "Identificar itens automaticamente" para extrair o pedido.</p>';
+  document.getElementById('btnExtrair').style.display='none'; // removido — auto-trigger
+  document.getElementById('resultadoOcr').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:20px 0;">
+      <span class="spinner" style="border-top-color:var(--blue);border-color:rgba(37,99,235,.2);width:20px;height:20px;border-width:3px;"></span>
+      Processando arquivo...
+    </div>`;
 
   const dz=document.getElementById('dropDoc');
   dz.classList.add('loaded');
@@ -526,7 +480,8 @@ async function processarDocumento(file) {
     const ab=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
     prev.innerHTML='';
-    let textoCompleto='';
+    const todasLinhas=[];
+
     for(let p=1;p<=pdf.numPages;p++){
       const page=await pdf.getPage(p);
       const vp=page.getViewport({scale:1.4});
@@ -535,125 +490,185 @@ async function processarDocumento(file) {
       canvas.height=vp.height; canvas.width=vp.width;
       prev.appendChild(canvas);
       await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-      // Extrair texto
+
+      // Extração posicional: agrupar por linha (Y arredondado a 8px)
       const tc=await page.getTextContent();
-      textoCompleto+=tc.items.map(i=>i.str).join(' ')+'\n';
+      const grupos={};
+      for(const item of tc.items){
+        if(!item.str.trim())continue;
+        const y=Math.round(item.transform[5]/8)*8;
+        const x=item.transform[4];
+        if(!grupos[y])grupos[y]=[];
+        grupos[y].push({str:item.str, x});
+      }
+      // Ordenar linhas de cima para baixo (Y decrescente em PDF = cima) e words por X
+      const linhasPagina=Object.entries(grupos)
+        .sort((a,b)=>parseFloat(b[0])-parseFloat(a[0]))
+        .map(([,words])=>words.sort((a,b)=>a.x-b.x).map(w=>w.str).join(' ').trim())
+        .filter(l=>l.length>2);
+      todasLinhas.push(...linhasPagina);
     }
-    docAtual.texto=textoCompleto;
-    document.getElementById('badgeOcr').textContent=`${pdf.numPages} página(s)`;
+
+    docAtual.linhas=todasLinhas;
+    docAtual.texto=todasLinhas.join('\n');
+    document.getElementById('badgeOcr').textContent=`${pdf.numPages} página(s) — ${todasLinhas.length} linhas extraídas`;
+    extrairItensDoc(); // auto-trigger
   } else {
-    // Imagem
+    // Imagem — renderizar preview e iniciar OCR automaticamente
     const url=URL.createObjectURL(file);
     prev.innerHTML=`<img src="${url}" style="max-width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);">`;
-    document.getElementById('badgeOcr').textContent='Imagem — OCR disponível';
+    document.getElementById('badgeOcr').textContent='Imagem — iniciando OCR...';
+    document.getElementById('resultadoOcr').innerHTML=`
+      <div style="font-size:13px;color:var(--muted);padding:12px 0;">
+        <span class="spinner" style="border-top-color:var(--blue);border-color:rgba(37,99,235,.2);width:16px;height:16px;border-width:2px;"></span>
+        &nbsp;Reconhecendo texto (OCR)... pode levar alguns segundos
+      </div>`;
+    try{
+      const result=await Tesseract.recognize(file,'por+eng',{
+        logger: m => {
+          if(m.status==='recognizing text'){
+            document.getElementById('badgeOcr').textContent=`OCR: ${Math.round(m.progress*100)}%`;
+          }
+        }
+      });
+      const linhas=result.data.lines
+        .filter(l=>l.confidence>40)
+        .map(l=>l.text.trim())
+        .filter(l=>l.length>2);
+      docAtual.linhas=linhas;
+      docAtual.texto=linhas.join('\n');
+      document.getElementById('badgeOcr').textContent=`OCR concluído — ${linhas.length} linhas`;
+      extrairItensDoc(); // auto-trigger
+    }catch(e){
+      document.getElementById('resultadoOcr').innerHTML=`<p style="color:var(--red);font-size:13px;">Erro no OCR: ${e.message}</p>`;
+    }
   }
 }
 
-async function extrairItensDoc() {
-  if(!docAtual)return;
-  const btn=document.getElementById('btnExtrair');
-  btn.innerHTML='<span class="spinner"></span> Processando...';
-  btn.disabled=true;
+// Normalizar acentos para matching
+function semAcento(s){
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function normMatch(s){
+  return semAcento(norm(s));
+}
+
+function extrairItensDoc() {
+  if(!docAtual||!docAtual.linhas?.length)return;
   const res=document.getElementById('resultadoOcr');
-  res.innerHTML='<p style="color:var(--muted);font-size:13px;"><span class="spinner" style="border-top-color:var(--blue);border-color:rgba(37,99,235,.2);"></span> Extraindo texto...</p>';
-
-  let texto = docAtual.texto;
-
-  if(!texto){
-    // OCR via Tesseract
-    try{
-      res.innerHTML='<p style="color:var(--muted);font-size:13px;">Executando OCR (pode levar alguns segundos)...</p>';
-      const result=await Tesseract.recognize(docAtual.file,'por+eng');
-      texto=result.data.text;
-      docAtual.texto=texto;
-    }catch(e){
-      res.innerHTML=`<p style="color:var(--red);font-size:13px;">Erro no OCR: ${e.message}</p>`;
-      btn.innerHTML='<i class="fas fa-magic"></i> Identificar itens automaticamente'; btn.disabled=false;
-      return;
-    }
-  }
-
-  const matches=matchItemsTexto(texto);
-  btn.innerHTML='<i class="fas fa-magic"></i> Identificar itens automaticamente'; btn.disabled=false;
+  const matches=matchItemsLinhas(docAtual.linhas);
 
   if(matches.length===0){
-    res.innerHTML=`<div style="padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e;">
-      <i class="fas fa-exclamation-triangle"></i> Nenhum item do histórico foi identificado no documento.
-      Tente lançar manualmente ou verifique se os relatórios históricos foram carregados.
-    </div>
-    <details style="margin-top:12px;"><summary style="font-size:12px;color:var(--muted);cursor:pointer;">Ver texto extraído</summary>
-    <pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;margin-top:8px;">${texto.substring(0,2000)}</pre></details>`;
+    res.innerHTML=`
+      <div style="padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e;margin-bottom:10px;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <b>Nenhum item do histórico foi identificado.</b><br>
+        Verifique se os relatórios históricos (Etapa 1 e 2) foram carregados.
+      </div>
+      <details><summary style="font-size:12px;color:var(--muted);cursor:pointer;">Ver linhas extraídas do documento</summary>
+      <pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;margin-top:6px;">${docAtual.linhas.slice(0,80).join('\n')}</pre></details>`;
     return;
   }
 
   res.innerHTML=`
-    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:13px;font-weight:700;">${matches.length} itens identificados</span>
-      <button class="btn btn-sm btn-blue" onclick="adicionarSelecionados()"><i class="fas fa-plus"></i> Adicionar selecionados à análise</button>
+    <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:13px;font-weight:700;color:var(--green);"><i class="fas fa-check-circle"></i> ${matches.length} itens identificados</span>
+      <button class="btn btn-sm btn-blue" onclick="adicionarSelecionados()"><i class="fas fa-chart-bar"></i> Analisar selecionados</button>
     </div>
-    <div id="listaOcrMatches">
+    <div id="listaOcrMatches" style="max-height:320px;overflow-y:auto;">
     ${matches.map((m,i)=>`
       <div class="ocr-match" id="ocr-match-${i}">
-        <input type="checkbox" id="chk${i}" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0;">
+        <input type="checkbox" id="chk${i}" checked style="width:15px;height:15px;cursor:pointer;flex-shrink:0;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.desc}</div>
-          <div style="font-size:11px;color:var(--muted);">Qtd identificada: <b>${m.qtd||'?'}</b> | Similaridade: ${Math.round(m.score*100)}%</div>
+          <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.desc}</div>
+          <div style="font-size:10px;color:var(--muted);">Linha: "${m.linhaOriginal.substring(0,50)}" | Match: ${Math.round(m.score*100)}%</div>
         </div>
-        <input type="number" value="${m.qtd||''}" placeholder="Qtd" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;" id="qtdOcr${i}">
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <input type="number" value="${m.qtd||''}" placeholder="Qtd" style="width:64px;padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" id="qtdOcr${i}">
+          <input type="number" value="${m.preco||''}" placeholder="R$ unit" style="width:80px;padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" id="precoOcr${i}">
+        </div>
       </div>`).join('')}
     </div>
-    <details style="margin-top:12px;"><summary style="font-size:12px;color:var(--muted);cursor:pointer;">Ver texto extraído</summary>
-    <pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;margin-top:8px;">${texto.substring(0,2000)}</pre></details>`;
+    <details style="margin-top:8px;"><summary style="font-size:11px;color:var(--muted);cursor:pointer;">Ver todas as linhas extraídas</summary>
+    <pre style="font-size:10px;color:var(--muted);white-space:pre-wrap;margin-top:6px;max-height:200px;overflow-y:auto;">${docAtual.linhas.join('\n')}</pre></details>`;
 
-  res._matches = matches;
+  res._matches=matches;
 }
 
-function matchItemsTexto(texto) {
-  const conhecidos = Object.keys(historicoCompras).concat(Object.keys(historicoDistribuicao));
-  const linhas = texto.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>3);
-  const resultados = [];
-  const vistos = new Set();
+function matchItemsLinhas(linhas) {
+  const conhecidos=[...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])];
+  const resultados=[];
+  const vistos=new Set();
+  const UNIDADES=/\b(UN|UND|CX|CXA|FR|FRC|KG|LT|PCT|RL|CT|AMP|CP|TB|SC|GL|PC|PT|BL)\b/i;
 
   for(const linha of linhas){
-    const lNorm=norm(linha);
-    const tokens=lNorm.split(' ').filter(t=>t.length>2);
-    if(tokens.length<2)continue;
+    const lNorm=normMatch(linha); // sem acento + uppercase
+    const tokens=lNorm.split(' ').filter(t=>t.length>1);
+    if(tokens.length<1)continue;
 
-    let melhor={desc:null,score:0,qtd:null};
+    let melhor={desc:null,score:0,qtd:null,preco:null,linhaOriginal:linha};
+
     for(const desc of conhecidos){
-      const dtokens=desc.split(' ').filter(t=>t.length>2);
-      const overlap=tokens.filter(t=>dtokens.includes(t)).length;
+      const dNorm=normMatch(desc);
+      const dtokens=dNorm.split(' ').filter(t=>t.length>1);
+
+      // Estratégia 1: substring exato (item contido na linha)
+      if(lNorm.includes(dNorm)){
+        const score=0.9+(dNorm.length/100); // mais longa = melhor
+        if(score>melhor.score) melhor={...melhor,desc,score};
+        continue;
+      }
+
+      // Estratégia 2: token overlap ponderado pelo item (não pela linha)
+      const overlap=dtokens.filter(t=>tokens.includes(t)).length;
       const score=overlap/Math.max(dtokens.length,1);
-      if(score>melhor.score) melhor={desc,score,qtd:null};
+      if(score>melhor.score) melhor={...melhor,desc,score};
     }
-    if(melhor.score<0.45||vistos.has(melhor.desc))continue;
+
+    if(melhor.score<0.35||!melhor.desc||vistos.has(melhor.desc))continue;
     vistos.add(melhor.desc);
 
-    // Tentar extrair quantidade da linha
-    const qtdMatch=linha.match(/\b(\d{1,6})\b/g);
-    const qtd=qtdMatch?parseInt(qtdMatch[qtdMatch.length-1]):null;
-    resultados.push({...melhor, qtd: qtd&&qtd>0&&qtd<100000?qtd:null});
+    // Extrair quantidade: número antes de unidade de medida, ou menor número da linha (< 10000)
+    let qtd=null;
+    const qtdComUnidade=linha.match(/(\d[\d.,]*)\s*(?:UN|UND|CX|CXA|FR|FRC|KG|LT|PCT|RL|CT|AMP|CP|TB|SC|GL|PC|PT|BL)/i);
+    if(qtdComUnidade) qtd=parseFloat(qtdComUnidade[1].replace(',','.'));
+    if(!qtd){
+      const nums=([...linha.matchAll(/\b(\d{1,5})\b/g)]).map(m=>parseInt(m[1])).filter(n=>n>0&&n<10000&&!String(n).match(/^(20|19|21)\d{2}$/));
+      if(nums.length) qtd=nums[0]; // primeiro número razoável
+    }
+
+    // Extrair preço: padrão R$ X,XX ou X.XXX,XX ou número com 2 decimais
+    let preco=null;
+    const precoMatch=linha.match(/R?\$?\s*(\d{1,6}[.,]\d{2})\b/);
+    if(precoMatch){
+      preco=parseFloat(precoMatch[1].replace(/\./g,'').replace(',','.'));
+      if(preco<0.01||preco>999999)preco=null;
+    }
+
+    resultados.push({desc:melhor.desc,score:melhor.score,qtd,preco,linhaOriginal:linha});
   }
-  return resultados.sort((a,b)=>b.score-a.score).slice(0,30);
+
+  return resultados.sort((a,b)=>b.score-a.score).slice(0,40);
 }
 
 function adicionarSelecionados() {
   const res=document.getElementById('resultadoOcr');
   const matches=res._matches||[];
   let adicionados=0;
-  matches.forEach((m,i)=>{
+  for(let i=0;i<matches.length;i++){
     const chk=document.getElementById('chk'+i);
-    if(!chk?.checked)return;
+    if(!chk?.checked)continue;
     const qtd=parseFloat(document.getElementById('qtdOcr'+i)?.value)||0;
-    if(!qtd){alert(`Informe a quantidade para: ${m.desc}`);return;}
-    const novo=calcularAnalise(m.desc,qtd,0,'','');
+    const preco=parseFloat(document.getElementById('precoOcr'+i)?.value)||0;
+    if(!qtd)continue; // pular sem qtd silenciosamente
+    const novo=calcularAnalise(matches[i].desc,qtd,preco,'','');
     pedidoAtual=pedidoAtual.filter(p=>p.desc!==novo.desc);
     pedidoAtual.unshift(novo);
     adicionados++;
-  });
+  }
   if(adicionados>0){
     renderizarAnalise();
-    document.getElementById('secaoAnalise').scrollIntoView({behavior:'smooth'});
+    setTimeout(()=>document.getElementById('secaoAnalise').scrollIntoView({behavior:'smooth'}),100);
   }
 }
 
