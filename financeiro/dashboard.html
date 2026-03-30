@@ -539,6 +539,9 @@ function excelDateToStr(val){
     const m=val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if(m) return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
     if(/^\d{4}-\d{2}-\d{2}/.test(val)) return val.slice(0,10);
+    // DD.MM.YY ou DD.MM.YYYY (ex: 15.03.26)
+    const m2=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+    if(m2){const y=m2[3].length===2?'20'+m2[3]:m2[3];return`${y}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;}
     return null;
   }
   if(typeof val==='number'&&val>40000&&val<60000){
@@ -572,9 +575,10 @@ function parseBoletosSheet(ws,label){
     // Layout C: col[4]=valor, col[5]=vencimento        (PIX)
     const v1=excelDateToStr(row[1]),v2=excelDateToStr(row[2]),v5=excelDateToStr(row[5]);
     const n2=parseFloat(row[2]),n3=parseFloat(row[3]),n4=parseFloat(row[4]);
-    if(v2&&!isNaN(n3)&&n3>0){venc=v2;val=n3;}               // layout A
-    else if(v1&&!isNaN(n2)&&n2>0){venc=v1;val=n2;}           // layout B
-    else if(v5&&!isNaN(n4)&&n4>0){venc=v5;val=n4;}           // layout C
+    if(v2&&!isNaN(n3)&&n3>0){venc=v2;val=n3;}               // layout A: col[2]=data, col[3]=valor
+    else if(v1&&!isNaN(n2)&&n2>0){venc=v1;val=n2;}           // layout B: col[1]=data, col[2]=valor
+    else if(v5&&!isNaN(n4)&&n4>0){venc=v5;val=n4;}           // layout C: col[5]=data, col[4]=valor
+    else if(v1&&!isNaN(n3)&&n3>0){venc=v1;val=n3;}           // layout D: col[1]=data, col[3]=valor (LOGISTICA)
     else if(!isNaN(n4)&&n4>0){val=n4;}
     else if(!isNaN(n3)&&n3>0){val=n3;}
     else if(!isNaN(n2)&&n2>0){val=n2;}
@@ -593,16 +597,55 @@ function parseBoletosSheet(ws,label){
   return result;
 }
 
+function parseFGTSSheet(ws){
+  // Parser dedicado para aba FGTS E RESCISÕES
+  // Estrutura: blocos por funcionário iniciados por linha 'ITEM | NOME: Fulano'
+  // Cada bloco tem parcelas: col[0]='N PARCELA', col[1]=valor, col[2]=data, col[3]=STATUS
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+  const result=[];
+  let currentPerson='';
+  for(const row of rows){
+    if(!row||row.length<2) continue;
+    const c0=String(row[0]||'').trim();
+    if(!c0) continue;
+    // Detecta cabeçalho de pessoa: col[0]='ITEM', col[1]='NOME: ...'
+    if(c0.toUpperCase()==='ITEM'&&row[1]){
+      const nm=String(row[1]).replace(/^NOME:\s*/i,'').trim();
+      if(nm) currentPerson=nm;
+      continue;
+    }
+    // Processa apenas linhas de parcela
+    if(!c0.toUpperCase().includes('PARCELA')) continue;
+    const statusRaw=row[3];
+    const statusStr=String(statusRaw||'').toUpperCase().trim();
+    // Considera pago se: 'PAGO' ou a col[3] é uma data (data de pagamento registrada)
+    const isPago=statusStr==='PAGO'||excelDateToStr(statusRaw)!==null;
+    const val=parseFloat(row[1]);
+    if(!val||val<=0) continue;
+    const venc=excelDateToStr(row[2]);
+    const fornecedor=currentPerson?`RESCISÃO - ${currentPerson}`:'RESCISÃO';
+    const key=`${fornecedor}|${c0}|${venc||''}|${val}`;
+    const ex=accounts.find(a=>a._key===key);
+    result.push({
+      id:ex?ex.id:(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)),
+      _key:key,fornecedor,documento:c0,vencimento:venc,valor:val,
+      aba:'FGTS',pago:isPago||(ex?ex.pago:false),_valorSuspeito:false,
+      data_pagamento:ex?ex.data_pagamento:null,obs:ex?ex.obs:'',
+    });
+  }
+  return result;
+}
+
 function importBoletos(ab,name){
   try{
     const wb=XLSX.read(ab,{type:'array',cellDates:false});
-    const abaMap={'PENDENTES':'PENDENTES',
-      'FGTS E RESCISÕES ':'FGTS','FGTS E RESCISÕES':'FGTS'};
     const all=[];
-    for(const[sn,label] of Object.entries(abaMap)){
-      const ws=wb.Sheets[sn];if(!ws)continue;
-      all.push(...parseBoletosSheet(ws,label));
-    }
+    // Aba PENDENTES: parser genérico por layout de colunas
+    const wsPend=wb.Sheets['PENDENTES'];
+    if(wsPend) all.push(...parseBoletosSheet(wsPend,'PENDENTES'));
+    // Aba FGTS E RESCISÕES: parser dedicado que respeita status PAGO/PENDENTE
+    const wsFgts=wb.Sheets['FGTS E RESCISÕES ']||wb.Sheets['FGTS E RESCISÕES'];
+    if(wsFgts) all.push(...parseFGTSSheet(wsFgts));
     if(!all.length){alert('Nenhuma conta encontrada. Verifique as abas: PENDENTES, FGTS E RESCISÕES');return;}
     accounts=all;
     document.getElementById('boletosDot').style.background='#10b981';
