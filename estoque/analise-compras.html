@@ -201,6 +201,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
      TAB COMPRAS
 ══════════════════════════════════════════════ -->
 <div id="tab-compras" class="tab-content">
+  <!-- Upload compras -->
+  <div class="card" style="padding:18px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <i class="fas fa-upload" style="color:var(--green);"></i>
+      <span style="font-size:13px;font-weight:700;">Carregar Relatórios de Compras</span>
+      <span style="font-size:11px;color:var(--muted);">— um arquivo por mês</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzCompras2"></div>
+  </div>
+  <!-- Filtros -->
   <div class="card" style="padding:16px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <select id="filtroComprasMes" class="form-input" style="max-width:160px;" onchange="renderCompras()">
@@ -233,6 +243,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
      TAB DISTRIBUIÇÃO POR SETOR
 ══════════════════════════════════════════════ -->
 <div id="tab-distribuicao" class="tab-content">
+  <!-- Upload distribuição -->
+  <div class="card" style="padding:18px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <i class="fas fa-upload" style="color:var(--purple);"></i>
+      <span style="font-size:13px;font-weight:700;">Carregar Relatórios de Distribuição</span>
+      <span style="font-size:11px;color:var(--muted);">— um arquivo por mês</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzDistribuicao2"></div>
+  </div>
+  <!-- Filtros -->
   <div class="card" style="padding:16px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <select id="filtroDistMes" class="form-input" style="max-width:160px;" onchange="renderDistribuicao()">
@@ -351,6 +371,7 @@ function criarDropZones(cId, pfx, onFile) {
 }
 function marcarDzOk(id, mes, n, nome) {
   const dz = document.getElementById(id);
+  if(!dz) return;
   dz.classList.add('loaded');
   dz.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
     <p style="font-size:12px;font-weight:600;color:var(--green);margin-top:4px;">${mes} 2026</p>
@@ -402,8 +423,10 @@ function carregarCompra(file, i, mes) {
       (fornecedoresHist[it.descricao]=fornecedoresHist[it.descricao]||new Set()).add(it.fornecedor);
     });
     marcarDzOk('dzc'+i, mes, itens.length, file.name);
+    marcarDzOk('dzc2-'+i, mes, itens.length, file.name);
     atualizarAutoComplete();
     atualizarStatus('statusCompras', arquivosCompras, historicoCompras, 'compras');
+    renderCompras();
   });
 }
 function carregarDistribuicao(file, i, mes) {
@@ -415,8 +438,10 @@ function carregarDistribuicao(file, i, mes) {
       (centrosHist[it.descricao]=centrosHist[it.descricao]||new Set()).add(it.centro);
     });
     marcarDzOk('dzd'+i, mes, itens.length, file.name);
+    marcarDzOk('dzd2-'+i, mes, itens.length, file.name);
     atualizarAutoComplete();
     atualizarStatus('statusDistribuicao', arquivosDist, historicoDistribuicao, 'distribuição');
+    renderDistribuicao();
   });
 }
 function atualizarStatus(id, arr, dados, tipo) {
@@ -1138,8 +1163,10 @@ function renderDistribuicao(){
 }
 
 // ── Init ──────────────────────────────────────────────────
-criarDropZones('dzCompras',     'dzc', carregarCompra);
-criarDropZones('dzDistribuicao','dzd', carregarDistribuicao);
+criarDropZones('dzCompras',      'dzc',  carregarCompra);
+criarDropZones('dzDistribuicao', 'dzd',  carregarDistribuicao);
+criarDropZones('dzCompras2',     'dzc2-',carregarCompra);
+criarDropZones('dzDistribuicao2','dzd2-',carregarDistribuicao);
 </script>
 </body>
 </html>
