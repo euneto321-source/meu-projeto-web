@@ -124,7 +124,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
            ondragover="event.preventDefault();this.classList.add('over')"
            ondragleave="this.classList.remove('over')"
            ondrop="event.preventDefault();this.classList.remove('over');carregarPedidoExcel({files:[event.dataTransfer.files[0]]})">
-        <input type="file" id="fileExcel" accept=".xlsx,.xls" style="display:none" onchange="carregarPedidoExcel(this)">
+        <input type="file" id="fileExcel" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none" onchange="carregarPedidoExcel(this)">
         <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
         <span style="font-size:13px;color:var(--muted);margin-left:8px;">Excel do pedido completo</span>
       </div>
@@ -357,7 +357,7 @@ function criarDropZones(cId, pfx, onFile) {
   MESES.forEach((mes, i) => {
     const dz = document.createElement('div');
     dz.className = 'drop-zone'; dz.id = pfx+i;
-    dz.innerHTML = `<input type="file" id="${pfx}f${i}" accept=".xlsx,.xls" style="display:none">
+    dz.innerHTML = `<input type="file" id="${pfx}f${i}" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
       <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
       <p style="font-size:12px;font-weight:600;margin-top:6px;">${mes} 2026</p>
       <p style="font-size:11px;color:var(--muted);">Clique ou arraste</p>`;
