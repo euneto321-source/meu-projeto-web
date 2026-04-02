@@ -78,6 +78,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
   <button class="tab-btn" onclick="trocarTab('compras',this)"><i class="fas fa-shopping-cart" style="margin-right:6px;"></i>Compras</button>
   <button class="tab-btn" onclick="trocarTab('distribuicao',this)"><i class="fas fa-sitemap" style="margin-right:6px;"></i>Distribuição por Setor</button>
   <button class="tab-btn" onclick="trocarTab('historico',this)"><i class="fas fa-chart-bar" style="margin-right:6px;"></i>Histórico de Consumo</button>
+  <button class="tab-btn" onclick="trocarTab('classificacao',this)"><i class="fas fa-layer-group" style="margin-right:6px;"></i>ABC/XYZ</button>
   <button class="tab-btn" onclick="trocarTab('relatorios',this)"><i class="fas fa-file-alt" style="margin-right:6px;"></i>Relatórios</button>
 </div>
 
@@ -95,7 +96,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       <div><h2 style="font-size:14px;font-weight:700;">Relatórios de Compras</h2>
         <p style="font-size:11px;color:var(--muted);">Histórico mensal de compras por fornecedor</p></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzCompras"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;" id="dzCompras"></div>
     <div id="statusCompras" style="margin-top:8px;font-size:12px;color:var(--muted);display:none;"></div>
   </div>
 
@@ -106,7 +107,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       <div><h2 style="font-size:14px;font-weight:700;">Relatórios de Distribuição</h2>
         <p style="font-size:11px;color:var(--muted);">Consumo real por centro de custo</p></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzDistribuicao"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;" id="dzDistribuicao"></div>
     <div id="statusDistribuicao" style="margin-top:8px;font-size:12px;color:var(--muted);display:none;"></div>
   </div>
 
@@ -208,14 +209,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       <span style="font-size:13px;font-weight:700;">Carregar Relatórios de Compras</span>
       <span style="font-size:11px;color:var(--muted);">— um arquivo por mês</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzCompras2"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;" id="dzCompras2"></div>
   </div>
   <!-- Filtros -->
   <div class="card" style="padding:16px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <select id="filtroComprasMes" class="form-input" style="max-width:160px;" onchange="renderCompras()">
         <option value="">Todos os meses</option>
-        <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+      </select>
+      <select id="filtroComprasEmpresa" class="form-input" style="max-width:180px;" onchange="renderCompras()">
+        <option value="">Todas as empresas</option>
       </select>
       <select id="filtroComprasForn" class="form-input" style="max-width:240px;" onchange="renderCompras()">
         <option value="">Todos os fornecedores</option>
@@ -229,7 +232,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
     <div style="overflow-x:auto;">
       <table class="tbl">
         <thead><tr>
-          <th>Fornecedor</th><th>Descrição</th><th>Unidade de Compra</th>
+          <th>Empresa</th><th>Fornecedor</th><th>NF</th><th>Descrição</th><th>Unidade de Compra</th>
           <th class="text-right">Qtd</th><th class="text-right">Valor Unit.</th>
           <th class="text-right">Valor Total</th><th>Mês</th>
         </tr></thead>
@@ -250,14 +253,13 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
       <span style="font-size:13px;font-weight:700;">Carregar Relatórios de Distribuição</span>
       <span style="font-size:11px;color:var(--muted);">— um arquivo por mês</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="dzDistribuicao2"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;" id="dzDistribuicao2"></div>
   </div>
   <!-- Filtros -->
   <div class="card" style="padding:16px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <select id="filtroDistMes" class="form-input" style="max-width:160px;" onchange="renderDistribuicao()">
         <option value="">Todos os meses</option>
-        <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
       </select>
       <select id="filtroDistSetor" class="form-input" style="max-width:260px;" onchange="renderDistribuicao()">
         <option value="">Todos os setores</option>
@@ -296,15 +298,55 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 </div>
 
 <!-- ══════════════════════════════════════════════
-     TAB 3 — RELATÓRIOS
+     TAB — CLASSIFICAÇÃO ABC/XYZ
+══════════════════════════════════════════════ -->
+<div id="tab-classificacao" class="tab-content">
+  <div id="classifResumo" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Matriz ABC × XYZ</h3>
+      <div id="matrizABCXYZ"></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">Distribuição ABC por Valor</h3>
+      <canvas id="chartABC" height="220"></canvas>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <select id="filtroClasseABC" class="form-input" style="max-width:120px;" onchange="renderClassificacao()">
+        <option value="">Todas</option><option>A</option><option>B</option><option>C</option>
+      </select>
+      <select id="filtroClasseXYZ" class="form-input" style="max-width:120px;" onchange="renderClassificacao()">
+        <option value="">Todas</option><option>X</option><option>Y</option><option>Z</option>
+      </select>
+      <input class="form-input" id="filtroClassifBusca" placeholder="Buscar item..." style="max-width:260px;" oninput="renderClassificacao()">
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr>
+          <th>Item</th><th class="text-right">Valor Total</th><th class="text-right">% Acumulado</th>
+          <th>ABC</th><th class="text-right">CV</th><th>XYZ</th><th>Classe</th>
+        </tr></thead>
+        <tbody id="tabelaClassif"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB — RELATÓRIOS
 ══════════════════════════════════════════════ -->
 <div id="tab-relatorios" class="tab-content">
   <div class="card" style="padding:20px;margin-bottom:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-sm btn-blue" id="r-mensal" onclick="trocarRelatorio('mensal')">Mensal</button>
         <button class="btn btn-sm btn-outline" id="r-semanal" onclick="trocarRelatorio('semanal')">Semanal (estimado)</button>
         <button class="btn btn-sm btn-outline" id="r-dispensacao" onclick="trocarRelatorio('dispensacao')">Últimas Dispensações</button>
+        <button class="btn btn-sm btn-outline" id="r-compravsconsumo" onclick="trocarRelatorio('compravsconsumo')">Compra vs Consumo</button>
+        <button class="btn btn-sm btn-outline" id="r-fornecedores" onclick="trocarRelatorio('fornecedores')">Fornecedores</button>
+        <button class="btn btn-sm btn-outline" id="r-alertas" onclick="trocarRelatorio('alertas')">Alertas de Estoque</button>
       </div>
       <button class="btn btn-sm btn-green" onclick="exportarRelatorio()"><i class="fas fa-download"></i> Exportar</button>
     </div>
@@ -318,19 +360,23 @@ body{background:var(--bg);color:var(--text);min-height:100vh;}
 // pdfjsLib configurado dentro de processarDocumento(), após carregamento garantido
 
 // ── Estado ────────────────────────────────────────────────
-const historicoCompras = {};      // desc → [{mes,qtd,valorUnit,fornecedor}]
+const historicoCompras = {};      // desc → [{mes,qtd,valorUnit,valorTotal,fornecedor,empresa,notaFiscal,dataCompra}]
 const historicoDistribuicao = {}; // desc → [{mes,centro,qtd,valor}]
 const fornecedoresHist = {};
 const centrosHist = {};
-let arquivosCompras = [];
-let arquivosDist = [];
+let arquivosCompras = {};  // mes → {mes,itens}
+let arquivosDist = {};     // mes → {mes,itens}
 let pedidoAtual = [];
 let filtroAtivo = 'todos';
 let relatorioAtivo = 'mensal';
-let docAtual = null; // { file, tipo, texto }
-const MESES = ['Janeiro','Fevereiro','Março'];
-const MESES_ABREV = ['Jan','Fev','Mar'];
+let docAtual = null;
+let MESES = [];       // dinâmico — preenchido conforme arquivos carregados
+let MESES_ABREV = []; // dinâmico
 let chartAtivo = null;
+const TODOS_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const TODOS_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MES_ORDEM = {}; TODOS_MESES.forEach((m,i)=>MES_ORDEM[m]=i);
+let anoAtual = new Date().getFullYear();
 
 // ── Utils ─────────────────────────────────────────────────
 const norm  = s => s?.toString().trim().toUpperCase().replace(/\s+/g,' ') || '';
@@ -344,48 +390,116 @@ function trocarTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'historico')    renderHistorico();
-  if (id === 'relatorios')   renderRelatorio();
-  if (id === 'compras')      renderCompras();
-  if (id === 'distribuicao') renderDistribuicao();
+  if (id === 'historico')      renderHistorico();
+  if (id === 'relatorios')     renderRelatorio();
+  if (id === 'compras')        renderCompras();
+  if (id === 'distribuicao')   renderDistribuicao();
+  if (id === 'classificacao')  renderClassificacao();
 }
 
-// ── Drop zones ────────────────────────────────────────────
+// ── Drop zones dinâmicas ──────────────────────────────────
+const dzRegistros = {}; // cId → [{mes,pfx,onFile}]
 function criarDropZones(cId, pfx, onFile) {
-  const c = document.getElementById(cId);
+  dzRegistros[cId] = {pfx, onFile, mesesAdicionados:new Set()};
+  reconstruirDropZones(cId);
+}
+function reconstruirDropZones(cId) {
+  const reg = dzRegistros[cId]; if(!reg) return;
+  const c = document.getElementById(cId); if(!c) return;
   c.innerHTML = '';
-  MESES.forEach((mes, i) => {
-    const dz = document.createElement('div');
-    dz.className = 'drop-zone'; dz.id = pfx+i;
-    dz.innerHTML = `<input type="file" id="${pfx}f${i}" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
-      <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
-      <p style="font-size:12px;font-weight:600;margin-top:6px;">${mes} 2026</p>
-      <p style="font-size:11px;color:var(--muted);">Clique ou arraste</p>`;
-    dz.onclick = () => document.getElementById(pfx+'f'+i).click();
-    document.getElementById(pfx+'f'+i).onchange = e => { if(e.target.files[0]) onFile(e.target.files[0],i,mes); };
-    dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
-    dz.ondragleave = () => dz.classList.remove('over');
-    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0],i,mes); };
-    c.appendChild(dz);
+  MESES.forEach((mes) => {
+    const key = mes;
+    criarDzItem(c, reg.pfx, key, mes, reg.onFile);
+    reg.mesesAdicionados.add(mes);
+  });
+  // Botão "+" para adicionar mês
+  const btnAdd = document.createElement('div');
+  btnAdd.className = 'drop-zone';
+  btnAdd.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:80px;border-style:dashed;opacity:.6;';
+  btnAdd.innerHTML = `<div style="text-align:center;"><i class="fas fa-plus" style="color:var(--blue);font-size:16px;"></i><p style="font-size:11px;color:var(--muted);margin-top:4px;">Adicionar mês</p></div>`;
+  btnAdd.onclick = () => {
+    const proximos = TODOS_MESES.filter(m => !MESES.includes(m));
+    if(!proximos.length){alert('Todos os 12 meses já foram adicionados.');return;}
+    const sel = prompt('Escolha o mês para adicionar:\\n' + proximos.map((m,i)=>`${i+1}. ${m}`).join('\\n'), '1');
+    if(!sel) return;
+    const idx = parseInt(sel)-1;
+    if(idx>=0 && idx<proximos.length) adicionarMes(proximos[idx]);
+  };
+  c.appendChild(btnAdd);
+}
+function criarDzItem(container, pfx, key, mes, onFile) {
+  const dz = document.createElement('div');
+  dz.className = 'drop-zone'; dz.id = pfx+key;
+  const fId = pfx+'f_'+key;
+  dz.innerHTML = `<input type="file" id="${fId}" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
+    <i class="fas fa-file-excel" style="color:var(--green);font-size:18px;"></i>
+    <p style="font-size:12px;font-weight:600;margin-top:6px;">${mes} ${anoAtual}</p>
+    <p style="font-size:11px;color:var(--muted);">Clique ou arraste</p>`;
+  container.appendChild(dz);
+  const fileInput = dz.querySelector('input[type="file"]');
+  dz.onclick = () => fileInput.click();
+  fileInput.onchange = e => { if(e.target.files[0]) onFile(e.target.files[0],key,mes); };
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+  dz.ondragleave = () => dz.classList.remove('over');
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0],key,mes); };
+}
+function adicionarMes(mes) {
+  if(!MESES.includes(mes)){
+    MESES.push(mes);
+    MESES.sort((a,b)=>MES_ORDEM[a]-MES_ORDEM[b]);
+    MESES_ABREV = MESES.map(m=>TODOS_ABREV[MES_ORDEM[m]]);
+    Object.keys(dzRegistros).forEach(cId=>reconstruirDropZones(cId));
+    atualizarFiltrosMes();
+  }
+}
+function atualizarFiltrosMes(){
+  ['filtroComprasMes','filtroDistMes'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel)return;
+    const atual=sel.value;
+    sel.innerHTML='<option value="">Todos os meses</option>'+MESES.map(m=>`<option${m===atual?' selected':''}>${m}</option>`).join('');
   });
 }
 function marcarDzOk(id, mes, n, nome) {
   const dz = document.getElementById(id);
   if(!dz) return;
   dz.classList.add('loaded');
+  dz.onclick = null;
   dz.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);font-size:18px;"></i>
-    <p style="font-size:12px;font-weight:600;color:var(--green);margin-top:4px;">${mes} 2026</p>
+    <p style="font-size:12px;font-weight:600;color:var(--green);margin-top:4px;">${mes} ${anoAtual}</p>
     <p style="font-size:11px;color:var(--muted);">${n} itens • ${nome}</p>`;
 }
 
 // ── Parser compras ────────────────────────────────────────
 function parsearCompras(wb, mes) {
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
-  const itens = []; let fornAtual = '';
+  const itens = []; let fornAtual = '', empresaAtual = '', notaAtual = '', dataCompraAtual = '';
   for (const row of rows) {
-    if (typeof row[0]==='string' && row[0].startsWith('FORNECEDOR:')) {
-      const p=row[0].split('-'); fornAtual=norm(p.length>1?p.slice(1).join('-'):row[0].replace('FORNECEDOR:',''));
+    const c0 = String(row[0]||'').trim();
+    // Detectar empresa
+    if (c0.toUpperCase().startsWith('EMPRESA:')) {
+      empresaAtual = norm(c0.replace(/^EMPRESA:\s*/i,''));
+      continue;
     }
+    // Detectar fornecedor
+    if (c0.startsWith('FORNECEDOR:')) {
+      const p=c0.split('-'); fornAtual=norm(p.length>1?p.slice(1).join('-'):c0.replace('FORNECEDOR:',''));
+      continue;
+    }
+    // Detectar nota fiscal
+    if (c0.toLowerCase().startsWith('num. nota:')) {
+      notaAtual = c0.replace(/^num\.\s*nota:\s*/i,'').trim();
+      // Data emissão em col[3] ou col[4]
+      const dataRaw = row[3] || row[4];
+      if(dataRaw){
+        const ds=String(dataRaw).trim();
+        if(ds.match(/^\d{2}\/\d{2}\/\d{4}$/)) dataCompraAtual=ds;
+        else if(typeof dataRaw==='number'){ const d=new Date((dataRaw-25569)*86400000); dataCompraAtual=d.toLocaleDateString('pt-BR'); }
+        else dataCompraAtual=ds;
+      }
+      continue;
+    }
+    // Pular totais
+    if (c0.toUpperCase().startsWith('TOTAL')) continue;
     // Linha de item: col[0]=código numérico, col[1]=descrição
     const cod=row[0]; const isCod=(typeof cod==='number'&&cod>0)||(typeof cod==='string'&&/^\d+$/.test((cod||'').trim())&&parseInt(cod)>0);
     if (isCod && row[1] && String(row[1]).trim()) {
@@ -393,7 +507,7 @@ function parsearCompras(wb, mes) {
       const valorUnit=parseFloat(row[5])||0;
       const valorTotal=parseFloat(row[7])||0;
       const unidade=String(row[2]||'').trim();
-      if(qtd>0) itens.push({descricao:norm(row[1]),qtd,valorUnit,valorTotal,unidade,fornecedor:fornAtual,mes});
+      if(qtd>0) itens.push({descricao:norm(row[1]),qtd,valorUnit,valorTotal,unidade,fornecedor:fornAtual,empresa:empresaAtual,notaFiscal:notaAtual,dataCompra:dataCompraAtual,mes});
     }
   }
   return itens;
@@ -414,57 +528,70 @@ function parsearDistribuicao(wb, mes) {
 }
 
 // ── Loaders ───────────────────────────────────────────────
-function carregarCompra(file, i, mes) {
+function carregarCompra(file, key, mes) {
   lerXl(file, wb => {
     const itens = parsearCompras(wb, mes);
-    arquivosCompras[i] = {mes,itens};
+    // Limpar itens antigos desse mês do histórico
+    if(arquivosCompras[mes]){
+      arquivosCompras[mes].itens.forEach(it=>{
+        if(historicoCompras[it.descricao]) historicoCompras[it.descricao]=historicoCompras[it.descricao].filter(h=>h.mes!==mes);
+      });
+    }
+    arquivosCompras[mes] = {mes,itens};
     itens.forEach(it => {
       (historicoCompras[it.descricao]=historicoCompras[it.descricao]||[]).push(it);
       (fornecedoresHist[it.descricao]=fornecedoresHist[it.descricao]||new Set()).add(it.fornecedor);
     });
-    marcarDzOk('dzc'+i, mes, itens.length, file.name);
-    marcarDzOk('dzc2-'+i, mes, itens.length, file.name);
-    atualizarAutoComplete();
+    adicionarMes(mes);
+    marcarDzOk('dzc'+mes, mes, itens.length, file.name);
+    marcarDzOk('dzc2-'+mes, mes, itens.length, file.name);
     atualizarStatus('statusCompras', arquivosCompras, historicoCompras, 'compras');
+    atualizarFiltrosMes();
     renderCompras();
   });
 }
-function carregarDistribuicao(file, i, mes) {
+function carregarDistribuicao(file, key, mes) {
   lerXl(file, wb => {
     const itens = parsearDistribuicao(wb, mes);
-    arquivosDist[i] = {mes,itens};
+    if(arquivosDist[mes]){
+      arquivosDist[mes].itens.forEach(it=>{
+        if(historicoDistribuicao[it.descricao]) historicoDistribuicao[it.descricao]=historicoDistribuicao[it.descricao].filter(h=>h.mes!==mes);
+      });
+    }
+    arquivosDist[mes] = {mes,itens};
     itens.forEach(it => {
       (historicoDistribuicao[it.descricao]=historicoDistribuicao[it.descricao]||[]).push(it);
       (centrosHist[it.descricao]=centrosHist[it.descricao]||new Set()).add(it.centro);
     });
-    marcarDzOk('dzd'+i, mes, itens.length, file.name);
-    marcarDzOk('dzd2-'+i, mes, itens.length, file.name);
-    atualizarAutoComplete();
+    adicionarMes(mes);
+    marcarDzOk('dzd'+mes, mes, itens.length, file.name);
+    marcarDzOk('dzd2-'+mes, mes, itens.length, file.name);
     atualizarStatus('statusDistribuicao', arquivosDist, historicoDistribuicao, 'distribuição');
+    atualizarFiltrosMes();
     renderDistribuicao();
   });
 }
-function atualizarStatus(id, arr, dados, tipo) {
+function atualizarStatus(id, obj, dados, tipo) {
   const el=document.getElementById(id); el.style.display='block';
-  el.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);"></i> ${arr.filter(Boolean).length} mês(es) de ${tipo} — ${Object.keys(dados).length} itens distintos`;
+  const n=Object.keys(obj).length;
+  el.innerHTML=`<i class="fas fa-check-circle" style="color:var(--green);"></i> ${n} mês(es) de ${tipo} — ${Object.keys(dados).length} itens distintos`;
 }
-function atualizarAutoComplete() { /* campos manuais removidos */ }
 
 // ── Última dispensação ────────────────────────────────────
 function ultimaDispensacao(desc) {
   const hist = historicoDistribuicao[desc] || [];
   if (!hist.length) return null;
-  const ordem = {'Março':3,'Fevereiro':2,'Janeiro':1};
-  const sorted = [...hist].sort((a,b)=>(ordem[b.mes]||0)-(ordem[a.mes]||0));
+  const sorted = [...hist].sort((a,b)=>(MES_ORDEM[b.mes]??-1)-(MES_ORDEM[a.mes]??-1));
   return sorted[0].mes;
 }
+function mesMaisRecente() {
+  if(!MESES.length) return null;
+  return MESES[MESES.length-1];
+}
 function mesesDesde(mes) {
-  const hoje = new Date(); // Mar 2026
-  const mapa = {'Janeiro':0,'Fevereiro':1,'Março':2};
-  const idx = mapa[mes];
-  if (idx===undefined) return null;
-  // Março = 0 meses atrás, Fev = 1, Jan = 2
-  return 2 - idx;
+  const ultimo = mesMaisRecente();
+  if(!ultimo || MES_ORDEM[mes]===undefined || MES_ORDEM[ultimo]===undefined) return null;
+  return MES_ORDEM[ultimo] - MES_ORDEM[mes];
 }
 
 // ── Motor de análise ──────────────────────────────────────
@@ -968,7 +1095,7 @@ function abrirDetalheItem(desc){
 // ── Relatórios ────────────────────────────────────────────
 function trocarRelatorio(tipo){
   relatorioAtivo=tipo;
-  ['mensal','semanal','dispensacao'].forEach(t=>{
+  ['mensal','semanal','dispensacao','compravsconsumo','fornecedores','alertas'].forEach(t=>{
     const b=document.getElementById('r-'+t);
     if(b){b.className='btn btn-sm '+(t===tipo?'btn-blue':'btn-outline');}
   });
@@ -981,8 +1108,11 @@ function renderRelatorio(){
 
   if(!todos.length){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--muted);">Carregue os relatórios para gerar os relatórios de consumo.</div>`;return;}
 
+  if(relatorioAtivo==='compravsconsumo'){ renderRelatorioCompraVsConsumo(el); return; }
+  if(relatorioAtivo==='fornecedores'){ renderRelatorioFornecedores(el); return; }
+  if(relatorioAtivo==='alertas'){ renderRelatorioAlertas(el); return; }
+
   if(relatorioAtivo==='dispensacao'){
-    const ordem={'Março':3,'Fevereiro':2,'Janeiro':1};
     const linhas=todos.map(desc=>{
       const ud=ultimaDispensacao(desc);
       const ma=ud!==null?mesesDesde(ud):null;
@@ -1026,8 +1156,9 @@ function renderRelatorio(){
         const porMes=MESES.map(m=>histD.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0)/divisor);
         const total=porMes.reduce((a,b)=>a+b,0);
         const media=total/MESES.length;
-        // Tendência: Jan→Mar
-        const tend=porMes[2]>porMes[0]?`<span style="color:var(--green);">↑ Alta</span>`:porMes[2]<porMes[0]?`<span style="color:var(--red);">↓ Baixa</span>`:`<span style="color:var(--muted);">→ Estável</span>`;
+        // Tendência: primeiro→último mês
+        const _first=porMes[0],_last=porMes[porMes.length-1];
+        const tend=_last>_first?`<span style="color:var(--green);">↑ Alta</span>`:_last<_first?`<span style="color:var(--red);">↓ Baixa</span>`:`<span style="color:var(--muted);">→ Estável</span>`;
         return `<tr>
           <td style="font-weight:600;max-width:200px;">${desc}</td>
           ${porMes.map(v=>`<td>${v>0?fmtN(v):'<span style="color:var(--border);">—</span>'}</td>`).join('')}
@@ -1042,6 +1173,7 @@ function renderRelatorio(){
 
 // ── Exportar ──────────────────────────────────────────────
 function exportarRelatorio(){
+  const data=new Date().toISOString().slice(0,10);
   if(relatorioAtivo==='mensal'||relatorioAtivo==='semanal'){
     const todos=[...new Set([...Object.keys(historicoDistribuicao),...Object.keys(historicoCompras)])].sort();
     const div=relatorioAtivo==='semanal'?4:1;
@@ -1054,13 +1186,41 @@ function exportarRelatorio(){
     });
     const ws=XLSX.utils.aoa_to_sheet(rows);
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Consumo');
-    XLSX.writeFile(wb,'relatorio-consumo-'+relatorioAtivo+'-'+new Date().toISOString().slice(0,10)+'.xlsx');
+    XLSX.writeFile(wb,'relatorio-consumo-'+relatorioAtivo+'-'+data+'.xlsx');
+  } else if(relatorioAtivo==='compravsconsumo'){
+    const dados=calcularCompraVsConsumo();
+    const rows=[['Item','Qtd Comprada','Qtd Consumida','Saldo','Ratio','Cobertura (meses)','Status']];
+    dados.forEach(d=>rows.push([d.desc,d.totalComprado,d.totalConsumido,d.saldo,d.ratio<999?d.ratio.toFixed(2):'∞',d.cobertura!==null?d.cobertura.toFixed(1):'',d.status]));
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'CompraVsConsumo');
+    XLSX.writeFile(wb,'compra-vs-consumo-'+data+'.xlsx');
+  } else if(relatorioAtivo==='fornecedores'){
+    const todos=[];
+    Object.values(arquivosCompras).forEach(a=>a.itens.forEach(it=>todos.push(it)));
+    const rows=[['Fornecedor','Descrição','Qtd','Valor Unit.','Valor Total','Mês']];
+    todos.forEach(it=>rows.push([it.fornecedor,it.descricao,it.qtd,it.valorUnit,it.valorTotal||it.qtd*it.valorUnit,it.mes]));
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Fornecedores');
+    XLSX.writeFile(wb,'fornecedores-'+data+'.xlsx');
+  } else if(relatorioAtivo==='alertas'){
+    const todos=[...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])];
+    const rows=[['Item','Qtd Comprada','Qtd Consumida','Valor','Alertas']];
+    todos.forEach(desc=>{
+      const hc=historicoCompras[desc]||[]; const hd=historicoDistribuicao[desc]||[];
+      const flags=[];
+      if(hc.length>0&&hd.length===0) flags.push('Comprado mas nunca consumido');
+      if(hd.length>0&&hc.length===0) flags.push('Consumido mas nunca comprado');
+      if(flags.length) rows.push([desc,hc.reduce((s,h)=>s+h.qtd,0),hd.reduce((s,h)=>s+h.qtd,0),hc.reduce((s,h)=>s+(h.valorTotal||h.qtd*h.valorUnit),0),flags.join(' | ')]);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Alertas');
+    XLSX.writeFile(wb,'alertas-estoque-'+data+'.xlsx');
   } else if(pedidoAtual.length){
     const rows=[['Item','Setor','Qtd Pedida','Média Compra/mês','Consumo/mês','Ult. Dispensação','Cobertura (meses)','Valor Unit.','Preço Médio Hist.','Var. Preço %','Fornecedor','Risco','Flags']];
     pedidoAtual.forEach(i=>rows.push([i.desc,i.setor,i.qtdSolicitada,i.ehNovo?'':i.mediaCompra.toFixed(1),i.mediaConsumo>0?i.mediaConsumo.toFixed(1):'',i.ultDisp||'',i.coberturaMeses!==null?i.coberturaMeses.toFixed(1):'',i.valorUnit>0?i.valorUnit:'',i.mediaValor>0?i.mediaValor.toFixed(2):'',i.varPreco!==null?Math.round(i.varPreco)+'%':'',i.fornecedor,i.risco.toUpperCase(),i.flags.map(f=>f.label).join(' | ')]));
     const ws=XLSX.utils.aoa_to_sheet(rows);
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Análise');
-    XLSX.writeFile(wb,'analise-pedido-'+new Date().toISOString().slice(0,10)+'.xlsx');
+    XLSX.writeFile(wb,'analise-pedido-'+data+'.xlsx');
   } else { alert('Nenhum dado para exportar.'); }
 }
 
@@ -1068,21 +1228,34 @@ function exportarRelatorio(){
 function renderCompras(){
   // Monta lista plana de todos os itens de compra
   const todos=[];
-  arquivosCompras.filter(Boolean).forEach(a=>a.itens.forEach(it=>todos.push(it)));
+  Object.values(arquivosCompras).forEach(a=>a.itens.forEach(it=>todos.push(it)));
 
-  // Popula select de fornecedores
+  // Popula select de fornecedores e empresas
   const fSel=document.getElementById('filtroComprasForn');
   const forns=[...new Set(todos.map(it=>it.fornecedor))].sort();
   const fAtual=fSel.value;
   fSel.innerHTML='<option value="">Todos os fornecedores</option>'+forns.map(f=>`<option${f===fAtual?' selected':''}>${f}</option>`).join('');
 
+  // Popula select de empresas (se existir)
+  const eSel=document.getElementById('filtroComprasEmpresa');
+  if(eSel){
+    const emps=[...new Set(todos.map(it=>it.empresa).filter(Boolean))].sort();
+    const eAtual=eSel.value;
+    eSel.innerHTML='<option value="">Todas as empresas</option>'+emps.map(e=>`<option${e===eAtual?' selected':''}>${e}</option>`).join('');
+  }
+
+  // Popula meses
+  atualizarFiltrosMes();
+
   const mesFiltro=document.getElementById('filtroComprasMes').value;
   const fornFiltro=document.getElementById('filtroComprasForn').value;
+  const empFiltro=document.getElementById('filtroComprasEmpresa')?.value||'';
   const busca=norm(document.getElementById('filtroComprasBusca').value);
 
   let dados=todos;
   if(mesFiltro) dados=dados.filter(it=>it.mes===mesFiltro);
   if(fornFiltro) dados=dados.filter(it=>it.fornecedor===fornFiltro);
+  if(empFiltro) dados=dados.filter(it=>it.empresa===empFiltro);
   if(busca) dados=dados.filter(it=>it.descricao.includes(busca));
 
   const totalQtd=dados.reduce((s,it)=>s+it.qtd,0);
@@ -1097,11 +1270,13 @@ function renderCompras(){
   document.getElementById('infoCompras').textContent=`${dados.length} registros`;
 
   const tb=document.getElementById('tabelaCompras');
-  if(!dados.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted);">Carregue os relatórios de compras (Etapa 1).</td></tr>`;return;}
+  if(!dados.length){tb.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted);">Carregue os relatórios de compras (Etapa 1).</td></tr>`;return;}
   tb.innerHTML=dados.map(it=>{
     const vt=it.valorTotal||(it.qtd*it.valorUnit);
     return `<tr>
+      <td style="font-size:11px;color:var(--muted);max-width:100px;">${it.empresa||'—'}</td>
       <td style="font-size:12px;max-width:160px;">${it.fornecedor}</td>
+      <td style="font-size:11px;color:var(--muted);">${it.notaFiscal||'—'}</td>
       <td style="font-weight:600;max-width:200px;">${it.descricao}</td>
       <td style="font-size:12px;color:var(--muted);">${it.unidade||'—'}</td>
       <td style="text-align:right;font-weight:700;">${fmtN(it.qtd)}</td>
@@ -1115,13 +1290,14 @@ function renderCompras(){
 // ── Render Distribuição por Setor ─────────────────────────
 function renderDistribuicao(){
   const todos=[];
-  arquivosDist.filter(Boolean).forEach(a=>a.itens.forEach(it=>todos.push(it)));
+  Object.values(arquivosDist).forEach(a=>a.itens.forEach(it=>todos.push(it)));
 
-  // Popula select de setores
+  // Popula selects
   const sSel=document.getElementById('filtroDistSetor');
   const setores=[...new Set(todos.map(it=>it.centro))].sort();
   const sAtual=sSel.value;
   sSel.innerHTML='<option value="">Todos os setores</option>'+setores.map(s=>`<option${s===sAtual?' selected':''}>${s}</option>`).join('');
+  atualizarFiltrosMes();
 
   const mesFiltro=document.getElementById('filtroDistMes').value;
   const setorFiltro=document.getElementById('filtroDistSetor').value;
@@ -1162,7 +1338,352 @@ function renderDistribuicao(){
   }).join('');
 }
 
+// ── Classificação ABC/XYZ ─────────────────────────────────
+let cacheABCXYZ = null;
+function calcularABCXYZ() {
+  const todos = [...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])];
+  if(!todos.length) return [];
+
+  // ABC por valor total de compra
+  const itens = todos.map(desc => {
+    const hc = historicoCompras[desc] || [];
+    const hd = historicoDistribuicao[desc] || [];
+    const valorTotal = hc.reduce((s,h)=>s+(h.valorTotal||h.qtd*h.valorUnit),0);
+    // XYZ por variabilidade de consumo
+    const mesesComDist = {};
+    hd.forEach(h => { mesesComDist[h.mes] = (mesesComDist[h.mes]||0)+h.qtd; });
+    const qtds = MESES.map(m => mesesComDist[m]||0);
+    const media = qtds.length ? qtds.reduce((a,b)=>a+b,0)/qtds.length : 0;
+    const variancia = qtds.length ? qtds.reduce((s,q)=>s+Math.pow(q-media,2),0)/qtds.length : 0;
+    const desvpad = Math.sqrt(variancia);
+    const cv = media > 0 ? desvpad / media : 999;
+    return { desc, valorTotal, media, cv, qtds };
+  });
+
+  // Ordena por valor decrescente para ABC
+  itens.sort((a,b) => b.valorTotal - a.valorTotal);
+  const totalGeral = itens.reduce((s,i)=>s+i.valorTotal,0);
+  let acum = 0;
+
+  itens.forEach(it => {
+    acum += it.valorTotal;
+    it.pctAcum = totalGeral > 0 ? (acum/totalGeral)*100 : 0;
+    it.classeABC = it.pctAcum <= 80 ? 'A' : it.pctAcum <= 95 ? 'B' : 'C';
+    it.classeXYZ = it.cv < 0.3 ? 'X' : it.cv < 0.6 ? 'Y' : 'Z';
+    it.combined = it.classeABC + it.classeXYZ;
+  });
+
+  cacheABCXYZ = itens;
+  return itens;
+}
+
+function renderClassificacao() {
+  const dados = calcularABCXYZ();
+  const el = document.getElementById('classifResumo');
+  if(!dados.length) {
+    el.innerHTML = sc('Sem dados',0,'fas fa-info-circle','var(--muted)','rgba(100,116,139,.1)');
+    document.getElementById('tabelaClassif').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted);">Carregue relatórios para ver a classificação.</td></tr>`;
+    return;
+  }
+
+  const countA=dados.filter(d=>d.classeABC==='A').length;
+  const countB=dados.filter(d=>d.classeABC==='B').length;
+  const countC=dados.filter(d=>d.classeABC==='C').length;
+  const valA=dados.filter(d=>d.classeABC==='A').reduce((s,d)=>s+d.valorTotal,0);
+
+  el.innerHTML = [
+    sc(`Classe A (${countA})`,fmt(valA),'fas fa-star','#ef4444','rgba(239,68,68,.1)'),
+    sc(`Classe B (${countB})`,'80-95%','fas fa-circle','#f59e0b','rgba(245,158,11,.1)'),
+    sc(`Classe C (${countC})`,'95-100%','fas fa-circle','#10b981','rgba(16,185,129,.1)'),
+    sc('Total itens',dados.length,'fas fa-boxes','#2563eb','rgba(37,99,235,.1)'),
+  ].join('');
+
+  // Matriz 3x3
+  const classes = ['A','B','C'];
+  const xyzClasses = ['X','Y','Z'];
+  const matrizCores = {AX:'#fecaca',AY:'#fed7aa',AZ:'#fde68a',BX:'#e0e7ff',BY:'#ddd6fe',BZ:'#fce7f3',CX:'#d1fae5',CY:'#e0f2fe',CZ:'#f0fdf4'};
+  let matrizHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="padding:8px;"></th>';
+  xyzClasses.forEach(x => matrizHTML += `<th style="padding:8px;text-align:center;font-weight:700;">${x}<br><span style="font-size:10px;color:var(--muted);">${x==='X'?'Estável':x==='Y'?'Moderado':'Errático'}</span></th>`);
+  matrizHTML += '</tr></thead><tbody>';
+  classes.forEach(a => {
+    matrizHTML += `<tr><td style="padding:8px;font-weight:700;">${a}</td>`;
+    xyzClasses.forEach(x => {
+      const combo = a+x;
+      const count = dados.filter(d=>d.combined===combo).length;
+      const val = dados.filter(d=>d.combined===combo).reduce((s,d)=>s+d.valorTotal,0);
+      matrizHTML += `<td style="padding:10px;text-align:center;background:${matrizCores[combo]};border-radius:6px;margin:2px;">
+        <div style="font-size:18px;font-weight:800;">${count}</div>
+        <div style="font-size:10px;color:var(--muted);">${val>0?fmt(val):''}</div>
+      </td>`;
+    });
+    matrizHTML += '</tr>';
+  });
+  matrizHTML += '</tbody></table>';
+  document.getElementById('matrizABCXYZ').innerHTML = matrizHTML;
+
+  // Chart doughnut ABC
+  setTimeout(() => {
+    if(chartAtivo) chartAtivo.destroy();
+    const ctx = document.getElementById('chartABC').getContext('2d');
+    chartAtivo = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['A','B','C'],
+        datasets: [{
+          data: [
+            dados.filter(d=>d.classeABC==='A').reduce((s,d)=>s+d.valorTotal,0),
+            dados.filter(d=>d.classeABC==='B').reduce((s,d)=>s+d.valorTotal,0),
+            dados.filter(d=>d.classeABC==='C').reduce((s,d)=>s+d.valorTotal,0)
+          ],
+          backgroundColor: ['rgba(239,68,68,.7)','rgba(245,158,11,.7)','rgba(16,185,129,.7)'],
+          borderWidth: 0
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: {size:12} } } } }
+    });
+  }, 50);
+
+  // Tabela filtrável
+  const fABC = document.getElementById('filtroClasseABC').value;
+  const fXYZ = document.getElementById('filtroClasseXYZ').value;
+  const fBusca = norm(document.getElementById('filtroClassifBusca').value);
+  let filtrados = dados;
+  if(fABC) filtrados = filtrados.filter(d=>d.classeABC===fABC);
+  if(fXYZ) filtrados = filtrados.filter(d=>d.classeXYZ===fXYZ);
+  if(fBusca) filtrados = filtrados.filter(d=>d.desc.includes(fBusca));
+
+  const corABC = {A:'flag-alto',B:'flag-medio',C:'flag-ok'};
+  const corXYZ = {X:'flag-ok',Y:'flag-medio',Z:'flag-alto'};
+  document.getElementById('tabelaClassif').innerHTML = filtrados.map(d => `<tr>
+    <td style="font-weight:600;max-width:220px;">${d.desc}</td>
+    <td class="text-right">${fmt(d.valorTotal)}</td>
+    <td class="text-right">${d.pctAcum.toFixed(1)}%</td>
+    <td><span class="badge ${corABC[d.classeABC]}">${d.classeABC}</span></td>
+    <td class="text-right">${d.cv<999?d.cv.toFixed(2):'—'}</td>
+    <td><span class="badge ${corXYZ[d.classeXYZ]}">${d.classeXYZ}</span></td>
+    <td><span class="badge" style="background:#e0e7ff;color:#3730a3;font-weight:800;">${d.combined}</span></td>
+  </tr>`).join('');
+}
+
+// ── Compras vs Consumo ───────────────────────────────────
+function calcularCompraVsConsumo() {
+  const todos = [...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])];
+  return todos.map(desc => {
+    const hc = historicoCompras[desc] || [];
+    const hd = historicoDistribuicao[desc] || [];
+    const totalComprado = hc.reduce((s,h)=>s+h.qtd,0);
+    const totalConsumido = hd.reduce((s,h)=>s+h.qtd,0);
+    const valorComprado = hc.reduce((s,h)=>s+(h.valorTotal||h.qtd*h.valorUnit),0);
+    const ratio = totalConsumido > 0 ? totalComprado / totalConsumido : (totalComprado > 0 ? 999 : 0);
+    const mediaConsumo = MESES.length ? totalConsumido / MESES.length : 0;
+    const saldo = totalComprado - totalConsumido;
+    const cobertura = mediaConsumo > 0 ? saldo / mediaConsumo : null;
+
+    let status, cor;
+    if(totalComprado>0 && totalConsumido===0){ status='Estoque morto potencial'; cor='#991b1b'; }
+    else if(totalConsumido>0 && totalComprado===0){ status='Risco desabastecimento'; cor='#991b1b'; }
+    else if(ratio > 2){ status='Sobreestoque'; cor='#991b1b'; }
+    else if(ratio > 1.5){ status='Atenção sobreestoque'; cor='#92400e'; }
+    else if(ratio < 0.5){ status='Risco desabastecimento'; cor='#991b1b'; }
+    else if(ratio < 0.8){ status='Atenção subcompra'; cor='#92400e'; }
+    else { status='Equilibrado'; cor='#065f46'; }
+
+    return { desc, totalComprado, totalConsumido, valorComprado, ratio, saldo, cobertura, mediaConsumo, status, cor };
+  }).sort((a,b) => Math.abs(b.ratio-1) - Math.abs(a.ratio-1));
+}
+
+function renderRelatorioCompraVsConsumo(el) {
+  const dados = calcularCompraVsConsumo();
+  if(!dados.length){ el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--muted);">Carregue relatórios de compras e distribuição.</div>`; return; }
+
+  const mortos=dados.filter(d=>d.totalComprado>0&&d.totalConsumido===0).length;
+  const risco=dados.filter(d=>d.totalConsumido>0&&d.totalComprado===0).length;
+  const sobre=dados.filter(d=>d.ratio>1.5&&d.totalConsumido>0).length;
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
+      ${sc('Total itens',dados.length,'fas fa-boxes','#2563eb','rgba(37,99,235,.1)')}
+      ${sc('Sobreestoque',sobre,'fas fa-arrow-up','#ef4444','rgba(239,68,68,.1)')}
+      ${sc('Estoque morto',mortos,'fas fa-skull','#7c3aed','rgba(124,58,237,.1)')}
+      ${sc('Risco desabast.',risco,'fas fa-exclamation-triangle','#f59e0b','rgba(245,158,11,.1)')}
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;"><div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr>
+          <th>Item</th><th class="text-right">Qtd Comprada</th><th class="text-right">Qtd Consumida</th>
+          <th class="text-right">Saldo</th><th class="text-right">Ratio</th><th class="text-right">Cobertura</th><th>Status</th>
+        </tr></thead>
+        <tbody>${dados.map(d=>`<tr>
+          <td style="font-weight:600;max-width:220px;">${d.desc}</td>
+          <td class="text-right">${fmtN(d.totalComprado)}</td>
+          <td class="text-right">${fmtN(d.totalConsumido)}</td>
+          <td class="text-right" style="font-weight:700;color:${d.saldo>0?'var(--green)':'var(--red)'};">${d.saldo>0?'+':''}${fmtN(d.saldo)}</td>
+          <td class="text-right" style="font-weight:700;">${d.ratio<999?d.ratio.toFixed(2):'∞'}</td>
+          <td class="text-right">${d.cobertura!==null?d.cobertura.toFixed(1)+' meses':'—'}</td>
+          <td><span class="badge" style="background:${d.cor}22;color:${d.cor};">${d.status}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div></div>`;
+}
+
+// ── Análise de Fornecedores ──────────────────────────────
+function renderRelatorioFornecedores(el) {
+  const todos=[];
+  Object.values(arquivosCompras).forEach(a=>a.itens.forEach(it=>todos.push(it)));
+  if(!todos.length){ el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--muted);">Carregue relatórios de compras.</div>`; return; }
+
+  // Portfolio por fornecedor
+  const portfolio = {};
+  todos.forEach(it => {
+    if(!portfolio[it.fornecedor]) portfolio[it.fornecedor] = {valor:0, itens:new Set(), meses:new Set()};
+    portfolio[it.fornecedor].valor += (it.valorTotal||it.qtd*it.valorUnit);
+    portfolio[it.fornecedor].itens.add(it.descricao);
+    portfolio[it.fornecedor].meses.add(it.mes);
+  });
+  const totalGeral = Object.values(portfolio).reduce((s,p)=>s+p.valor,0);
+  const fornArr = Object.entries(portfolio).map(([f,p])=>({
+    fornecedor:f, valor:p.valor, pct:totalGeral>0?(p.valor/totalGeral*100):0,
+    itens:p.itens.size, meses:p.meses.size
+  })).sort((a,b)=>b.valor-a.valor);
+
+  // Itens com múltiplos fornecedores (oportunidade de economia)
+  const itensForn = {};
+  todos.forEach(it => {
+    if(!itensForn[it.descricao]) itensForn[it.descricao] = {};
+    if(!itensForn[it.descricao][it.fornecedor]) itensForn[it.descricao][it.fornecedor] = [];
+    itensForn[it.descricao][it.fornecedor].push(it.valorUnit);
+  });
+  const duplicatas = [];
+  Object.entries(itensForn).forEach(([desc, forns]) => {
+    const fs = Object.keys(forns);
+    if(fs.length < 2) return;
+    const precos = fs.map(f => ({ fornecedor:f, preco: forns[f].reduce((s,v)=>s+v,0)/forns[f].length }));
+    precos.sort((a,b)=>a.preco-b.preco);
+    const economia = precos[precos.length-1].preco - precos[0].preco;
+    duplicatas.push({ desc, fornecedores:precos, economia, pctEconomia: precos[precos.length-1].preco>0?(economia/precos[precos.length-1].preco*100):0 });
+  });
+  duplicatas.sort((a,b)=>b.economia-a.economia);
+
+  // Itens com fornecedor único
+  const fornUnico = Object.entries(itensForn).filter(([,f])=>Object.keys(f).length===1).length;
+
+  const concentrados = fornArr.filter(f=>f.pct>30);
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
+      ${sc('Fornecedores',fornArr.length,'fas fa-truck','#2563eb','rgba(37,99,235,.1)')}
+      ${sc('Concentração >30%',concentrados.length,'fas fa-exclamation-triangle','#ef4444','rgba(239,68,68,.1)')}
+      ${sc('Fornecedor único',fornUnico,'fas fa-user','#f59e0b','rgba(245,158,11,.1)')}
+      ${sc('Oportunidades preço',duplicatas.length,'fas fa-dollar-sign','#10b981','rgba(16,185,129,.1)')}
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px;">
+      <div style="padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;">
+        <i class="fas fa-chart-pie" style="color:var(--blue);"></i> Portfolio de Fornecedores
+      </div>
+      <div style="overflow-x:auto;"><table class="tbl">
+        <thead><tr><th>Fornecedor</th><th class="text-right">Valor Total</th><th class="text-right">% do Total</th><th>Concentração</th><th class="text-right">Itens</th><th class="text-right">Meses</th></tr></thead>
+        <tbody>${fornArr.map(f=>`<tr>
+          <td style="font-weight:600;">${f.fornecedor}</td>
+          <td class="text-right">${fmt(f.valor)}</td>
+          <td class="text-right" style="font-weight:700;">${f.pct.toFixed(1)}%</td>
+          <td><div class="cobertura-bar" style="width:120px;"><div class="cobertura-fill" style="width:${Math.min(f.pct,100)}%;background:${f.pct>30?'var(--red)':f.pct>15?'var(--yellow)':'var(--green)'};"></div></div></td>
+          <td class="text-right">${f.itens}</td>
+          <td class="text-right">${f.meses}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>
+
+    ${duplicatas.length?`<div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;">
+        <i class="fas fa-exchange-alt" style="color:var(--green);"></i> Comparação de Preços (mesmo item, fornecedores diferentes)
+      </div>
+      <div style="overflow-x:auto;"><table class="tbl">
+        <thead><tr><th>Item</th><th>Fornecedores / Preço Médio</th><th class="text-right">Economia Potencial</th><th class="text-right">%</th></tr></thead>
+        <tbody>${duplicatas.slice(0,30).map(d=>`<tr>
+          <td style="font-weight:600;max-width:200px;">${d.desc}</td>
+          <td style="font-size:12px;">${d.fornecedores.map(f=>`${f.fornecedor}: ${fmt(f.preco)}`).join(' | ')}</td>
+          <td class="text-right" style="font-weight:700;color:var(--green);">${fmt(d.economia)}</td>
+          <td class="text-right">${d.pctEconomia.toFixed(0)}%</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`:''}`;
+}
+
+// ── Alertas de Estoque (morto/lento) ─────────────────────
+function renderRelatorioAlertas(el) {
+  const todos = [...new Set([...Object.keys(historicoCompras),...Object.keys(historicoDistribuicao)])];
+  if(!todos.length){ el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--muted);">Carregue relatórios.</div>`; return; }
+
+  const alertas = [];
+  todos.forEach(desc => {
+    const hc = historicoCompras[desc]||[];
+    const hd = historicoDistribuicao[desc]||[];
+    const flags = [];
+
+    // Comprado mas nunca consumido
+    if(hc.length>0 && hd.length===0) flags.push({tipo:'morto',label:'Comprado mas nunca consumido',cor:'#7c3aed'});
+    // Consumido mas nunca comprado
+    if(hd.length>0 && hc.length===0) flags.push({tipo:'risco',label:'Consumido mas nunca comprado',cor:'#ef4444'});
+    // Consumo declinante
+    if(hd.length>0 && MESES.length>=2){
+      const porMes = MESES.map(m=>hd.filter(h=>h.mes===m).reduce((s,h)=>s+h.qtd,0));
+      const primeiro = porMes.find(v=>v>0);
+      const ultimo = porMes[porMes.length-1];
+      if(primeiro && ultimo===0) flags.push({tipo:'lento',label:'Sem consumo no último mês',cor:'#f59e0b'});
+      else if(primeiro && ultimo < primeiro*0.3 && ultimo>0) flags.push({tipo:'lento',label:'Consumo em queda (>70%)',cor:'#f59e0b'});
+    }
+    // Consumo esporádico (1 setor, 1 mês)
+    const centros = new Set(hd.map(h=>h.centro));
+    const mesesDist = new Set(hd.map(h=>h.mes));
+    if(hd.length>0 && centros.size===1 && mesesDist.size===1) flags.push({tipo:'esporadico',label:'Demanda esporádica (1 setor, 1 mês)',cor:'#64748b'});
+
+    if(flags.length) {
+      const valorTotal = hc.reduce((s,h)=>s+(h.valorTotal||h.qtd*h.valorUnit),0);
+      alertas.push({desc, flags, valorTotal, totalComprado:hc.reduce((s,h)=>s+h.qtd,0), totalConsumido:hd.reduce((s,h)=>s+h.qtd,0)});
+    }
+  });
+
+  alertas.sort((a,b)=>b.valorTotal-a.valorTotal);
+
+  const mortos=alertas.filter(a=>a.flags.some(f=>f.tipo==='morto')).length;
+  const riscos=alertas.filter(a=>a.flags.some(f=>f.tipo==='risco')).length;
+  const lentos=alertas.filter(a=>a.flags.some(f=>f.tipo==='lento')).length;
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
+      ${sc('Total alertas',alertas.length,'fas fa-bell','#2563eb','rgba(37,99,235,.1)')}
+      ${sc('Estoque morto',mortos,'fas fa-skull','#7c3aed','rgba(124,58,237,.1)')}
+      ${sc('Risco desabast.',riscos,'fas fa-exclamation-triangle','#ef4444','rgba(239,68,68,.1)')}
+      ${sc('Movimento lento',lentos,'fas fa-hourglass-half','#f59e0b','rgba(245,158,11,.1)')}
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;"><div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Item</th><th class="text-right">Qtd Comprada</th><th class="text-right">Qtd Consumida</th><th class="text-right">Valor</th><th>Alertas</th></tr></thead>
+        <tbody>${alertas.map(a=>`<tr>
+          <td style="font-weight:600;max-width:220px;">${a.desc}</td>
+          <td class="text-right">${fmtN(a.totalComprado)}</td>
+          <td class="text-right">${fmtN(a.totalConsumido)}</td>
+          <td class="text-right">${a.valorTotal>0?fmt(a.valorTotal):'—'}</td>
+          <td>${a.flags.map(f=>`<span class="badge" style="background:${f.cor}22;color:${f.cor};margin:2px;">${f.label}</span>`).join('')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div></div>`;
+}
+
 // ── Init ──────────────────────────────────────────────────
+// Meses iniciais — baseado no mês atual, últimos 3 meses
+(function(){
+  const now = new Date();
+  const mesAtual = now.getMonth(); // 0-11
+  for(let i=2;i>=0;i--){
+    let idx = mesAtual - i;
+    if(idx<0) idx+=12;
+    MESES.push(TODOS_MESES[idx]);
+  }
+  MESES_ABREV = MESES.map(m=>TODOS_ABREV[MES_ORDEM[m]]);
+})();
+
 criarDropZones('dzCompras',      'dzc',  carregarCompra);
 criarDropZones('dzDistribuicao', 'dzd',  carregarDistribuicao);
 criarDropZones('dzCompras2',     'dzc2-',carregarCompra);
